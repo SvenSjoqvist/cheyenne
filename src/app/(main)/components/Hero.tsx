@@ -62,12 +62,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           className="object-cover"
           sizes="100vw"
         />
-        {overlay && (
-          <div 
-            className="absolute inset-0 bg-black" 
-            style={{ opacity: overlayOpacity }}
-          />
-        )}
       </div>
 
       {/* Content Container - Removed right padding and adjusted alignment */}
