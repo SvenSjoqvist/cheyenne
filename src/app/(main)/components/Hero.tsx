@@ -8,8 +8,6 @@ interface HeroSectionProps {
   topPadding?: string | number;
   buttonSize?: 'small' | 'medium' | 'large';
   onButtonClick?: () => void;
-  overlay?: boolean;
-  overlayOpacity?: number;
 }
 
 const buttonSizes = {
@@ -40,8 +38,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   topPadding = '660px',
   buttonSize = 'medium',
   onButtonClick,
-  overlay = true,
-  overlayOpacity = 0.4
 }) => {
   const buttonStyles = buttonSizes[buttonSize];
 
