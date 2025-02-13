@@ -1,23 +1,10 @@
-import React from 'react';
-import Header from './components/Header';
-import Navigation from './components/Navbar';
-import HeroSection from './components/Hero';
-import ProductSection from './components/Products';
-import Footer from './components/Footer';
-import ImageOverlay from './components/Overlay';
-import RunawaySection from './components/About';
+import HeroSection from './_components/Hero';
+import ProductSection from './_components/Products';
+import ImageOverlay from './_components/Overlay';
+import RunawaySection from './_components/About';
+import Link from 'next/link';
 
 const KilaekoPage: React.FC = () => {
-
-  const navigationProps = {
-    navItems: ["Catalog", "Collection Journal", "About", "Size & Fit"],
-    socialIcons: [
-        "/search.svg",
-        "/human.svg",
-        "/money.svg",
-        "/bag.svg"
-    ]
-  };
 
   const heroSectionProps = {
     backgroundImage: "https://cdn.builder.io/api/v1/image/assets/df24f938eeb948889fe9ad55656873a2/63f22b473e11fee9c7f5ef8299ad98ab6bd5095e858350ca520d45d76223ce8d?apiKey=df24f938eeb948889fe9ad55656873a2&",
@@ -31,41 +18,9 @@ const KilaekoPage: React.FC = () => {
     { name: "louze bikini", topPrice: "$90", bottomPrice: "$90" }
   ];
 
-  const footerSections = [
-    {
-      title: "concierge",
-      links: ["contact", "size & fit", "track an order", "shipping & delivery", "account", "FAQ"]
-    },
-    {
-      title: "company",
-      links: ["who we are", "sustainability"]
-    },
-    {
-      title: "legal",
-      links: ["return & cancellation policy", "accessibility policy", "privacy policy", "terms of service", "do not sell or share my personal data​"]
-    },
-    {
-      title: "social",
-      links: ["instagram", "spotify", "pinterest"]
-    }
-  ];
-
-  const paymentMethods = [
-    "/payment/visa.svg",
-    "/payment/mastercard.svg",
-    "/payment/paypal.svg",
-    "/payment/klarna.svg",
-    "/payment/applepay.svg",
-    "/payment/afterpay.svg",
-    "/payment/shoppay.svg",
-    "/payment/googlepay.svg",
-    "/payment/amex.svg"
-  ];
 
   return (
     <div className="flex overflow-hidden flex-col bg-neutral-100">
-      <Header/>
-      <Navigation {...navigationProps} />
       <HeroSection {...heroSectionProps} />
       <div className="flex relative flex-col justify-center items-center w-full min-h-[1024px] max-md:px-5 max-md:max-w-full">
       <ImageOverlay
@@ -74,16 +29,15 @@ const KilaekoPage: React.FC = () => {
     />
       </div>
       <ProductSection products={products} />
-      <button className="cursor-pointer self-center px-5 py-2 mt-32 max-w-full text-2xl font-darker-grotesque tracking-wider leading-none bg-neutral-800 text-neutral-100 w-auto max-md:mt-10 inline-flex items-center justify-center">
+      <Link className="cursor-pointer self-center px-5 py-2 mt-32 max-w-full text-2xl font-darker-grotesque tracking-wider leading-none bg-neutral-800 text-neutral-100 w-auto max-md:mt-10 inline-flex items-center justify-center" href={"/catalog"}>
   shop now
-</button>
+</Link>
 
 
 <RunawaySection />
 <div className=" text-center px-16 py-24 w-full text-4xl font-bold leading-none bg-[#588FAE] text-neutral-100 tracking-[2px] max-md:px-5 max-md:max-w-full font-[bero]">
         no restocks, limited quantity.
       </div>
-      <Footer sections={footerSections} paymentMethods={paymentMethods} />
     </div>
   );
 };
