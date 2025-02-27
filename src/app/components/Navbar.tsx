@@ -3,9 +3,10 @@ import React, { Suspense } from 'react'; // Import Suspense
 import Image from 'next/image';
 import SearchBar from './Search'; // Import SearchBar
 import { getMenu } from '../lib/shopify';
+import CartModal from './cart/modal';
 
 const Navigation = async () => {
-  const navItems = await getMenu('next-js-frontend-menu');
+  const navItems = await getMenu('main-menu');
 
   return (
     <div className="p-8 w-full border-b bg-neutral-100 border-zinc-300 max-md:px-5">
@@ -38,6 +39,7 @@ const Navigation = async () => {
 
           {/* SearchBar with Suspense */}
           <div className="flex gap-8 items-center">
+          <CartModal />
             <Suspense fallback={<div>Loading search...</div>}>
               <SearchBar />
             </Suspense>

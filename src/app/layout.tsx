@@ -4,7 +4,9 @@ import "./globals.css";
 import Header from "./components/Header";
 import Navigation from "./components/Navbar";
 import {Footer} from "./components/Footer";
-
+import { CartProvider } from "./components/cart/cart-context";
+import { cookies } from "next/headers";
+import { getCart } from "./lib/shopify";
 const darkerGrotesque = Darker_Grotesque({
   subsets: ["latin"], // Supports Latin characters
   weight: ["300", "400", "500", "600", "700", "800", "900"], // Select font weights
@@ -76,20 +78,25 @@ const paymentMethods = [
   "/payment/amex.svg"
 ];
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  const cartId = (await cookies()).get("cartId")?.value;
+  const cart = getCart(cartId);
+  
   return (
     <html lang="en">
       <body
         className={`${darkerGrotesque.variable} antialiased`}
-      >
+      ><CartProvider cartPromise={cart}>
       <Header/>
       <Navigation/>
         {children}
       <Footer sections={footerSections} paymentMethods={paymentMethods} />
+      </CartProvider>
       </body>
     </html>
   );

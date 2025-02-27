@@ -2,7 +2,9 @@
 @theme {
   --font-darker-grotesque: sans-serif;
 }
-
+* {
+  overflow-x: hidden;
+}
 @font-face {
   font-family: 'Bero';
   src: url('/fonts/BeroBold.otf') format('opentype');

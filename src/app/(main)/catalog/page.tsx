@@ -7,7 +7,7 @@ const BikiniBoutique: React.FC = async () => {
   const topProducts = await getProducts({ query: "" });
 
   return (
-    <div className="flex overflow-hidden flex-col bg-neutral-100">
+    <div className="flex overflow-hidden flex-col bg-white">
       <Suspense fallback={<div>Loading...</div>}>
         <ProductGrid products={topProducts} />
       </Suspense>
