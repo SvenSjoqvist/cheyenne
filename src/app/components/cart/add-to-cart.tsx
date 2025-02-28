@@ -15,7 +15,7 @@ function SubmitButton({
   selectedVariantId: string | undefined;
 }) {
   const buttonClasses =
-    "relative flex w-full items-center justify-center rounded-full bg-blue-600 p-4 tracking-wide text-white";
+    "relative flex w-2/3 items-center justify-center rounded-xl p-4 tracking-wide text-black border border-black";
   const disabledClasses = "cursor-not-allowed opacity-60 hover:opacity-60";
 
   if (!availableForSale) {
@@ -33,9 +33,6 @@ function SubmitButton({
         disabled
         className={clsx(buttonClasses, disabledClasses)}
       >
-        <div className="absolute left-0 ml-4">
-          +
-        </div>
         Add to luggage
       </button>
     );
@@ -46,11 +43,9 @@ function SubmitButton({
       aria-label="Add to cart"
       className={clsx(buttonClasses, {
         "hover:opacity-90": true,
+        "cursor-pointer": true,
       })}
     >
-      <div className="absolute left-0 ml-4">
-        +
-      </div>
       Add to luggage
     </button>
   );

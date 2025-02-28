@@ -79,14 +79,19 @@ export default function VariantSelector({
                 key={value}
                 aria-disabled={!isAvailableForSale}
                 disabled={!isAvailableForSale}
-                title={`${option.name} ${value}${!isAvailableForSale ? " (Out of Stock)" : ""}`}
+                title={`${option.name} ${value}${
+                  !isAvailableForSale ? " (Out of Stock)" : ""
+                }`}
                 className={clsx(
-                  "flex min-w-[48px] items-center justify-center rounded-full border bg-neutral-100 px-2 py-1 text-sm",
+                  "flex min-w-[48px] items-center justify-center rounded-full border px-2 py-1 text-sm transition-colors duration-300 ease-in-out cursor-pointer",
                   {
-                    "cursor-default ring-2 ring-blue-600": isActive,
-                    "ring-1 ring-transparent transition duration-300 ease-in-out hover:ring-blue-600":
+                    // Selected option: reduced background opacity
+                    "bg-opacity-50 bg-neutral-300": isActive,
+                    // Non-selected options: white background
+                    "bg-white hover:bg-neutral-100":
                       !isActive && isAvailableForSale,
-                    "relative z-10 cursor-not-allowed overflow-hidden bg-neutral-100 text-neutral-500 ring-1 ring-neutral-300 before:absolute before:inset-x-0 before:-z-10 before:h-px before:-rotate-45 before:bg-neutral-300 before:transition-transform dark:bg-neutral-900 dark:text-neutral-400 dark:ring-neutral-700 before:dark:bg-neutral-700":
+                    // Out-of-stock options: grayed out
+                    "cursor-not-allowed bg-neutral-100 text-neutral-500 ring-1 ring-neutral-300 dark:bg-neutral-900 dark:text-neutral-400 dark:ring-neutral-700":
                       !isAvailableForSale,
                   }
                 )}

@@ -3,8 +3,8 @@ import { isShopifyError } from "../type-guard";
 import { ensureStartWith } from "../utils";
 import { getCollectionProductsQuery, getCollectionsQuery } from "./queries/collection";
 import { getMenuQuery } from "./queries/Menu";
-import { getProductQuery, getProductRecommendationsQuery, getProductsQuery } from "./queries/product";
-import { Connection, Menu, ShopifyMenuOperation, ShopifyProduct, ShopifyProductsOperation, Image, Product, Collection, ShopifyCollectionsOperation, ShopifyCollection, ShopifyCollectionProductsOperation, ShopifyProductOperation, ShopifyCreateCartOperation, Cart, ShopifyCartOperation, ShopifyRemoveFromCartOperation, ShopifyUpdateCartOperation, ShopifyAddToCartOperation, ShopifyCart, ShopifyProductRecommendationsOperation } from "./types";
+import { getProductQuery, getProductsByTagQuery, getProductsQuery } from "./queries/product";
+import { Connection, Menu, ShopifyMenuOperation, ShopifyProduct, ShopifyProductsOperation, Image, Product, Collection, ShopifyCollectionsOperation, ShopifyCollection, ShopifyCollectionProductsOperation, ShopifyProductOperation, ShopifyCreateCartOperation, Cart, ShopifyCartOperation, ShopifyRemoveFromCartOperation, ShopifyUpdateCartOperation, ShopifyAddToCartOperation, ShopifyCart, ShopifyProductsByTagOperation } from "./types";
 import { globalContent } from "./queries/globalContent";
 import { getCollectionQuery } from "./queries/collection-journal";
 import { addToCartMutation, createCartMutation, editCartItemsMutation, removeFromCartMutation } from "./mutations/cart";
@@ -422,16 +422,25 @@ export async function addToCart(
   return reshapeCart(res.body.data.cartLinesAdd.cart);
 }
 
-export async function getProductRecommendations(
-  productId: string
+export async function getProductsByTag(
+  tag: string,
+  productId: string,
+  limit = 5
 ): Promise<Product[]> {
-  const res = await shopifyFetch<ShopifyProductRecommendationsOperation>({
-    query: getProductRecommendationsQuery,
+  const res = await shopifyFetch<ShopifyProductsByTagOperation>({
+    query: getProductsByTagQuery,
     tags: [TAGS.products],
     variables: {
-      productId,
+      query: `tag:${tag}`,
+      limit,
+      productId
     },
   });
 
-  return reshapeProducts(res.body.data.productRecommendations);
+  // Filter out the current product from results
+  const products = reshapeProducts(
+    res.body.data.products.edges.map((edge: { node: ShopifyProduct }) => edge.node)
+  );
+  
+  return products.filter(product => product.id !== productId);
 }

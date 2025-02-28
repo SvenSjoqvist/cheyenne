@@ -18,7 +18,7 @@ const Navigation = async () => {
               <Link
                 key={index}
                 href={`/${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-                className="hover:underline text-base font-darker-grotesque tracking-wider leading-none text-neutral-800"
+                className="hover:underline text-base font-darker-grotesque tracking-wider leading-none text-black"
               >
                 {item.title}
               </Link>
@@ -38,11 +38,11 @@ const Navigation = async () => {
           </Link>
 
           {/* SearchBar with Suspense */}
-          <div className="flex gap-8 items-center">
-          <CartModal />
-            <Suspense fallback={<div>Loading search...</div>}>
+          <div className="flex gap-3 items-center">
+          <Suspense fallback={<div>Loading search...</div>}>
               <SearchBar />
             </Suspense>
+          <CartModal />
           </div>
         </div>
       </div>

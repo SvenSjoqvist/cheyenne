@@ -301,3 +301,18 @@ export type Menu = {
       responsiveClasses: Record<string, string>;
     };
   }
+
+  export type ShopifyProductsByTagOperation = {
+    data: {
+      products: {
+        edges: Array<{
+          node: ShopifyProduct;
+        }>;
+      };
+    };
+    variables: {
+      query: string;
+      limit: number;
+      productId: string;
+    };
+  };

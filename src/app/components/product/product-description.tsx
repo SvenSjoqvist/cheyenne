@@ -7,8 +7,8 @@ import { AddToCart } from "../cart/add-to-cart";
 export function ProductDescription({ product }: { product: Product }) {
   return (
     <>
-      <div className="mb-6 flex flex-col border-b pb-6 dark:border-neutral-700">
-        <h1 className="mb-2 text-5xl font-medium font-[bero]">{product.title}</h1>
+      <div className="mb-6 flex flex-col">
+        <h1 className="mb-2 text-3xl font-bold font-[bero]">{product.title}</h1>
         <div className="mr-auto w-auto rounded-full  p-2 text-sm text-black">
           <Price
             amount={product.priceRange.maxVariantPrice.amount}
@@ -24,6 +24,10 @@ export function ProductDescription({ product }: { product: Product }) {
         />
       ) : null}
       <AddToCart product={product} />
+      <p className="text-xs text-red-600 pt-4 w-2/3">
+        before adding to luggage, please check our size guide or contact us for
+        more information.
+      </p>
     </>
   );
 }

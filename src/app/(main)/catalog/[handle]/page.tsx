@@ -3,8 +3,8 @@ import Gallery from "@/app/components/product/gallery";
 import { ProductProvider } from "@/app/components/product/product-context";
 import { ProductDescription } from "@/app/components/product/product-description";
 import { HIDDEN_PRODUCT_TAG } from "@/app/lib/constants";
-import { getProduct, getProductRecommendations } from "@/app/lib/shopify";
-import { Image } from "@/app/lib/shopify/types";
+import { getProduct, getProductsByTag } from "@/app/lib/shopify";
+import { Image, Product } from "@/app/lib/shopify/types";
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -64,12 +64,12 @@ export default async function ProductPage({ params }: PageProps) {
   
   return (
     <ProductProvider>
-      <div className="mx-auto max-w-screen-2xl px-4">
+      <div className="mx-auto max-w-screen-2xl pt-10">
         <div className="flex flex-col bg-white p-8 md:p-12 lg:flex-row lg:gap-8">
           <div className="h-full w-full basis-full lg:basis-4/6">
             <Suspense
               fallback={
-                <div className="relative aspect-square h-full max-h-[550px] w-full overflow-hidden" />
+                <div className="relative aspect-square h-full w-full overflow-hidden" />
               }
             >
               <Gallery
@@ -86,16 +86,26 @@ export default async function ProductPage({ params }: PageProps) {
             </Suspense>
           </div>
         </div>
-        <RelatedProducts id={product.id} />
+        <RelatedProducts id={product.id} tags={product.tags} />
       </div>
     </ProductProvider>
   );
 }
 
-async function RelatedProducts({ id }: { id: string }) {
-  const relatedProducts = await getProductRecommendations(id);
+async function RelatedProducts({ id, tags }: { id: string; tags?: string[] }) {
+    let relatedProducts: Product[] = [];
 
-  if (!relatedProducts) return null;
+  // Try to get tag-based recommendations first if tags exist
+  if (tags && tags.length > 0) {
+    const primaryTag = tags[0];
+    const taggedProducts = await getProductsByTag(primaryTag, id);
+    
+    if (taggedProducts && taggedProducts.length > 0) {
+      relatedProducts = taggedProducts;
+    }
+  }
+
+  if (!relatedProducts || relatedProducts.length === 0) return null;
 
   return (
     <div className="py-8">

@@ -26,10 +26,14 @@ export const getProductQuery = /* GraphQL */ `
   ${productFragment}
 `;
 
-export const getProductRecommendationsQuery = /* GraphQL */ `
-  query getProductRecommendations($productId: ID!) {
-    productRecommendations(productId: $productId) {
-      ...product
+export const getProductsByTagQuery = /* GraphQL */ `
+  query getProductsByTag($query: String!, $limit: Int!) {
+    products(first: $limit, query: $query) {
+      edges {
+        node {
+          ...product
+        }
+      }
     }
   }
   ${productFragment}
