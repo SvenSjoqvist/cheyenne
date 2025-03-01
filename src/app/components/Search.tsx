@@ -46,8 +46,8 @@ export default function SearchBar () {
             aria-label="Search"
           >
             <svg 
-              width="20" 
-              height="20" 
+              width="28" 
+              height="28" 
               viewBox="0 0 20 20" 
               fill="none" 
               className="w-5 h-5"

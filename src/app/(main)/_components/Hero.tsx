@@ -3,43 +3,16 @@ import Image from 'next/image';
 
 interface HeroSectionProps {
   backgroundImage: string;
-  buttonText: string;
   minHeight?: string | number;
   topPadding?: string | number;
-  buttonSize?: 'small' | 'medium' | 'large';
   onButtonClick?: () => void;
 }
 
-const buttonSizes = {
-  small: {
-    width: 'w-20',
-    height: 'h-20',
-    fontSize: 'text-base',
-    padding: 'px-3'
-  },
-  medium: {
-    width: 'w-24',
-    height: 'h-24',
-    fontSize: 'text-lg',
-    padding: 'px-4'
-  },
-  large: {
-    width: 'w-32',
-    height: 'h-32',
-    fontSize: 'text-xl',
-    padding: 'px-6'
-  }
-};
-
 const HeroSection: React.FC<HeroSectionProps> = ({
   backgroundImage,
-  buttonText,
   minHeight = '866px',
   topPadding = '660px',
-  buttonSize = 'medium',
-  onButtonClick,
 }) => {
-  const buttonStyles = buttonSizes[buttonSize];
 
   return (
     <section 
@@ -69,36 +42,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           paddingBottom: '7rem'
         }}
       >
-        <button
-          onClick={onButtonClick}
-          className={`
-            ${buttonStyles.width}
-            ${buttonStyles.height}
-            ${buttonStyles.fontSize}
-            ${buttonStyles.padding}
-            rounded-xl
-            bg-neutral-800
-            hover:bg-neutral-700
-            transition-colors
-            duration-200
-            font-medium
-            tracking-wider
-            leading-5
-            flex
-            items-center
-            justify-center
-            transform
-            hover:scale-105
-            active:scale-95
-          `}
-          style={{
-            position: 'absolute',
-            right: 0,
-            marginRight: 0
-          }}
-        >
-          {buttonText}
-        </button>
       </div>
     </section>
   );

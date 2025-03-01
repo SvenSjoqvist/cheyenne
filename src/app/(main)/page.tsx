@@ -2,21 +2,16 @@ import HeroSection from './_components/Hero';
 import ProductSection from './_components/Products';
 import ImageOverlay from './_components/Overlay';
 import RunawaySection from './_components/About';
+import { getProducts } from '@/app/lib/shopify';
 import Link from 'next/link';
 
-const KilaekoPage: React.FC = () => {
+const KilaekoPage: React.FC = async () => {
 
   const heroSectionProps = {
     backgroundImage: "https://cdn.builder.io/api/v1/image/assets/df24f938eeb948889fe9ad55656873a2/63f22b473e11fee9c7f5ef8299ad98ab6bd5095e858350ca520d45d76223ce8d?apiKey=df24f938eeb948889fe9ad55656873a2&",
-    buttonText: "size & fit guide"
   };
-
-  const products = [
-    { name: "valea bikini", topPrice: "$90", bottomPrice: "$90" },
-    { name: "carei bikini", topPrice: "$90", bottomPrice: "$90" },
-    { name: "braux bikini", topPrice: "$90", bottomPrice: "$90" },
-    { name: "louze bikini", topPrice: "$90", bottomPrice: "$90" }
-  ];
+  const products = await getProducts({ query: "" });
+  const productsSlice = products.slice(0, 4);
 
 
   return (
@@ -28,7 +23,7 @@ const KilaekoPage: React.FC = () => {
       overlaySrc="https://cdn.builder.io/api/v1/image/assets/df24f938eeb948889fe9ad55656873a2/e9cafacfea9c8e1bb665842f9aedd625182e915211ca51f507a85f8b1e717158?apiKey=df24f938eeb948889fe9ad55656873a2&"
     />
       </div>
-      <ProductSection products={products} />
+      <ProductSection products={productsSlice}/>
       <Link className="cursor-pointer self-center px-5 py-2 mt-32 max-w-full text-2xl font-darker-grotesque tracking-wider leading-none bg-neutral-800 text-neutral-100 w-auto max-md:mt-10 inline-flex items-center justify-center" href={"/catalog"}>
   shop now
 </Link>

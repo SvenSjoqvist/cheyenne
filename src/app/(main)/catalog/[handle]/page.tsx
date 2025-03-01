@@ -1,3 +1,4 @@
+import { AddToCart } from "@/app/components/cart/add-to-cart";
 import { GridTileImage } from "@/app/components/grid/Tile";
 import Gallery from "@/app/components/product/gallery";
 import { ProductProvider } from "@/app/components/product/product-context";
@@ -109,7 +110,7 @@ async function RelatedProducts({ id, tags }: { id: string; tags?: string[] }) {
 
   return (
     <div className="py-8">
-      <h2 className="mb-4 text-2xl font-bold">Related Products</h2>
+      <h2 className="mb-4 text-2xl font-bold">Complete the set</h2>
       <ul className="flex w-full gap-4 overflow-x-auto pt-1">
         {relatedProducts.map((product) => (
           <li
@@ -123,11 +124,6 @@ async function RelatedProducts({ id, tags }: { id: string; tags?: string[] }) {
             >
               <GridTileImage
                 alt={product.title}
-                label={{
-                  title: product.title,
-                  amount: product.priceRange.maxVariantPrice.amount,
-                  currencyCode: product.priceRange.maxVariantPrice.currencyCode,
-                }}
                 src={product.featuredImage?.url}
                 fill
                 sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, (min-width: 475px) 50vw, 100vw"
@@ -136,6 +132,9 @@ async function RelatedProducts({ id, tags }: { id: string; tags?: string[] }) {
           </li>
         ))}
       </ul>
+      <div className="mt-4">
+        <AddToCart product={relatedProducts[0]} />
+      </div>
     </div>
   );
 }

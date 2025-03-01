@@ -38,10 +38,12 @@ const Navigation = async () => {
           </Link>
 
           {/* SearchBar with Suspense */}
-          <div className="flex gap-3 items-center">
+          <div className="flex gap-8 items-center">
           <Suspense fallback={<div>Loading search...</div>}>
               <SearchBar />
             </Suspense>
+            <Image src="/icons/human.svg" alt="Cart" width={23} height={23} />
+            <Image src="/icons/money.svg" alt="Cart" width={23} height={23} />
           <CartModal />
           </div>
         </div>

@@ -1,7 +1,6 @@
 import { Product } from "@/app/lib/shopify/types";
 import Price from "../Price";
 import VariantSelector from "@/app/components/product/variant-selector";
-import Prose from "../prose";
 import { AddToCart } from "../cart/add-to-cart";
 
 export function ProductDescription({ product }: { product: Product }) {
@@ -17,15 +16,9 @@ export function ProductDescription({ product }: { product: Product }) {
         </div>
       </div>
       <VariantSelector options={product.options} variants={product.variants} />
-      {product.descriptionHtml ? (
-        <Prose
-          className="mb-6 text-sm leading-light dark:text-white/[60%]"
-          html={product.descriptionHtml}
-        />
-      ) : null}
       <AddToCart product={product} />
       <p className="text-xs text-red-600 pt-4 w-2/3">
-        before adding to luggage, please check our size guide or contact us for
+        Before adding to luggage, please check our size guide or contact us for
         more information.
       </p>
     </>

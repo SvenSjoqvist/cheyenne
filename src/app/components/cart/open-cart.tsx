@@ -11,8 +11,8 @@ export default function OpenCart({
         className="cursor-pointer"
         src="/icons/checkout.svg"
         alt="Shopping cart"
-        width={24}
-        height={24}
+        width={28}
+        height={28}
       />
 
       {quantity ? (
