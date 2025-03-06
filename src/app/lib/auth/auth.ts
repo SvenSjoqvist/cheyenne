@@ -2,7 +2,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { customerCreate, customerAccessTokenCreate } from '@/app/lib/shopify';
+import { customerCreate, customerAccessTokenCreate, customerActivateByUrl } from '@/app/lib/shopify';
 import { redirect } from 'next/navigation';
 
 // Signup action
@@ -135,3 +135,8 @@ export async function getAuthStatus() {
   const token = cookieStore.get('customerAccessToken')?.value;
   return !!token;
 }
+
+export async function activateAccount(activationUrl: string) {
+  const response = await customerActivateByUrl(activationUrl);
+  return response;
+}   

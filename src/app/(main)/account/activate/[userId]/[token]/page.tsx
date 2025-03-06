@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { customerActivateByUrl } from '@/app/lib/shopify';
+import { activateAccount } from '@/app/lib/auth/auth';
 
 export default function ActivateAccount() {
   const router = useRouter();
@@ -11,13 +11,13 @@ export default function ActivateAccount() {
   const [message, setMessage] = useState('Activating your account...');
 
   useEffect(() => {
-    const activateAccount = async () => {
+    const activateAccounts = async () => {
       try {
         // Get the full activation URL that was accessed
         const fullUrl = window.location.href;
         
         // Call the activation function
-        const result = await customerActivateByUrl(fullUrl);
+        const result = await activateAccount(fullUrl);
         
         if (result.success) {
           setStatus('success');
@@ -37,7 +37,7 @@ export default function ActivateAccount() {
       }
     };
 
-    activateAccount();
+    activateAccounts();
   }, [router]);
 
   return (
