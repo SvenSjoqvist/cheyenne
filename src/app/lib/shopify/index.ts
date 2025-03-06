@@ -490,12 +490,13 @@ export async function customerAccessTokenCreate(email: string, password: string)
   return res.body.data.customerAccessTokenCreate;
 }
 
-export async function customerActivateByUrl(activationUrl: string) {
+export async function customerActivateByUrl(activationUrl: string, password: string) {
   try {
     const res = await shopifyFetch<ShopifyCustomerActivateByUrlOperation>({
       query: customerActivateByUrlMutation,
       variables: { 
-        activationUrl: activationUrl // Pass the string directly, not a URL object
+        activationUrl,
+        password
       },
       cache: "no-store",
     });
@@ -513,13 +514,13 @@ export async function customerActivateByUrl(activationUrl: string) {
     if (res.body.data?.customerActivateByUrl?.customer && 
         res.body.data?.customerActivateByUrl?.customerAccessToken) {
       
-      // You can store the access token in cookies if you want to log the user in automatically
-      const { accessToken } = res.body.data.customerActivateByUrl.customerAccessToken;
+      const { accessToken, expiresAt } = res.body.data.customerActivateByUrl.customerAccessToken;
       
       return {
         success: true,
         customer: res.body.data.customerActivateByUrl.customer,
-        accessToken
+        accessToken,
+        expiresAt
       };
     }
 

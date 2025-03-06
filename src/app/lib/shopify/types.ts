@@ -406,6 +406,7 @@ export type Menu = {
       };
     };
     variables: {
-      activationUrl: string; // This should be a string, not a URL object
+      activationUrl: string; 
+      password: string;
     };
   }

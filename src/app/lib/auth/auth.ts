@@ -136,7 +136,22 @@ export async function getAuthStatus() {
   return !!token;
 }
 
-export async function activateAccount(activationUrl: string) {
-  const response = await customerActivateByUrl(activationUrl);
+export async function activateAccount(activationUrl: string, password: string) {
+  const response = await customerActivateByUrl(activationUrl, password);
   return response;
 }   
+
+export async function setCustomerAccessToken(token: string, expiresAt: string) {
+  const cookieStore = await cookies();
+  cookieStore.set({
+    name: 'customerAccessToken',
+    value: token,
+    httpOnly: true,
+    path: '/',
+    expires: new Date(expiresAt),
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production'
+  });
+  
+  return { success: true };
+}

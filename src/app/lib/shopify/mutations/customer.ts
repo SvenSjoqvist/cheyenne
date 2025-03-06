@@ -33,9 +33,9 @@ export const customerAccessTokenCreateMutation = /* GraphQL */ `
   }
 `;
 
-export const customerActivateByUrlMutation = `#graphql
-  mutation customerActivateByUrl($activationUrl: URL!) {
-    customerActivateByUrl(activationUrl: $activationUrl) {
+export const customerActivateByUrlMutation = `
+  mutation customerActivateByUrl($activationUrl: URL!, $password: String!) {
+    customerActivateByUrl(activationUrl: $activationUrl, password: $password) {
       customer {
         id
         email

@@ -1,75 +1,142 @@
-// app/account/activate/[userId]/[token]/page.tsx
+// app/account/activate/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { activateAccount } from '@/app/lib/auth/auth';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { activateAccount, setCustomerAccessToken } from '@/app/lib/auth/auth';
 
-export default function ActivateAccount() {
+export default function AccountActivationPage() {
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const router = useRouter();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('Activating your account...');
+  const searchParams = useSearchParams();
+  const activationUrl = searchParams.get('activationUrl');
 
+  // Validate the activation URL is present
   useEffect(() => {
-    const activateAccounts = async () => {
-      try {
-        // Get the full activation URL that was accessed
-        const fullUrl = window.location.href;
-        
-        // Call the activation function
-        const result = await activateAccount(fullUrl);
-        
-        if (result.success) {
-          setStatus('success');
-          setMessage('Your account has been successfully activated!');
-          // Redirect to login page after a short delay
-          setTimeout(() => {
-            router.push('/account/login');
-          }, 3000);
-        } else {
-          setStatus('error');
-          setMessage(result.error || 'Failed to activate account. The link may be expired or invalid.');
-        }
-      } catch (error: unknown) {
-        console.error('Activation error:', error);
-        setStatus('error');
-        setMessage(error instanceof Error ? error.message : 'An error occurred during activation. Please try again later.');
-      }
-    };
+    if (!activationUrl) {
+      setError('Missing activation URL. Please check your email link.');
+    }
+  }, [activationUrl]);
 
-    activateAccounts();
-  }, [router]);
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    
+    // Validate password length
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+    
+    if (!activationUrl) {
+      setError('Missing activation URL');
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      const result = await activateAccount(activationUrl, password);
+      
+      if (result.success && result.accessToken) {
+        // Use the server action to set the cookie
+        await setCustomerAccessToken(result.accessToken, result.expiresAt);
+        
+        setIsSuccess(true);
+        
+        // Redirect after a short delay
+        setTimeout(() => {
+          router.push('/account');
+          router.refresh(); // Refresh to update auth state
+        }, 2000);
+      } else {
+        setError(result.error || 'Failed to activate account');
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-4">Account Activation</h1>
+    <div className="container mx-auto py-12">
+      <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded shadow-md">
+        <h1 className="text-2xl font-bold mb-6">Activate Your Account</h1>
         
-        {status === 'loading' && (
-          <div className="flex items-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mr-3"></div>
-            <p>{message}</p>
+        {isSuccess ? (
+          <div className="text-center">
+            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
+              Your account has been activated successfully!
+            </div>
+            <p className="mb-4">You are now logged in.</p>
+            <p>Redirecting to your account page...</p>
           </div>
+        ) : (
+          <>
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+                {error}
+              </div>
+            )}
+            
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2" htmlFor="password">
+                  New Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                  minLength={8}
+                />
+              </div>
+              
+              <div className="mb-6">
+                <label className="block text-gray-700 mb-2" htmlFor="confirmPassword">
+                  Confirm Password
+                </label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+              
+              <button
+                type="submit"
+                disabled={isLoading || !activationUrl}
+                className="w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              >
+                {isLoading ? 'Activating...' : 'Activate Account'}
+              </button>
+            </form>
+          </>
         )}
         
-        {status === 'success' && (
-          <div className="text-green-600">
-            <p>{message}</p>
-            <p className="mt-2 text-sm">Redirecting to login page...</p>
-          </div>
-        )}
-        
-        {status === 'error' && (
-          <div className="text-red-600">
-            <p>{message}</p>
-            <button 
-              onClick={() => router.push('/account/login')}
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Go to Login
-            </button>
-          </div>
-        )}
+        <div className="mt-4 text-center">
+          <Link href="/" className="text-indigo-600 hover:text-indigo-800">
+            ← Back to Home
+          </Link>
+        </div>
       </div>
     </div>
   );
