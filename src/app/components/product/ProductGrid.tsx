@@ -1,6 +1,5 @@
 import Image from 'next/image';
-import ProductItem from './ProductItem';
-
+import ProductItem from '@/app/components/product/ProductItem';
 interface ProductPrice {
   amount: string;
   currencyCode: string;

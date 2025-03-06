@@ -4,12 +4,12 @@ import { ensureStartWith } from "../utils";
 import { getCollectionProductsQuery, getCollectionsQuery } from "./queries/collection";
 import { getMenuQuery } from "./queries/Menu";
 import { getProductQuery, getProductsByTagQuery, getProductsQuery } from "./queries/product";
-import { Connection, Menu, ShopifyMenuOperation, ShopifyProduct, ShopifyProductsOperation, Image, Product, Collection, ShopifyCollectionsOperation, ShopifyCollection, ShopifyCollectionProductsOperation, ShopifyProductOperation, ShopifyCreateCartOperation, Cart, ShopifyCartOperation, ShopifyRemoveFromCartOperation, ShopifyUpdateCartOperation, ShopifyAddToCartOperation, ShopifyCart, ShopifyProductsByTagOperation } from "./types";
+import { Connection, Menu, ShopifyMenuOperation, ShopifyProduct, ShopifyProductsOperation, Image, Product, Collection, ShopifyCollectionsOperation, ShopifyCollection, ShopifyCollectionProductsOperation, ShopifyProductOperation, ShopifyCreateCartOperation, Cart, ShopifyCartOperation, ShopifyRemoveFromCartOperation, ShopifyUpdateCartOperation, ShopifyAddToCartOperation, ShopifyCart, ShopifyProductsByTagOperation, CustomerCreateResponse, CustomerAccessTokenCreateResponse, ShopifyCustomerAccessTokenOperation, ShopifyCustomerCreateOperation, ShopifyCustomerActivateByUrlOperation } from "./types";
 import { globalContent } from "./queries/globalContent";
 import { getCollectionQuery } from "./queries/collection-journal";
 import { addToCartMutation, createCartMutation, editCartItemsMutation, removeFromCartMutation } from "./mutations/cart";
 import { getCartQuery } from "./queries/cart";
-
+import { customerAccessTokenCreateMutation, customerActivateByUrlMutation, customerCreateMutation } from "./mutations/customer";
 const domain = ensureStartWith(process.env.SHOPIFY_STORE_DOMAIN, "https://");
 const endpoint = `${domain}/api/2025-01/graphql.json`;
 const key = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
@@ -443,4 +443,95 @@ export async function getProductsByTag(
   );
   
   return products.filter(product => product.id !== productId);
+}
+
+type CustomerCreateInput = {
+  email: string;
+  password: string; // Password is required but was missing
+  firstName?: string;
+  lastName?: string;
+  acceptsMarketing?: boolean;
+  phone?: string;
+};
+
+
+export async function customerCreate(customer: CustomerCreateInput): Promise<CustomerCreateResponse> {
+  const res = await shopifyFetch<ShopifyCustomerCreateOperation>({
+    query: customerCreateMutation,
+    variables: { input: customer },
+    cache: "no-store",
+  });
+
+  // Check for errors
+  if (res.body.data?.customerCreate?.customerUserErrors?.length > 0) {
+    const errors = res.body.data.customerCreate.customerUserErrors;
+    throw {
+      code: errors[0].code || 'CUSTOMER_CREATE_ERROR',
+      message: errors.map(e => e.message).join(', '),
+      fields: errors.flatMap(e => e.field || [])
+    };
+  }
+
+  return res.body.data.customerCreate;
+}
+
+export async function customerAccessTokenCreate(email: string, password: string): Promise<CustomerAccessTokenCreateResponse> {
+  const res = await shopifyFetch<ShopifyCustomerAccessTokenOperation>({
+    query: customerAccessTokenCreateMutation,
+    variables: { 
+      input: {
+        email,
+        password
+      }
+    },
+    cache: "no-store",
+  });
+
+  return res.body.data.customerAccessTokenCreate;
+}
+
+export async function customerActivateByUrl(activationUrl: string) {
+  try {
+    const res = await shopifyFetch<ShopifyCustomerActivateByUrlOperation>({
+      query: customerActivateByUrlMutation,
+      variables: { 
+        activationUrl: activationUrl // Pass the string directly, not a URL object
+      },
+      cache: "no-store",
+    });
+
+    // Check for errors
+    if (res.body.data?.customerActivateByUrl?.customerUserErrors?.length > 0) {
+      const errors = res.body.data.customerActivateByUrl.customerUserErrors;
+      return {
+        success: false,
+        error: errors.map(e => e.message).join(', ')
+      };
+    }
+
+    // If we have a customer and token, the activation was successful
+    if (res.body.data?.customerActivateByUrl?.customer && 
+        res.body.data?.customerActivateByUrl?.customerAccessToken) {
+      
+      // You can store the access token in cookies if you want to log the user in automatically
+      const { accessToken } = res.body.data.customerActivateByUrl.customerAccessToken;
+      
+      return {
+        success: true,
+        customer: res.body.data.customerActivateByUrl.customer,
+        accessToken
+      };
+    }
+
+    return {
+      success: false,
+      error: 'Failed to activate account'
+    };
+  } catch (error: unknown) {
+    console.error('Error activating customer account:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'An error occurred during activation'
+    };
+  }
 }

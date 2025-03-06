@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import ProductGrid from './_components/ProductGrid';
+import ProductGrid from '../../components/product/ProductGrid';
 import { getProducts } from '@/app/lib/shopify';
 
 const BikiniBoutique: React.FC = async () => {

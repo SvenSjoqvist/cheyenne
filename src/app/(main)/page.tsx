@@ -1,7 +1,7 @@
-import HeroSection from './_components/Hero';
-import ProductSection from './_components/Products';
-import ImageOverlay from './_components/Overlay';
-import RunawaySection from './_components/About';
+import HeroSection from '../components/main/Hero';
+import ProductSection from '../components/main/Products';
+import ImageOverlay from '../components/main/Overlay';
+import RunawaySection from '../components/main/About';
 import { getProducts } from '@/app/lib/shopify';
 import Link from 'next/link';
 

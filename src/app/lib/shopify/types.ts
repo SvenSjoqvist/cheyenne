@@ -316,3 +316,96 @@ export type Menu = {
       productId: string;
     };
   };
+  export type CustomerCreateResponse = {
+    customer: Customer | null;
+    customerUserErrors: {
+      code: string;
+      field: string[];
+      message: string;
+    }[];
+  };
+
+  export type Customer = {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
+  
+  export type ShopifyCustomerCreateOperation = {
+    data: {
+      customerCreate: {
+        customer: Customer;
+        customerUserErrors: {
+          code: string;
+          field: string[];
+          message: string;
+        }[];
+      };
+    };
+    variables: {
+      input: CustomerCreateInput;
+    };
+  };
+  
+  // Update your CustomerCreateInput type if necessary
+  export type CustomerCreateInput = {
+    email: string;
+    password: string;
+    firstName?: string;
+    lastName?: string;
+    acceptsMarketing?: boolean;
+    phone?: string;
+  };
+  
+
+  export type CustomerAccessToken = {
+    accessToken: string;
+    expiresAt: string;
+  };
+  
+  export type CustomerAccessTokenCreateResponse = {
+    customerAccessToken: CustomerAccessToken | null;
+    customerUserErrors: {
+      code: string;
+      field: string[];
+      message: string;
+    }[];
+  };
+  
+  export type ShopifyCustomerAccessTokenOperation = {
+    data: {
+      customerAccessTokenCreate: CustomerAccessTokenCreateResponse;
+    };
+    variables: {
+      input: {
+        email: string;
+        password: string;
+      }
+    };
+  };
+
+  export interface ShopifyCustomerActivateByUrlOperation {
+    data: {
+      customerActivateByUrl: {
+        customer: {
+          id: string;
+          email: string;
+          firstName: string | null;
+          lastName: string | null;
+        } | null;
+        customerAccessToken: {
+          accessToken: string;
+          expiresAt: string;
+        } | null;
+        customerUserErrors: {
+          code: string;
+          field: string[];
+          message: string;
+        }[];
+      };
+    };
+    variables: {
+      activationUrl: string; // This should be a string, not a URL object
+    };
+  }
