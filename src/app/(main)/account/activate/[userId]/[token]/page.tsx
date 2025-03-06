@@ -17,6 +17,7 @@ export default function AccountActivationPage() {
   const activationUrl = searchParams.get('activationUrl');
 
   // Validate the activation URL is present
+  console.log('activationUrl', activationUrl);
   useEffect(() => {
     if (!activationUrl) {
       setError('Missing activation URL. Please check your email link.');
