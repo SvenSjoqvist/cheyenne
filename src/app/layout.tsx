@@ -8,6 +8,8 @@ import { CartProvider } from "./components/cart/cart-context";
 import { cookies } from "next/headers";
 import { getCart } from "./lib/shopify";
 import SizeGuide from "./components/SizeGuide";
+import { UserProvider } from "./components/account/AccountContext";
+import { getCustomer, getCustomerOrders } from "@/app/lib/shopify";
 const darkerGrotesque = Darker_Grotesque({
   subsets: ["latin"], // Supports Latin characters
   weight: ["300", "400", "500", "600", "700", "800", "900"], // Select font weights
@@ -87,18 +89,23 @@ export default async function RootLayout({
 
   const cartId = (await cookies()).get("cartId")?.value;
   const cart = getCart(cartId);
-  
+  const customer = getCustomer();
+  const customerOrders = getCustomerOrders();
+
   return (
     <html lang="en">
       <body
         className={`${darkerGrotesque.variable} antialiased`}
-      ><CartProvider cartPromise={cart}>
-      <Header/>
-      <Navigation/>
-      <SizeGuide/>
+      >
+        <UserProvider customer={customer} orders={customerOrders}>
+          <CartProvider cartPromise={cart}>
+            <Header/>
+            <Navigation/>
+            <SizeGuide/>
         {children}
       <Footer sections={footerSections} paymentMethods={paymentMethods} />
       </CartProvider>
+      </UserProvider>
       </body>
     </html>
   );

@@ -4,12 +4,13 @@ import { ensureStartWith } from "../utils";
 import { getCollectionProductsQuery, getCollectionsQuery } from "./queries/collection";
 import { getMenuQuery } from "./queries/Menu";
 import { getProductQuery, getProductsByTagQuery, getProductsQuery } from "./queries/product";
-import { Connection, Menu, ShopifyMenuOperation, ShopifyProduct, ShopifyProductsOperation, Image, Product, Collection, ShopifyCollectionsOperation, ShopifyCollection, ShopifyCollectionProductsOperation, ShopifyProductOperation, ShopifyCreateCartOperation, Cart, ShopifyCartOperation, ShopifyRemoveFromCartOperation, ShopifyUpdateCartOperation, ShopifyAddToCartOperation, ShopifyCart, ShopifyProductsByTagOperation, CustomerCreateResponse, CustomerAccessTokenCreateResponse, ShopifyCustomerAccessTokenOperation, ShopifyCustomerCreateOperation, ShopifyCustomerActivateByUrlOperation } from "./types";
+import { Connection, Menu, ShopifyMenuOperation, ShopifyProduct, ShopifyProductsOperation, Image, Product, Collection, ShopifyCollectionsOperation, ShopifyCollection, ShopifyCollectionProductsOperation, ShopifyProductOperation, ShopifyCreateCartOperation, Cart, ShopifyCartOperation, ShopifyRemoveFromCartOperation, ShopifyUpdateCartOperation, ShopifyAddToCartOperation, ShopifyCart, ShopifyProductsByTagOperation, CustomerCreateResponse, CustomerAccessTokenCreateResponse, ShopifyCustomerAccessTokenOperation, ShopifyCustomerCreateOperation, ShopifyCustomerActivateByUrlOperation, ShopifyCustomerUpdateOperation, CustomerUpdateInput, CustomerUpdateResponse, ShopifyCustomerOrdersOperation, OrdersResponse, ShopifyCustomerOperation, CustomerResponse } from "./types";
 import { globalContent } from "./queries/globalContent";
 import { getCollectionQuery } from "./queries/collection-journal";
 import { addToCartMutation, createCartMutation, editCartItemsMutation, removeFromCartMutation } from "./mutations/cart";
 import { getCartQuery } from "./queries/cart";
-import { customerAccessTokenCreateMutation, customerActivateByUrlMutation, customerCreateMutation } from "./mutations/customer";
+import { customerAccessTokenCreateMutation, customerActivateByUrlMutation, customerCreateMutation, customerOrdersQuery, customerQuery, customerUpdateMutation } from "./mutations/customer";
+import { cookies } from "next/headers";
 const domain = ensureStartWith(process.env.SHOPIFY_STORE_DOMAIN, "https://");
 const endpoint = `${domain}/api/2025-01/graphql.json`;
 const key = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
@@ -533,6 +534,129 @@ export async function customerActivateByUrl(activationUrl: string, password: str
     return {
       success: false,
       error: error instanceof Error ? error.message : 'An error occurred during activation'
+    };
+  }
+}
+
+
+export async function getCustomer(): Promise<CustomerResponse> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('customerAccessToken')?.value;
+    console.log(token);
+    if (!token) {
+      return { customer: null };
+    }
+    
+    const res = await shopifyFetch<ShopifyCustomerOperation>({
+      query: customerQuery,
+      variables: { customerAccessToken: token },
+      cache: 'no-store',
+    });
+    
+    if (res.status === 200 && res.body.data?.customer) {
+      return { customer: res.body.data.customer };
+    }
+    
+    return { customer: null };
+  } catch (error) {
+    console.error('Error fetching customer:', error);
+    return { 
+      customer: null, 
+      error: error instanceof Error ? error.message : 'Failed to fetch customer data' 
+    };
+  }
+}
+
+// Function to get customer orders
+export async function getCustomerOrders(): Promise<OrdersResponse> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('customerAccessToken')?.value;
+    
+    if (!token) {
+      return { orders: [] };
+    }
+    
+    const res = await shopifyFetch<ShopifyCustomerOrdersOperation>({
+      query: customerOrdersQuery,
+      variables: { customerAccessToken: token },
+      cache: 'no-store',
+    });
+    
+    if (res.status === 200 && res.body.data?.customer?.orders?.edges) {
+      // Transform the orders data structure
+      const orders = res.body.data.customer.orders.edges.map((edge: { node: any; }) => edge.node);
+      return { orders };
+    }
+    
+    return { orders: [] };
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    return { 
+      orders: [], 
+      error: error instanceof Error ? error.message : 'Failed to fetch order data' 
+    };
+  }
+}
+
+export async function updateCustomer(input: CustomerUpdateInput): Promise<CustomerUpdateResponse> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('customerAccessToken')?.value;
+    
+    if (!token) {
+      return { error: 'Not authenticated' };
+    }
+    
+    // Build customer update input
+    const customerInput: Record<string, string> = {};
+    
+    if (input.firstName !== undefined) customerInput.firstName = input.firstName;
+    if (input.lastName !== undefined) customerInput.lastName = input.lastName;
+    if (input.email) customerInput.email = input.email;
+    if (input.phone !== undefined) customerInput.phone = input.phone;
+    if (input.password && input.currentPassword) {
+      customerInput.password = input.password;
+    }
+    
+    const res = await shopifyFetch<ShopifyCustomerUpdateOperation>({
+      query: customerUpdateMutation,
+      variables: {
+        customerAccessToken: token,
+        customer: customerInput,
+      },
+      cache: 'no-store',
+    });
+    
+    if (res.body.data?.customerUpdate?.customerUserErrors?.length > 0) {
+      const errors = res.body.data.customerUpdate.customerUserErrors;
+      return { error: errors.map(e => e.message).join(', ') };
+    }
+    
+    // If we have a new token, update it
+    if (res.body.data?.customerUpdate?.customerAccessToken) {
+      const { accessToken, expiresAt } = res.body.data.customerUpdate.customerAccessToken;
+      
+      cookieStore.set({
+        name: 'customerAccessToken',
+        value: accessToken,
+        httpOnly: true,
+        path: '/',
+        expires: new Date(expiresAt),
+        sameSite: 'strict',
+        secure: process.env.NODE_ENV === 'production',
+      });
+    }
+    
+    return { 
+      success: true,
+      customer: res.body.data?.customerUpdate?.customer || undefined
+    };
+  } catch (error: unknown) {
+    console.error('Error updating customer:', error);
+    return { 
+      error: error instanceof Error ? error.message : 'Failed to update account' 
     };
   }
 }

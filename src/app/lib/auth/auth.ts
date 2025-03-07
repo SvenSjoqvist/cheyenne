@@ -2,7 +2,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { customerCreate, customerAccessTokenCreate, customerActivateByUrl } from '@/app/lib/shopify';
+import { customerCreate, customerAccessTokenCreate, customerActivateByUrl, updateCustomer, getCustomer, getCustomerOrders } from '@/app/lib/shopify';
 import { redirect } from 'next/navigation';
 
 // Signup action
@@ -72,8 +72,6 @@ export async function signup(formData: FormData) {
     };
   }
 }
-
-// Login action (if you don't have this already)
 export async function login(formData: FormData) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
@@ -154,4 +152,32 @@ export async function setCustomerAccessToken(token: string, expiresAt: string) {
   });
   
   return { success: true };
+}
+
+
+export async function customerUpdate(formData: FormData) {
+  const email = formData.get('email') as string;
+  const firstName = formData.get('firstName') as string;
+  const lastName = formData.get('lastName') as string;
+  const phone = formData.get('phone') as string;
+
+  const response = await updateCustomer({
+    email,
+    firstName,
+    lastName,
+    phone
+  });
+  return response;
+}
+
+export async function Customer() {
+  const response = await getCustomer();
+  console.log(response);
+  
+  return response;
+}
+
+export async function getCustomerOrder() {
+  const response = await getCustomerOrders();
+  return response;
 }

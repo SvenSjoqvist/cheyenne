@@ -4,6 +4,7 @@ import Image from 'next/image';
 import SearchBar from './Search'; // Import SearchBar
 import { getMenu } from '../lib/shopify';
 import CartModal from './cart/modal';
+import OpenForm from './account/open-form';
 
 const Navigation = async () => {
   const navItems = await getMenu('main-menu');
@@ -42,8 +43,14 @@ const Navigation = async () => {
           <Suspense fallback={<div>Loading search...</div>}>
               <SearchBar />
             </Suspense>
-            <Image src="/icons/human.svg" alt="Cart" width={23} height={23} />
-            <Image src="/icons/money.svg" alt="Cart" width={23} height={23} />
+            <OpenForm />
+            <Image 
+        src="/icons/money.svg" 
+        alt="Cart" 
+        width={23} 
+        height={23} 
+        className="cursor-pointer"
+      />
           <CartModal />
           </div>
         </div>

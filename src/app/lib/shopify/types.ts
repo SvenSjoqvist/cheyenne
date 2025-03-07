@@ -324,13 +324,6 @@ export type Menu = {
       message: string;
     }[];
   };
-
-  export type Customer = {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-  };
   
   export type ShopifyCustomerCreateOperation = {
     data: {
@@ -410,3 +403,125 @@ export type Menu = {
       password: string;
     };
   }
+
+
+  // types/customer.ts
+
+// Customer type
+export interface Customer {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+  phone: string | null;
+  displayName: string;
+  defaultAddress?: {
+    id: string;
+    formatted: string[];
+  } | null;
+}
+
+// Order type
+export interface Order {
+  id: string;
+  orderNumber: number;
+  processedAt: string;
+  financialStatus: string;
+  fulfillmentStatus: string;
+  totalPrice: {
+    amount: string;
+    currencyCode: string;
+  };
+  lineItems: {
+    edges: Array<{
+      node: {
+        title: string;
+        quantity: number;
+        variant: {
+          title: string;
+          image: {
+            url: string;
+          } | null;
+        } | null;
+      };
+    }>;
+  };
+}
+
+// Response types for the functions
+export interface CustomerResponse {
+  customer: Customer | null;
+  error?: string;
+}
+
+export interface OrdersResponse {
+  orders: Order[];
+  error?: string;
+}
+
+export interface CustomerUpdateInput {
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  phone?: string;
+  password?: string;
+  currentPassword?: string;
+}
+
+export interface CustomerUpdateResponse {
+  success?: boolean;
+  customer?: Customer;
+  error?: string;
+}
+
+// GraphQL operation types
+export interface ShopifyCustomerOperation {
+  data: {
+    customer: Customer | null;
+  };
+  variables: {
+    customerAccessToken: string;
+  };
+}
+
+export interface ShopifyCustomerOrdersOperation {
+  data: {
+    customer: {
+      orders: {
+        edges: Array<{
+          node: Order;
+        }>;
+      };
+    } | null;
+  };
+  variables: {
+    customerAccessToken: string;
+  };
+}
+
+export interface ShopifyCustomerUpdateOperation {
+  data: {
+    customerUpdate: {
+      customer: Customer | null;
+      customerAccessToken: {
+        accessToken: string;
+        expiresAt: string;
+      } | null;
+      customerUserErrors: Array<{
+        code: string;
+        field: string[];
+        message: string;
+      }>;
+    };
+  };
+  variables: {
+    customerAccessToken: string;
+    customer: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      phone?: string;
+      password?: string;
+    };
+  };
+}

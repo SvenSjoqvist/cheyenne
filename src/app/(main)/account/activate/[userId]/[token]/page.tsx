@@ -1,8 +1,7 @@
-// app/account/activate/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { activateAccount, setCustomerAccessToken } from '@/app/lib/auth/auth';
 
@@ -12,17 +11,25 @@ export default function AccountActivationPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [activationUrl, setActivationUrl] = useState<string | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const activationUrl = searchParams.get('activationUrl');
-
-  // Validate the activation URL is present
-  console.log('activationUrl', activationUrl);
+  const params = useParams();
+  
+  // Get the userId and token from the URL path parameters
+  const userId = params.userId as string;
+  const token = params.token as string;
+  
+  // Set up the activation URL once the component mounts on the client side
   useEffect(() => {
-    if (!activationUrl) {
-      setError('Missing activation URL. Please check your email link.');
+    if (typeof window !== 'undefined' && userId && token) {
+      // Construct the Shopify activation URL using the correct format
+      const fullActivationUrl = `${window.location.origin}/account/activate/${userId}/${token}`;
+      setActivationUrl(fullActivationUrl);
+      console.log('activationUrl', fullActivationUrl);
+    } else if (!userId || !token) {
+      setError('Missing activation parameters. Please check your email link.');
     }
-  }, [activationUrl]);
+  }, [userId, token]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
