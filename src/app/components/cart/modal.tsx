@@ -76,9 +76,14 @@ export default function CartModal() {
             leaveFrom="translate-x-0"
             leaveTo="translate-x-full"
           >
-            <Dialog.Panel className="fixed bottom-0 right-0 top-0 flex h-full w-full flex-col border-l border-neutral-200 bg-white/80 p-6 text-black backdrop-blur-xl md:w-[390px] dark:border-neutral-700 dark:bg-black/80 dark:text-white">
-              <div className="flex items-center justify-between">
-                <Image src="/icons/checkoutwhite.svg" alt="Luggage" width={24} height={24} />
+            <Dialog.Panel className="fixed bottom-0 right-0 top-0 flex  h-full w-full flex-col border-l p-6  backdrop-blur-xl md:w-[390px] border-neutral-700 bg-black/80 text-white">
+              <div className="flex items-center justify-between overflow-y-hidden">
+                <Image
+                  src="/icons/checkoutwhite.svg"
+                  alt="Luggage"
+                  width={24}
+                  height={24}
+                />
                 <p className="text-lg font-semibold">My Cart</p>
                 <button aria-label="Close cart" onClick={closeCart}>
                   <CloseCart />
@@ -169,7 +174,7 @@ export default function CartModal() {
                                   item.cost.totalAmount.currencyCode
                                 }
                               />
-                              <div className="ml-auto flex h-9 flex-row items-center rounded-full border border-neutral-200 dark:border-neutral-700">
+                              <div className="ml-auto flex h-9 flex-row items-center rounded-full border border-neutral-200 dark:border-neutral-700 overflow-y-hidden">
                                 <EditItemQuantityButton
                                   item={item}
                                   type="minus"
@@ -192,22 +197,22 @@ export default function CartModal() {
                       })}
                   </ul>
                   <div className="py-4 text-sm text-neutral-500 dark:text-neutral-400">
-                    <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 dark:border-neutral-700">
+                    <div className="mb-3 flex items-center justify-between border-b  pb-1 border-neutral-700">
                       <p>Taxes</p>
                       <Price
-                        className="text-right text-base text-black dark:text-white"
+                        className="text-right text-base text-white"
                         amount={cart.cost.totalTaxAmount.amount}
                         currencyCode={cart.cost.totalTaxAmount.currencyCode}
                       />
                     </div>
-                    <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 pt-1 dark:border-neutral-700">
+                    <div className="mb-3 flex items-center justify-between border-b  pb-1 pt-1 border-neutral-700">
                       <p>Shipping</p>
                       <p className="text-right">Calculated at checkout</p>
                     </div>
-                    <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 pt-1 dark:border-neutral-700">
+                    <div className="mb-3 flex items-center justify-between border-b border-neutral-700 pb-1 pt-1">
                       <p>Total</p>
                       <Price
-                        className="text-right text-base text-black dark:text-white"
+                        className="text-right text-base text-white"
                         amount={cart.cost.totalAmount.amount}
                         currencyCode={cart.cost.totalAmount.currencyCode}
                       />
@@ -256,31 +261,39 @@ export default function CartModal() {
                 </Dialog.Title>
                 <div className="mt-4 text-center">
                   <p className="text-sm">
-                    Please confirm that you&apos;ve selected the correct sizes for all items in your cart.
+                    Please confirm that you&apos;ve selected the correct sizes
+                    for all items in your cart.
                   </p>
-                  
+
                   <div className="mt-4 max-h-40 overflow-y-auto">
                     {cart?.lines.map((item, i) => {
                       // Get the size option if it exists
                       const sizeOption = item.merchandise.selectedOptions.find(
-                        option => option.name.toLowerCase() === 'size'
+                        (option) => option.name.toLowerCase() === "size"
                       );
-                      
+
                       return (
-                        <div key={i} className="mb-2 flex items-center justify-between border-b border-neutral-700 pb-2">
-                          <span className="text-sm font-medium">{item.merchandise.product.title}</span>
+                        <div
+                          key={i}
+                          className="mb-2 flex items-center justify-between border-b border-neutral-700 pb-2"
+                        >
+                          <span className="text-sm font-medium">
+                            {item.merchandise.product.title}
+                          </span>
                           <span className="text-sm">
-                            {sizeOption ? `Size: ${sizeOption.value}` : 'No size selected'}
+                            {sizeOption
+                              ? `Size: ${sizeOption.value}`
+                              : "No size selected"}
                           </span>
                         </div>
                       );
                     })}
                   </div>
-                  
+
                   {/* Size Guide Link */}
                   <div className="mt-4 flex items-center justify-center">
-                    <Link 
-                      href="/size-guide" 
+                    <Link
+                      href="/size-guide"
                       className="group flex items-center gap-1 text-sm text-gray-300 transition-colors hover:text-white"
                       onClick={(e) => {
                         // Prevent closing the size confirmation when clicking the link
@@ -288,16 +301,16 @@ export default function CartModal() {
                       }}
                       target="_blank"
                     >
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        width="16" 
-                        height="16" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        strokeWidth="2" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         className="transition-transform group-hover:scale-110"
                       >
                         <circle cx="12" cy="12" r="10" />
@@ -310,7 +323,7 @@ export default function CartModal() {
                     </Link>
                   </div>
                 </div>
-                
+
                 <div className="mt-6 flex w-full justify-between space-x-4">
                   <button
                     className="flex-1 rounded-lg border border-neutral-700 py-2 text-sm hover:border-neutral-500 transition-colors"

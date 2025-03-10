@@ -21,7 +21,10 @@ export default function Gallery({
             {images.map((image, index) => {
               const isActive = index === imageIndex;
               return (
-                <div key={image.src} className="h-40 w-40 flex-shrink-0">
+                <div
+                  key={image.src}
+                  className="h-40 w-40 flex-shrink-0 overflow-y-hidden"
+                >
                   <button
                     formAction={() => {
                       const newState = updateImage(index.toString());

@@ -1,13 +1,15 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { login, signup } from '@/app/lib/auth/auth';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { login, signup } from "@/app/components/account/actions";
 
 export default function AuthModals({ onClose }: { onClose?: () => void }) {
-  const [showModal, setShowModal] = useState<'login' | 'signup' | null>('login');
+  const [showModal, setShowModal] = useState<"login" | "signup" | null>(
+    "login"
+  );
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isVisible, setIsVisible] = useState(false);
   const router = useRouter();
   // Set visible after mount for animation
@@ -30,21 +32,23 @@ export default function AuthModals({ onClose }: { onClose?: () => void }) {
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
 
     const formData = new FormData(e.currentTarget);
-    
+
     try {
       const response = await login(formData);
       if (response.error) {
         setError(response.error);
       } else {
-        router.push('/account');
+        router.push("/account");
         router.refresh();
         handleClose();
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -53,22 +57,24 @@ export default function AuthModals({ onClose }: { onClose?: () => void }) {
   async function handleSignup(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
 
     const formData = new FormData(e.currentTarget);
-    
+
     try {
       const result = await signup(formData);
-      
+
       if (result.error) {
         setError(result.error);
       } else if (result.success) {
-        router.push('/account');
+        router.push("/account");
         router.refresh();
         handleClose();
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -78,42 +84,57 @@ export default function AuthModals({ onClose }: { onClose?: () => void }) {
   if (!showModal) return null;
 
   return (
-    <div 
+    <div
       className={`fixed inset-0 bg-black/30  flex items-center justify-center z-50 p-4 transition-opacity duration-300${
-        isVisible ? 'opacity-100' : 'opacity-0'
+        isVisible ? "opacity-100" : "opacity-0"
       }`}
       onClick={handleClose}
     >
-      <div 
+      <div
         className={`bg-[#212121]  p-20  max-w-[500px] w-full relative shadow-xl transition-transform duration-300 ${
-          isVisible ? 'scale-100 translate-y-0' : 'scale-95 translate-y-8'
+          isVisible ? "scale-100 translate-y-0" : "scale-95 translate-y-8"
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
-        <button 
+        <button
           onClick={handleClose}
           className="absolute top-4 right-4 text-white  transition-colors duration-200 cursor-pointer"
           aria-label="Close"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
 
-        {showModal === 'login' ? (
-          <div className={`transition-opacity duration-300 text-white ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+        {showModal === "login" ? (
+          <div
+            className={`transition-opacity duration-300 text-white ${
+              isVisible ? "opacity-100" : "opacity-0"
+            }`}
+          >
             <h2 className="text-center text-xl mb-6 text-white">
-              Check your order status, create a return, and view and manage your account.
+              Check your order status, create a return, and view and manage your
+              account.
             </h2>
-            
+
             {error && (
               <div className="mb-4 p-3 bg-red-100 text-red-700 rounded animate-fadeIn">
                 {error}
               </div>
             )}
-            
+
             <form onSubmit={handleLogin}>
               <div className="mb-4">
                 <input
@@ -131,7 +152,7 @@ export default function AuthModals({ onClose }: { onClose?: () => void }) {
                   required
                 />
               </div>
-              
+
               <button
                 type="submit"
                 disabled={isLoading}
@@ -140,19 +161,19 @@ export default function AuthModals({ onClose }: { onClose?: () => void }) {
                 {isLoading ? "signing in..." : "sign in"}
               </button>
             </form>
-            
+
             <div className="text-center ">
-              <button 
-                onClick={() => setError('')}
+              <button
+                onClick={() => setError("")}
                 className="text-sm text-white hover:underline mb-4 block mx-auto transition-colors duration-200"
               >
                 forgot your password?
               </button>
-              
-              <button 
+
+              <button
                 onClick={() => {
-                  setShowModal('signup');
-                  setError('');
+                  setShowModal("signup");
+                  setError("");
                 }}
                 className="text-sm text-white hover:underline block mx-auto transition-colors duration-200"
               >
@@ -161,23 +182,27 @@ export default function AuthModals({ onClose }: { onClose?: () => void }) {
             </div>
           </div>
         ) : (
-          <div className={`transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+          <div
+            className={`transition-opacity duration-300 ${
+              isVisible ? "opacity-100" : "opacity-0"
+            }`}
+          >
             <h2 className="text-center text-xl mb-6 text-white">
               create an account
             </h2>
-            
+
             {error && (
               <div className="mb-4 p-3 bg-red-100 text-red-700 rounded animate-fadeIn">
                 {error}
               </div>
             )}
-            
+
             <form onSubmit={handleSignup}>
               <div className="grid grid-cols-2 gap-4 mb-4 placeholder:text-black text-white">
                 <input
                   type="name"
                   name="firstName"
-                  autoComplete='given-name'
+                  autoComplete="given-name"
                   placeholder="first name"
                   className="p-3 border border-gray-300 rounded-lg transition-all bg-white placeholder:text-black"
                   required
@@ -185,13 +210,13 @@ export default function AuthModals({ onClose }: { onClose?: () => void }) {
                 <input
                   type="name"
                   name="lastName"
-                  autoComplete='family-name'
+                  autoComplete="family-name"
                   placeholder="last name"
                   className="p-3 border border-gray-300 rounded-lg transition-all bg-white placeholder:text-black"
                   required
                 />
               </div>
-              
+
               <div className="mb-4 placeholder:text-black text-white">
                 <input
                   type="email"
@@ -222,7 +247,7 @@ export default function AuthModals({ onClose }: { onClose?: () => void }) {
                   required
                 />
               </div>
-              
+
               <div className="mb-6">
                 <label className="flex items-center">
                   <input
@@ -235,7 +260,7 @@ export default function AuthModals({ onClose }: { onClose?: () => void }) {
                   </span>
                 </label>
               </div>
-              
+
               <button
                 type="submit"
                 disabled={isLoading}
@@ -244,18 +269,27 @@ export default function AuthModals({ onClose }: { onClose?: () => void }) {
                 {isLoading ? "creating account..." : "create your account"}
               </button>
             </form>
-            
+
             <p className="text-xs text-center mb-4 text-white">
               By signing up for an account you accept our{" "}
-              <a href="/terms" className="underline text-white cursor-pointer">Terms of Service</a> and{" "}
-              <a href="/privacy" className="underline text-white cursor-pointer">Privacy Policy</a>.
+              <a href="/terms" className="underline text-white cursor-pointer">
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a
+                href="/privacy"
+                className="underline text-white cursor-pointer"
+              >
+                Privacy Policy
+              </a>
+              .
             </p>
-            
+
             <div className="text-center text-white">
-              <button 
+              <button
                 onClick={() => {
-                  setShowModal('login');
-                  setError('');
+                  setShowModal("login");
+                  setError("");
                 }}
                 className="text-sm text-white hover:underline block mx-auto transition-colors duration-200 cursor-pointer"
               >

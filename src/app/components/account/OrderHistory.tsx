@@ -1,9 +1,9 @@
 // components/account/OrderHistory.tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { Order } from '@/app/components/account/AccountContext';
+import { useState } from "react";
+import Image from "next/image";
+import { Order } from "@/app/components/account/AccountContext";
 
 export default function OrderHistory({ orders }: { orders: Order[] }) {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
@@ -17,8 +17,8 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
   };
 
   const formatCurrency = (amount: string, currencyCode: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
       currency: currencyCode,
     }).format(parseFloat(amount));
   };
@@ -33,7 +33,7 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
 
   if (orders.length === 0) {
     return (
-      <div className='p-10 flex flex-2 flex-col py-10 w-full h-full'>
+      <div className="p-10 flex flex-2 flex-col py-10 w-full h-full">
         <h1 className="text-2xl font-bold mb-6 font-[bero]">Order History</h1>
         <div className="text-center py-8">
           <p className="mb-4 font-[bero]">You don't have any orders yet.</p>
@@ -43,10 +43,10 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
   }
 
   return (
-    <div className='p-10 flex flex-2 flex-col py-20 w-full h-full'>
+    <div className="p-10 flex flex-2 flex-col py-20 w-full h-full">
       <h1 className="text-3xl font-bold mb-6 font-[bero]">Order History</h1>
-      
-      <div className="space-y-4">
+
+      <div className="space-y-4 w-2/3">
         {orders.map((order) => (
           <div key={order.id} className="border rounded overflow-hidden">
             <div
@@ -68,16 +68,16 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
                 </p>
                 <p
                   className={`text-sm ${
-                    order.fulfillmentStatus === 'FULFILLED'
-                      ? 'text-green-600'
-                      : 'text-orange-600'
+                    order.fulfillmentStatus === "FULFILLED"
+                      ? "text-green-600"
+                      : "text-orange-600"
                   }`}
                 >
                   {order.fulfillmentStatus}
                 </p>
               </div>
             </div>
-            
+
             {expandedOrder === order.id && (
               <div className="p-4 border-t">
                 <h3 className="font-semibold mb-2">Items</h3>
@@ -91,19 +91,21 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
                             alt={edge.node.title}
                             fill
                             sizes="64px"
-                            style={{ objectFit: 'cover' }}
+                            style={{ objectFit: "cover" }}
                             className="rounded"
                           />
                         </div>
                       )}
                       <div>
                         <p className="font-medium">{edge.node.title}</p>
-                        {edge.node.variant?.title !== 'Default Title' && (
+                        {edge.node.variant?.title !== "Default Title" && (
                           <p className="text-sm text-gray-600">
                             {edge.node.variant?.title}
                           </p>
                         )}
-                        <p className="text-sm">Quantity: {edge.node.quantity}</p>
+                        <p className="text-sm">
+                          Quantity: {edge.node.quantity}
+                        </p>
                       </div>
                     </div>
                   ))}
