@@ -25,17 +25,9 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
 
   if (orders.length === 0) {
     return (
-      <div className="flex justify-center items-center h-40">
-        <p>Loading your orders...</p>
-      </div>
-    );
-  }
-
-  if (orders.length === 0) {
-    return (
-      <div className='p-10 flex flex-2 flex-col py-10 w-full h-full'>
-        <h1 className="text-2xl font-bold mb-6 font-[bero]">Order History</h1>
-        <div className="text-center py-8">
+      <div className='p-10 flex flex-2 flex-col py-20 w-full h-full'>
+        <h1 className="text-3xl font-bold mb-2 font-[bero]">Order History</h1>
+        <div className="text-left">
           <p className="mb-4 font-[bero]">You don't have any orders yet.</p>
         </div>
       </div>
