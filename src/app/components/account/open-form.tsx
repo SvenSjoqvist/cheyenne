@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import AuthModals from "./form";
 import Image from "next/image";
 import { useRouter } from 'next/navigation';

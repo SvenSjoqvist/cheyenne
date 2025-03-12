@@ -1,24 +1,49 @@
-// components/account/AccountDashboard.tsx
-'use client';
+import { redirect } from "next/navigation";
+import { Customer } from "@/app/components/account/AccountContext";
+import OrderHistory from "@/app/components/account/OrderHistory";
+import AccountDetails from "@/app/components/account/AccountDetails";
+import LogoutButton from "@/app/components/account/ui/LogoutButton";
+import { getCookies, getCustomerOrder, Customer as fetchCustomer } from "@/app/components/account/actions";
 
-import { useState } from 'react';
-import { useUser, Customer } from '@/app/components/account/AccountContext';
-import OrderHistory from '@/app/components/account/OrderHistory';
-import AccountDetails from '@/app/components/account/AccountDetails';
-
-type Tab = 'dashboard' | 'orders' | 'addresses' | 'profile';
-
-export default function AccountDashboard({ initialCustomer }: { initialCustomer: Customer }) {
-  const { customer, orders } = useUser();
-  console.log(customer);
+export default async function AccountDashboard() {
+  // Check authentication server-side
+  const token = await getCookies({ cookieName: 'customerAccessToken' });
   
-  // Use the context customer if available, otherwise use the initial customer
-  const customerData = customer || initialCustomer;
+  if (!token) {
+    redirect('/');
+  }
   
+  // Fetch customer data server-side
+  const customerData = await fetchCustomer();
+  
+  if (!customerData || !customerData.customer) {
+    redirect('/');
+  }
+  
+  // Fetch orders server-side
+  const orderData = await getCustomerOrder();
+  const orders = orderData?.orders || [];
+  
+  // Prepare customer object
+  const customer: Customer = {
+    id: customerData.customer?.id || "",
+    firstName: customerData.customer?.firstName || "",
+    lastName: customerData.customer?.lastName || "",
+    email: customerData.customer?.email || "",
+    phone: customerData.customer?.phone || "",
+    displayName: customerData.customer?.displayName || 
+      `${customerData.customer?.firstName || ""} ${customerData.customer?.lastName || ""}`
+  };
+
   return (
-    <div className='w-full h-full flex flex-row bg-[#F7F7F7]'>
-        <OrderHistory orders={orders}/>
-        <AccountDetails customer={customerData}/>
+    <div className="h-full w-full bg-[#F7F7F7]">
+      <div className="flex flex-row">
+        <OrderHistory orders={orders} />
+        <AccountDetails customer={customer} />
+      </div>
+      <div className="flex justify-center align-middle pb-10">
+        <LogoutButton />
+      </div>
     </div>
   );
 }

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Darker_Grotesque } from "next/font/google";
-import "./globals.css"; 
+import "./globals.css";
 import Header from "./components/Header";
 import Navigation from "./components/Navbar";
-import {Footer} from "./components/Footer";
+import { Footer } from "./components/Footer";
 import { CartProvider } from "./components/cart/cart-context";
 import { cookies } from "next/headers";
 import { getCart } from "./lib/shopify";
@@ -27,7 +27,7 @@ type FooterSection = {
     label: string;
     href: string;
   }>;
-}
+};
 
 // Updated footer sections with proper links
 const footerSections: FooterSection[] = [
@@ -39,15 +39,15 @@ const footerSections: FooterSection[] = [
       { label: "track an order", href: "/order-tracking" },
       { label: "shipping & delivery", href: "/shipping" },
       { label: "account", href: "/account" },
-      { label: "FAQ", href: "/faq" }
-    ]
+      { label: "FAQ", href: "/faq" },
+    ],
   },
   {
     title: "company",
     links: [
       { label: "who we are", href: "/about" },
-      { label: "sustainability", href: "/sustainability" }
-    ]
+      { label: "sustainability", href: "/sustainability" },
+    ],
   },
   {
     title: "legal",
@@ -56,17 +56,20 @@ const footerSections: FooterSection[] = [
       { label: "accessibility policy", href: "/accessibility" },
       { label: "privacy policy", href: "/privacy" },
       { label: "terms of service", href: "/tos" },
-      { label: "do not sell or share my personal data​", href: "/privacy/do-not-sell" }
-    ]
+      {
+        label: "do not sell or share my personal data​",
+        href: "/privacy/do-not-sell",
+      },
+    ],
   },
   {
     title: "social",
     links: [
       { label: "instagram", href: "https://instagram.com/kilaeko" },
       { label: "spotify", href: "https://spotify.com/kilaeko" },
-      { label: "pinterest", href: "https://pinterest.com/kilaeko" }
-    ]
-  }
+      { label: "pinterest", href: "https://pinterest.com/kilaeko" },
+    ],
+  },
 ];
 
 const paymentMethods = [
@@ -78,7 +81,7 @@ const paymentMethods = [
   "/payment/afterpay.svg",
   "/payment/shoppay.svg",
   "/payment/googlepay.svg",
-  "/payment/amex.svg"
+  "/payment/amex.svg",
 ];
 
 export default async function RootLayout({
@@ -86,26 +89,26 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   const cartId = (await cookies()).get("cartId")?.value;
   const cart = getCart(cartId);
   const customer = getCustomer();
   const customerOrders = getCustomerOrders();
-
+console.log(customer)
   return (
     <html lang="en">
       <body
         className={`${darkerGrotesque.variable} antialiased`}
+        suppressHydrationWarning
       >
         <UserProvider customer={customer} orders={customerOrders}>
           <CartProvider cartPromise={cart}>
-            <Header/>
-            <Navigation/>
-            <SizeGuide/>
-        {children}
-      <Footer sections={footerSections} paymentMethods={paymentMethods} />
-      </CartProvider>
-      </UserProvider>
+            <Header />
+            <Navigation />
+            <SizeGuide />
+            {children}
+            <Footer sections={footerSections} paymentMethods={paymentMethods} />
+          </CartProvider>
+        </UserProvider>
       </body>
     </html>
   );

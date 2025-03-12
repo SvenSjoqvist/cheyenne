@@ -1,24 +1,85 @@
+"use server";
 import { HIDDEN_PRODUCT_TAG, TAGS } from "../constants";
 import { isShopifyError } from "../type-guard";
 import { ensureStartWith } from "../utils";
 import { getCollectionProductsQuery, getCollectionsQuery } from "./queries/collection";
 import { getMenuQuery } from "./queries/Menu";
 import { getProductQuery, getProductsByTagQuery, getProductsQuery } from "./queries/product";
-import { Connection, Menu, ShopifyMenuOperation, ShopifyProduct, ShopifyProductsOperation, Image, Product, Collection, ShopifyCollectionsOperation, ShopifyCollection, ShopifyCollectionProductsOperation, ShopifyProductOperation, ShopifyCreateCartOperation, Cart, ShopifyCartOperation, ShopifyRemoveFromCartOperation, ShopifyUpdateCartOperation, ShopifyAddToCartOperation, ShopifyCart, ShopifyProductsByTagOperation, CustomerCreateResponse, CustomerAccessTokenCreateResponse, ShopifyCustomerAccessTokenOperation, ShopifyCustomerCreateOperation, ShopifyCustomerActivateByUrlOperation, ShopifyCustomerUpdateOperation, CustomerUpdateInput, CustomerUpdateResponse, ShopifyCustomerOrdersOperation, OrdersResponse, ShopifyCustomerOperation, CustomerResponse } from "./types";
+import { Connection, Menu, ShopifyMenuOperation, ShopifyProduct, ShopifyProductsOperation, Image, Product, Collection, ShopifyCollectionsOperation, ShopifyCollection, ShopifyCollectionProductsOperation, ShopifyProductOperation, ShopifyCreateCartOperation, Cart, ShopifyCartOperation, ShopifyRemoveFromCartOperation, ShopifyUpdateCartOperation, ShopifyAddToCartOperation, ShopifyCart, ShopifyProductsByTagOperation, CustomerCreateResponse, CustomerAccessTokenCreateResponse, ShopifyCustomerAccessTokenOperation, ShopifyCustomerCreateOperation, ShopifyCustomerActivateByUrlOperation, ShopifyCustomerUpdateOperation, CustomerUpdateResponse, ShopifyCustomerOrdersOperation, OrdersResponse, ShopifyCustomerOperation, CustomerResponse, ShopifyCustomerRecoverOperation, ShopifyCancelOrderOperation, Order } from "./types";
 import { globalContent } from "./queries/globalContent";
 import { getCollectionQuery } from "./queries/collection-journal";
 import { addToCartMutation, createCartMutation, editCartItemsMutation, removeFromCartMutation } from "./mutations/cart";
 import { getCartQuery } from "./queries/cart";
-import { customerAccessTokenCreateMutation, customerActivateByUrlMutation, customerCreateMutation, customerOrdersQuery, customerQuery, customerUpdateMutation } from "./mutations/customer";
+import { cancelOrderMutation, customerAccessTokenCreateMutation, customerActivateByUrlMutation, customerCreateMutation, customerOrdersQuery, customerRecoverMutation, customerUpdateMutation } from "./mutations/customer";
 import { cookies } from "next/headers";
+import { customerOrderQuery, customerQuery } from "./queries/customer";
 const domain = ensureStartWith(process.env.SHOPIFY_STORE_DOMAIN, "https://");
 const endpoint = `${domain}/api/2025-01/graphql.json`;
+const adminEndpoint = `${domain}/admin/api/2025-01/graphql.json`;
 const key = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
+const adminKey = process.env.SHOPIFY_ACCESS_TOKEN;
 type ExtractVariables<T> = T extends { variables: object }
   ? T["variables"]
   : never;
 
-
+  export async function shopifyAdminFetch<T>({
+    cache = "no-store",
+    headers,
+    query,
+    tags,
+    variables,
+  }: {
+    cache?: RequestCache;
+    headers?: HeadersInit;
+    query: string;
+    tags?: string[];
+    variables?: ExtractVariables<T>;
+  }): Promise<{ status: number; body: T } | never> {
+    try {
+      if (!adminKey) {
+        throw new Error("SHOPIFY_ACCESS_TOKEN is not set");
+      }
+      const result = await fetch(adminEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Shopify-Access-Token": adminKey,
+          ...headers,
+        },
+        body: JSON.stringify({
+          ...(query && { query }),
+          ...(variables && { variables }),
+        }),
+        cache,
+        ...(tags && { next: { tags } }),
+      });
+  
+      const body = await result.json();
+  
+      if (body.errors) {
+        throw body.errors[0];
+      }
+  
+      return {
+        status: result.status,
+        body,
+      };
+    } catch (error) {
+      if (isShopifyError(error)) {
+        throw {
+          cause: error.cause?.toString() || "unknown",
+          status: error.status || 500,
+          message: error.message,
+          query,
+        };
+      }
+  
+      throw {
+        error,
+        query,
+      };
+    }
+  }
   export async function shopifyFetch<T>({
     cache = "force-cache",
     headers,
@@ -224,7 +285,6 @@ export async function getCollectionProducts({
     });
   
     if (!res.body.data.collection) {
-      console.log(`No collection found for \`${collection}\``);
       return [];
     }
   
@@ -543,7 +603,6 @@ export async function getCustomer(): Promise<CustomerResponse> {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('customerAccessToken')?.value;
-    console.log(token);
     if (!token) {
       return { customer: null };
     }
@@ -569,25 +628,47 @@ export async function getCustomer(): Promise<CustomerResponse> {
 }
 
 // Function to get customer orders
-export async function getCustomerOrders(): Promise<OrdersResponse> {
+export async function getCustomerOrders(orderNumber?: number): Promise<OrdersResponse> {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get('customerAccessToken')?.value;
-    
+    const token = cookieStore.get('customerAccessToken')?.value;    
     if (!token) {
       return { orders: [] };
     }
-    
-    const res = await shopifyFetch<ShopifyCustomerOrdersOperation>({
-      query: customerOrdersQuery,
-      variables: { customerAccessToken: token },
-      cache: 'no-store',
-    });
-    
-    if (res.status === 200 && res.body.data?.customer?.orders?.edges) {
-      // Transform the orders data structure
-      const orders = res.body.data.customer.orders.edges.map((edge: { node: any; }) => edge.node);
-      return { orders };
+    if (orderNumber) {
+      const res = await shopifyFetch<ShopifyCustomerOrdersOperation>({
+        query: customerOrderQuery,
+        variables: { 
+          customerAccessToken: token,
+          orderNumber: orderNumber.toString()
+        },
+        cache: 'no-store',
+      });
+      
+      if (res.status === 200 && res.body.data?.customer?.orders?.edges) {
+        const orders = res.body.data.customer.orders.edges.map((edge: { node: Order; }) => edge.node);
+        
+        // If no orders found with this ID (or not belonging to this customer)
+        if (orders.length === 0) {
+          return { 
+            orders: [],
+            error: 'Order not found or does not belong to this customer'
+          };
+        }
+        
+        return { orders };
+      }
+    } else {
+      const res = await shopifyFetch<ShopifyCustomerOrdersOperation>({
+        query: customerOrdersQuery,
+        variables: { customerAccessToken: token },
+        cache: 'no-store',
+      });
+      
+      if (res.status === 200 && res.body.data?.customer?.orders?.edges) {
+        const orders = res.body.data.customer.orders.edges.map((edge: { node: Order; }) => edge.node);
+        return { orders };
+      }
     }
     
     return { orders: [] };
@@ -599,8 +680,9 @@ export async function getCustomerOrders(): Promise<OrdersResponse> {
     };
   }
 }
-
-export async function updateCustomer(input: CustomerUpdateInput): Promise<CustomerUpdateResponse> {
+export async function updateCustomerPassword(
+  newPassword: string
+): Promise<CustomerUpdateResponse> {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('customerAccessToken')?.value;
@@ -609,22 +691,14 @@ export async function updateCustomer(input: CustomerUpdateInput): Promise<Custom
       return { error: 'Not authenticated' };
     }
     
-    // Build customer update input
-    const customerInput: Record<string, string> = {};
-    
-    if (input.firstName !== undefined) customerInput.firstName = input.firstName;
-    if (input.lastName !== undefined) customerInput.lastName = input.lastName;
-    if (input.email) customerInput.email = input.email;
-    if (input.phone !== undefined) customerInput.phone = input.phone;
-    if (input.password && input.currentPassword) {
-      customerInput.password = input.password;
-    }
-    
+    // Pass password directly as a variable, not inside customer object
     const res = await shopifyFetch<ShopifyCustomerUpdateOperation>({
       query: customerUpdateMutation,
       variables: {
         customerAccessToken: token,
-        customer: customerInput,
+        password: newPassword,
+        // You can pass an empty customer object if needed by your GraphQL schema
+        customer: {}
       },
       cache: 'no-store',
     });
@@ -634,7 +708,6 @@ export async function updateCustomer(input: CustomerUpdateInput): Promise<Custom
       return { error: errors.map(e => e.message).join(', ') };
     }
     
-    // If we have a new token, update it
     if (res.body.data?.customerUpdate?.customerAccessToken) {
       const { accessToken, expiresAt } = res.body.data.customerUpdate.customerAccessToken;
       
@@ -649,14 +722,103 @@ export async function updateCustomer(input: CustomerUpdateInput): Promise<Custom
       });
     }
     
-    return { 
+    return {
       success: true,
       customer: res.body.data?.customerUpdate?.customer || undefined
     };
   } catch (error: unknown) {
-    console.error('Error updating customer:', error);
+    console.error('Error updating customer password:', error);
     return { 
-      error: error instanceof Error ? error.message : 'Failed to update account' 
+      error: error instanceof Error ? error.message : 'Failed to update password'
+    };
+  }
+}
+
+export async function customerRecover(email: string) {
+  const res = await shopifyFetch<ShopifyCustomerRecoverOperation>({
+    query: customerRecoverMutation,
+    variables: { email },
+  });
+
+  return res.body.data.customerRecover;
+}
+
+export async function cancelOrder(
+  orderId: string,
+  orderNumber: number,
+  options?: {
+    reason: 'CUSTOMER' | 'INVENTORY' | 'FRAUD' | 'DECLINED' | 'OTHER';
+    refund?: boolean;
+    restock?: boolean;
+  }
+) {
+  try {    
+    const cookieStore = await cookies();
+    const token = cookieStore.get('customerAccessToken')?.value;
+    
+    if (!token) {
+      console.warn('User not authenticated. Cannot cancel order.');
+      return { error: 'Not authenticated', success: false };
+    }
+    
+    const { orders, error } = await getCustomerOrders(orderNumber);
+    
+    if (error) {
+      console.error(`Error fetching orders: ${error}`);
+      return { error, success: false };
+    }
+    
+    if (!orders || orders.length === 0) {
+      console.warn('Order not found or does not belong to this customer.');
+      return { 
+        error: 'Order not found or does not belong to this customer', 
+        success: false 
+      };
+    }
+    
+    const order = orders[0];
+    if (
+      order.fulfillmentStatus === 'FULFILLED' || 
+      order.fulfillmentStatus === 'PARTIALLY_FULFILLED' ||
+      (order.financialStatus === 'PAID' && 
+       order.processedAt && 
+       new Date(order.processedAt) < new Date(Date.now() - 24 * 60 * 60 * 1000)) // 24 hours ago
+    ) {
+      console.warn('Order cannot be cancelled as it is already being processed or fulfilled.');
+      return { 
+        error: 'Order cannot be cancelled as it is already being processed or fulfilled', 
+        success: false 
+      };
+    }
+    
+    const res = await shopifyAdminFetch<ShopifyCancelOrderOperation>({
+      query: cancelOrderMutation,
+      variables: {
+        orderId: orderId,
+        reason: options?.reason || 'CUSTOMER',
+        refund: options?.refund !== undefined ? options.refund : true,
+        restock: options?.restock !== undefined ? options.restock : true
+      },
+    });
+
+    // Check for errors in the response
+    if (res.body.data?.orderCancel?.order?.userErrors?.length > 0) {
+      const errors = res.body.data.orderCancel.order.userErrors;
+      console.error(`Error cancelling order: ${errors.map(e => e.message).join(', ')}`);
+      return { 
+        error: errors.map(e => e.message).join(', '), 
+        success: false 
+      };
+    }
+    return { 
+      success: true, 
+      order: res.body.data.orderCancel.order 
+    };
+  } catch (error) {
+    console.error('Error cancelling order:', error);
+    return { 
+      error: error instanceof Error ? error.message : 'Failed to cancel order',
+      success: false
     };
   }
 }

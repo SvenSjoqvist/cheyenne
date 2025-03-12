@@ -1,8 +1,8 @@
 'use client';
 
 import { createContext, useContext, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { use } from 'react';
+import { CustomerResponse as ShopifyCustomerResponse, OrdersResponse } from '@/app/lib/shopify/types'; // Adjust the import to use the correct type
 
 export type Order = {
   id: string;
@@ -44,13 +44,14 @@ export type Customer = {
 };
 
 type UserState = {
-  customer: Customer | null;
-  orders: Order[];
+    customer: ShopifyCustomerResponse; // Update type to ShopifyCustomerResponse
+    orders: Order[];
 };
 
 type UserContextType = UserState & {
   fetchUserData: () => Promise<void>;
-  handleLogout: () => Promise<void>;
+  setCustomer: (customer: ShopifyCustomerResponse) => void; // Update type to ShopifyCustomerResponse
+  setOrders: (orders: Order[]) => void;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -61,59 +62,54 @@ export function UserProvider({
   orders: ordersPromise
 }: { 
   children: React.ReactNode, 
-  customer: Promise<any>,
-  orders: Promise<any>
+  customer: Promise<ShopifyCustomerResponse>, // Update type to Promise<ShopifyCustomerResponse>
+  orders: Promise<OrdersResponse>
 }) {
-  const router = useRouter();
   
   // Unwrap promises using the 'use' hook
   const customerData = use(customerPromise);
-  const ordersData = use(ordersPromise);
-
-  console.log(customerData);
-  console.log(ordersData);
+  const ordersResponse = use(ordersPromise);
   
   const [state, setState] = useState<UserState>({
-    customer: customerData?.customer || null,
-    orders: ordersData?.orders || [],
+    customer: customerData,
+    orders: ordersResponse.orders || [],
   });
+
+  const setCustomer = (customer: ShopifyCustomerResponse) => { // Update type to ShopifyCustomerResponse
+    setState(prevState => ({
+      ...prevState,
+      customer
+    }));
+  };
+
+  const setOrders = (orders: Order[]) => {
+    setState(prevState => ({
+      ...prevState,
+      orders
+    }));
+  };
 
   // This function will refresh the data by simply setting state with the data we already have
   // No need for additional API calls since we're in a client component
   const fetchUserData = async () => {
-    console.log('Refreshing user data from context...');
     // Just re-use the data we already have from the server
     setState({
-      customer: customerData?.customer || null,
-      orders: ordersData?.orders || [],
+      customer: customerData,
+      orders: ordersResponse.orders || [],
     });
   };
 
-  const handleLogout = async () => {
-    try {
-      // We still need this API call to handle the logout server-side
-      await fetch('/api/logout', { method: 'POST' });
-      
-      setState({
-        customer: null,
-        orders: [],
-      });
-      router.push('/');
-      router.refresh();
-    } catch (err: unknown) {
-      console.error('Logout error:', err);
-    }
-  };
 
   const value = useMemo(
     () => ({
       ...state,
       fetchUserData,
-      handleLogout,
+      setCustomer,
+      setOrders
     }),
-    [state]
+    [state, fetchUserData, setCustomer, setOrders]
   );
-
+  
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
 

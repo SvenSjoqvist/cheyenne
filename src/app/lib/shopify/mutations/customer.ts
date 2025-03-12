@@ -55,23 +55,6 @@ export const customerActivateByUrlMutation = `
   }
 `;
 
-export const customerQuery = `
-  query customerQuery($customerAccessToken: String!) {
-    customer(customerAccessToken: $customerAccessToken) {
-      id
-      firstName
-      lastName
-      email
-      phone
-      displayName
-      defaultAddress {
-        id
-        formatted
-      }
-    }
-  }
-`;
-
 // GraphQL query to fetch customer orders
 export const customerOrdersQuery = `
   query customerOrders($customerAccessToken: String!) {
@@ -110,14 +93,16 @@ export const customerOrdersQuery = `
 `;
 
 export const customerUpdateMutation = `
-  mutation customerUpdate($customerAccessToken: String!, $customer: CustomerUpdateInput!) {
-    customerUpdate(customerAccessToken: $customerAccessToken, customer: $customer) {
+  mutation customerUpdatePassword(
+    $customerAccessToken: String!,
+    $customer: CustomerUpdateInput!
+  ) {
+    customerUpdate(
+      customerAccessToken: $customerAccessToken,
+      customer: $customer
+    ) {
       customer {
         id
-        firstName
-        lastName
-        email
-        phone
       }
       customerAccessToken {
         accessToken
@@ -130,4 +115,37 @@ export const customerUpdateMutation = `
       }
     }
   }
+`;
+
+export const customerRecoverMutation = `
+  mutation customerRecover($email: String!) {
+    customerRecover(email: $email) {
+      customerUserErrors {
+        code
+        field
+        message
+      }
+    }
+  }
+`;
+
+export const updateOrderMutation = `
+  mutation updateOrder($orderId: ID!, $lineItemId: ID!, $quantity: Int!) {
+    orderLinesUpdate(orderId: $orderId, lineItemId: $lineItemId, quantity: $quantity) {
+      order {
+        id
+      }
+    }
+  }
+`;
+
+export const cancelOrderMutation = `
+mutation orderCancel($orderId: ID!, $reason: OrderCancelReason!, $refund: Boolean!, $restock: Boolean!) {
+  orderCancel(orderId: $orderId, reason: $reason, refund: $refund, restock: $restock) {
+    userErrors {
+      field
+      message
+    }
+  }
+}
 `;
