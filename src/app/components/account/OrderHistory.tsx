@@ -5,13 +5,14 @@ import Image from "next/image";
 import { Order } from "@/app/components/account/AccountContext";
 import React from "react";
 import { cancelOrder } from "@/app/lib/shopify";
+import { useRouter } from "next/navigation";
 
 export default function OrderHistory({ orders }: { orders: Order[] }) {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [editingOrder, setEditingOrder] = useState<string | null>(null);
   const [cancelingOrderId, setCancelingOrderId] = useState<string | null>(null);
   const [isCanceling, setIsCanceling] = useState(false);
-
+  const router = useRouter();
   const toggleOrderDetails = (orderId: string) => {
     if (expandedOrder === orderId) {
       setExpandedOrder(null);
@@ -150,7 +151,7 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
                   </td>
                   <td className="border border-gray-300 p-3">
                     <div className="flex flex-col space-y-1">
-                      <button className="text-xs text-blue-600 hover:underline cursor-pointer">Request Return</button>
+                      <button className="text-xs text-blue-600 hover:underline cursor-pointer" onClick={() => router.push(`/account/return/${order.orderNumber}`)}>Request Return</button>
                       {isOrderEditable(order) && (
                         <>
                           <button 

@@ -93,7 +93,6 @@ export default async function RootLayout({
   const cart = getCart(cartId);
   const customer = getCustomer();
   const customerOrders = getCustomerOrders();
-console.log(customer)
   return (
     <html lang="en">
       <body
