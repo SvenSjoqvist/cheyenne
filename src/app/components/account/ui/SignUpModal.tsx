@@ -108,7 +108,7 @@ export default function SignUpModal({ onClose, isVisible, setIsVisible }: { onCl
                 name="firstName"
                 autoComplete="given-name"
                 placeholder="first name"
-                className="p-3 border border-gray-300 rounded-lg transition-all bg-white placeholder:text-black"
+                className="p-3 border border-gray-300 rounded-lg transition-all bg-white placeholder:text-black text-black"
                 required
               />
               <input
@@ -116,7 +116,7 @@ export default function SignUpModal({ onClose, isVisible, setIsVisible }: { onCl
                 name="lastName"
                 autoComplete="family-name"
                 placeholder="last name"
-                className="p-3 border border-gray-300 rounded-lg transition-all bg-white placeholder:text-black"
+                className="p-3 border border-gray-300 rounded-lg transition-all bg-white placeholder:text-black text-black"
                 required
               />
             </div>
@@ -126,28 +126,28 @@ export default function SignUpModal({ onClose, isVisible, setIsVisible }: { onCl
                 type="email"
                 name="email"
                 placeholder="email"
-                className="w-full p-3 border border-gray-300 rounded mb-3 bg-white placeholder:text-black focus:border-transparent transition-all"
+                className="w-full p-3 border border-gray-300 rounded mb-3 bg-white placeholder:text-black text-black focus:border-transparent transition-all"
                 required
               />
               <input
                 type="email"
                 name="confirmEmail"
                 placeholder="confirm email"
-                className="w-full p-3 border border-gray-300 rounded mb-3 bg-white placeholder:text-black focus:border-transparent transition-all"
+                className="w-full p-3 border border-gray-300 rounded mb-3 bg-white placeholder:text-black text-black focus:border-transparent transition-all"
                 required
               />
               <input
                 type="password"
                 name="password"
                 placeholder="password"
-                className="w-full p-3 border border-gray-300 rounded mb-3 bg-white placeholder:text-black focus:border-transparent transition-all"
+                className="w-full p-3 border border-gray-300 rounded mb-3 bg-white placeholder:text-black focus:border-transparent transition-all text-black"
                 required
               />
               <input
                 type="password"
                 name="confirmPassword"
                 placeholder="confirm password"
-                className="w-full p-3 border border-gray-300 rounded mb-3 bg-white placeholder:text-black focus:border-transparent transition-all"
+                className="w-full p-3 border border-gray-300 rounded mb-3 bg-white placeholder:text-black focus:border-transparent transition-all text-black"
                 required
               />
             </div>

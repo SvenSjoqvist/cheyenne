@@ -39,7 +39,7 @@ const Navigation = async () => {
           </Link>
 
           {/* SearchBar with Suspense */}
-          <div className="flex gap-4 md:gap-8 items-center overflow-x-auto overflow-y-hidden flex-nowrap">
+          <div className="flex gap-4 md:gap-8 items-center overflow-y-hidden overflow-x-hidden flex-nowrap">
             <Suspense fallback={<div>Loading search...</div>}>
               <SearchBar />
             </Suspense>

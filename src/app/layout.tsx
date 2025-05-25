@@ -68,6 +68,8 @@ const footerSections: FooterSection[] = [
       { label: "instagram", href: "https://instagram.com/kilaeko" },
       { label: "spotify", href: "https://spotify.com/kilaeko" },
       { label: "pinterest", href: "https://pinterest.com/kilaeko" },
+      { label: "tiktok", href: "https://tiktok.com/kilaeko" },
+      { label: "substack", href: "https://kilaeko.substack.com" },
     ],
   },
 ];

@@ -44,7 +44,6 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
   const handleEditOrder = (orderId: string, e: React.MouseEvent) => {
     e.stopPropagation(); 
     setEditingOrder(orderId);
-    setExpandedOrder(orderId);
   };
 
   const handleCancelOrder = async (orderId: string, orderNumber: number, e: React.MouseEvent) => {
@@ -151,7 +150,7 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
                   </td>
                   <td className="border border-gray-300 p-3">
                     <div className="flex flex-col space-y-1">
-                      <button className="text-xs text-blue-600 hover:underline cursor-pointer" onClick={() => router.push(`/account/return/${order.orderNumber}`)}>Request Return</button>
+                      <button className="text-xs text-blue-600 hover:underline cursor-pointer" onClick={(e) => { e.stopPropagation(); router.push(`/account/return/${order.orderNumber}`); }}>Request Return</button>
                       {isOrderEditable(order) && (
                         <>
                           <button 

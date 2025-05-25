@@ -1,578 +1,578 @@
 export type Menu = {
-    title: string;
-    path: string;
+  title: string;
+  path: string;
 };
 
 export type ShopifyMenuOperation = {
-    data: {
-        menu?: {
-            items: {
-                title: string;
-                url: string;
-            }[];
-        };
+  data: {
+    menu?: {
+      items: {
+        title: string;
+        url: string;
+      }[];
     };
-    variables: {
-        handle: string;
-    };
+  };
+  variables: {
+    handle: string;
+  };
 };
 
 export type Money = {
-    amount: string;
-    currencyCode: string;
+  amount: string;
+  currencyCode: string;
 };
 
 export type ProductOption = {
-    id: string;
-    name: string;
-    values: string[];
+  id: string;
+  name: string;
+  values: string[];
 };
 
 export type Edge<T> = {
-    node: T;
+  node: T;
 };
 
 export type Connection<T> = {
-    edges: Array<Edge<T>>;
+  edges: Array<Edge<T>>;
 };
 
 export type ProductVariant = {
-    id: string;
-    title: string;
-    availableForSale: boolean;
-    selectedOptions: {
-        name: string;
-        value: string;
-    }[];
-    price: Money;
+  id: string;
+  title: string;
+  availableForSale: boolean;
+  selectedOptions: {
+    name: string;
+    value: string;
+  }[];
+  price: Money;
 };
 
 export type Image = {
-    url: string;
-    altText: string;
-    width: number;
-    height: number;
+  url: string;
+  altText: string;
+  width: number;
+  height: number;
 };
 
 export type SEO = {
-    title: string;
-    description: string;
+  title: string;
+  description: string;
 };
 
 export type ShopifyProduct = {
-    id: string;
-    handle: string;
-    availableForSale: boolean;
-    title: string;
-    description: string;
-    descriptionHtml: string;
-    options: ProductOption[];
-    priceRange: {
-        maxVariantPrice: Money;
-        minVariantPrice: Money;
-    };
-    variants: Connection<ProductVariant>;
-    featuredImage: Image;
-    images: Connection<Image>;
-    seo: SEO;
-    tags: string[];
-    updatedAt: string;
+  id: string;
+  handle: string;
+  availableForSale: boolean;
+  title: string;
+  description: string;
+  descriptionHtml: string;
+  options: ProductOption[];
+  priceRange: {
+    maxVariantPrice: Money;
+    minVariantPrice: Money;
+  };
+  variants: Connection<ProductVariant>;
+  featuredImage: Image;
+  images: Connection<Image>;
+  seo: SEO;
+  tags: string[];
+  updatedAt: string;
 };
 
 export type Product = Omit<ShopifyProduct, "variants" | "images"> & {
-    variants: ProductVariant[];
-    images: Image[];
+  variants: ProductVariant[];
+  images: Image[];
 };
 
 export type ShopifyProductsOperation = {
-    data: {
-        products: Connection<ShopifyProduct>;
-    };
-    variables: {
-        query?: string;
-        reverse?: boolean;
-        sortKey?: string;
-    };
+  data: {
+    products: Connection<ShopifyProduct>;
+  };
+  variables: {
+    query?: string;
+    reverse?: boolean;
+    sortKey?: string;
+  };
 };
 
 export type ShopifyCollection = {
-    handle: string;
-    title: string;
-    description: string;
-    seo: SEO;
-    updatedAt: string;
+  handle: string;
+  title: string;
+  description: string;
+  seo: SEO;
+  updatedAt: string;
 };
 
 export type Collection = ShopifyCollection & {
-    path: string;
+  path: string;
 };
 
 export type ShopifyCollectionsOperation = {
-    data: {
-        collections: Connection<ShopifyCollection>;
-    };
+  data: {
+    collections: Connection<ShopifyCollection>;
+  };
 };
 
 export type ShopifyCollectionProductsOperation = {
-    data: {
-        collection: {
-            products: Connection<ShopifyProduct>;
-        };
+  data: {
+    collection: {
+      products: Connection<ShopifyProduct>;
     };
-    variables: {
-        handle: string;
-        reverse?: boolean;
-        sortKey?: string;
-    };
+  };
+  variables: {
+    handle: string;
+    reverse?: boolean;
+    sortKey?: string;
+  };
 };
 
 export type ShopifyProductOperation = {
-    data: { product: ShopifyProduct };
-    variables: {
-        handle: string;
-    };
+  data: { product: ShopifyProduct };
+  variables: {
+    handle: string;
+  };
 };
 
 export type CartProduct = {
-    id: string;
-    handle: string;
-    title: string;
-    featuredImage: Image;
+  id: string;
+  handle: string;
+  title: string;
+  featuredImage: Image;
 };
 
 export type CartItem = {
-    id: string | undefined;
-    quantity: number;
-    cost: {
-        totalAmount: Money;
-    };
-    merchandise: {
-        id: string;
-        title: string;
-        selectedOptions: {
-            name: string;
-            value: string;
-        }[];
-        product: CartProduct;
-    };
+  id: string | undefined;
+  quantity: number;
+  cost: {
+    totalAmount: Money;
+  };
+  merchandise: {
+    id: string;
+    title: string;
+    selectedOptions: {
+      name: string;
+      value: string;
+    }[];
+    product: CartProduct;
+  };
 };
 
 export type ShopifyCart = {
-    id: string | undefined;
-    checkoutUrl: string;
-    cost: {
-        subtotalAmount: Money;
-        totalAmount: Money;
-        totalTaxAmount: Money;
-    };
-    lines: Connection<CartItem>;
-    totalQuantity: number;
+  id: string | undefined;
+  checkoutUrl: string;
+  cost: {
+    subtotalAmount: Money;
+    totalAmount: Money;
+    totalTaxAmount: Money;
+  };
+  lines: Connection<CartItem>;
+  totalQuantity: number;
 };
 
 export type ShopifyCartOperation = {
-    data: {
-        cart: ShopifyCart;
-    };
-    variables: {
-        cartId: string;
-    };
+  data: {
+    cart: ShopifyCart;
+  };
+  variables: {
+    cartId: string;
+  };
 };
 
 export type ShopifyCreateCartOperation = {
-    data: { cartCreate: { cart: ShopifyCart } };
+  data: { cartCreate: { cart: ShopifyCart } };
 };
 
 export type ShopifyUpdateCartOperation = {
-    data: {
-        cartLinesUpdate: {
-            cart: ShopifyCart;
-        };
+  data: {
+    cartLinesUpdate: {
+      cart: ShopifyCart;
     };
-    variables: {
-        cartId: string;
-        lines: {
-            id: string;
-            merchandiseId: string;
-            quantity: number;
-        }[];
-    };
+  };
+  variables: {
+    cartId: string;
+    lines: {
+      id: string;
+      merchandiseId: string;
+      quantity: number;
+    }[];
+  };
 };
 
 export type ShopifyRemoveFromCartOperation = {
-    data: {
-        cartLinesRemove: {
-            cart: ShopifyCart;
-        };
+  data: {
+    cartLinesRemove: {
+      cart: ShopifyCart;
     };
-    variables: {
-        cartId: string;
-        lineIds: string[];
-    };
+  };
+  variables: {
+    cartId: string;
+    lineIds: string[];
+  };
 };
 
 export type Cart = Omit<ShopifyCart, "lines"> & {
-    lines: CartItem[];
+  lines: CartItem[];
 };
 
 export type ShopifyAddToCartOperation = {
-    data: {
-        cartLinesAdd: {
-            cart: ShopifyCart;
-        };
+  data: {
+    cartLinesAdd: {
+      cart: ShopifyCart;
     };
-    variables: {
-        cartId: string;
-        lines: {
-            merchandiseId: string;
-            quantity: number;
-        }[];
-    };
+  };
+  variables: {
+    cartId: string;
+    lines: {
+      merchandiseId: string;
+      quantity: number;
+    }[];
+  };
 };
 
 export type ShopifyProductRecommendationsOperation = {
-    data: {
-        productRecommendations: ShopifyProduct[];
-    };
-    variables: {
-        productId: string;
-    };
+  data: {
+    productRecommendations: ShopifyProduct[];
+  };
+  variables: {
+    productId: string;
+  };
 };
 
 export type Page = {
-    id: string;
-    title: string;
-    handle: string;
-    body: string;
-    bodySummary: string;
-    seo?: SEO;
-    createdAt: string;
-    updatedAt: string;
+  id: string;
+  title: string;
+  handle: string;
+  body: string;
+  bodySummary: string;
+  seo?: SEO;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type ShopifyPageOperation = {
-    data: { pageByHandle: Page };
-    variables: { handle: string };
+  data: { pageByHandle: Page };
+  variables: { handle: string };
 };
 
 export type ShopifyPagesOperation = {
-    data: {
-        pages: Connection<Page>;
-    };
+  data: {
+    pages: Connection<Page>;
+  };
 };
 
 export type CollectionJournalField = {
-    key: string;
-    value: string;
+  key: string;
+  value: string;
 };
 
 export type ShopifyCollectionJournalOperation = {
-    data: {
-        metaobject: {
-            type: string;
-            fields: CollectionJournalField[];
-            main_content: CollectionJournalField;
-            bottom_content: CollectionJournalField;
-            layout: CollectionJournalField;
-        };
+  data: {
+    metaobject: {
+      type: string;
+      fields: CollectionJournalField[];
+      main_content: CollectionJournalField;
+      bottom_content: CollectionJournalField;
+      layout: CollectionJournalField;
     };
+  };
 };
 
 export type CollectionJournal = {
-    mainContent: {
-        leftColumn: {
-            text: string[];
-        };
-        rightColumn: {
-            images: Array<{
-                url: string;
-                alt: string;
-                position: string;
-            }>;
-        };
+  mainContent: {
+    leftColumn: {
+      text: string[];
     };
-    bottomContent: {
-        text: string[];
-        additionalImage: {
-            url: string;
-            alt: string;
-        };
+    rightColumn: {
+      images: Array<{
+        url: string;
+        alt: string;
+        position: string;
+      }>;
     };
-    layout: {
-        spacing: Record<string, string>;
-        responsiveClasses: Record<string, string>;
+  };
+  bottomContent: {
+    text: string[];
+    additionalImage: {
+      url: string;
+      alt: string;
     };
+  };
+  layout: {
+    spacing: Record<string, string>;
+    responsiveClasses: Record<string, string>;
+  };
 };
 
 export type ShopifyProductsByTagOperation = {
-    data: {
-        products: {
-            edges: Array<{
-                node: ShopifyProduct;
-            }>;
-        };
+  data: {
+    products: {
+      edges: Array<{
+        node: ShopifyProduct;
+      }>;
     };
-    variables: {
-        query: string;
-        limit: number;
-        productId: string;
-    };
+  };
+  variables: {
+    query: string;
+    limit: number;
+    productId: string;
+  };
 };
 
 export type CustomerCreateResponse = {
-    customer: Customer | null;
-    customerUserErrors: {
-        code: string;
-        field: string[];
-        message: string;
-    }[];
+  customer: Customer | null;
+  customerUserErrors: {
+    code: string;
+    field: string[];
+    message: string;
+  }[];
 };
 
 export type ShopifyCustomerCreateOperation = {
-    data: {
-        customerCreate: {
-            customer: Customer;
-            customerUserErrors: {
-                code: string;
-                field: string[];
-                message: string;
-            }[];
-        };
+  data: {
+    customerCreate: {
+      customer: Customer;
+      customerUserErrors: {
+        code: string;
+        field: string[];
+        message: string;
+      }[];
     };
-    variables: {
-        input: CustomerCreateInput;
-    };
+  };
+  variables: {
+    input: CustomerCreateInput;
+  };
 };
 
 // Update your CustomerCreateInput type if necessary
 export type CustomerCreateInput = {
-    email: string;
-    password: string;
-    firstName?: string;
-    lastName?: string;
-    acceptsMarketing?: boolean;
-    phone?: string;
+  email: string;
+  password: string;
+  firstName?: string;
+  lastName?: string;
+  acceptsMarketing?: boolean;
+  phone?: string;
 };
 
 export type CustomerAccessToken = {
-    accessToken: string;
-    expiresAt: string;
+  accessToken: string;
+  expiresAt: string;
 };
 
 export type CustomerAccessTokenCreateResponse = {
-    customerAccessToken: CustomerAccessToken | null;
-    customerUserErrors: {
-        code: string;
-        field: string[];
-        message: string;
-    }[];
+  customerAccessToken: CustomerAccessToken | null;
+  customerUserErrors: {
+    code: string;
+    field: string[];
+    message: string;
+  }[];
 };
 
 export type ShopifyCustomerAccessTokenOperation = {
-    data: {
-        customerAccessTokenCreate: CustomerAccessTokenCreateResponse;
+  data: {
+    customerAccessTokenCreate: CustomerAccessTokenCreateResponse;
+  };
+  variables: {
+    input: {
+      email: string;
+      password: string;
     };
-    variables: {
-        input: {
-            email: string;
-            password: string;
-        };
-    };
+  };
 };
 
 export interface ShopifyCustomerActivateByUrlOperation {
-    data: {
-        customerActivateByUrl: {
-            customer: {
-                id: string;
-                email: string;
-                firstName: string | null;
-                lastName: string | null;
-            } | null;
-            customerAccessToken: {
-                accessToken: string;
-                expiresAt: string;
-            } | null;
-            customerUserErrors: {
-                code: string;
-                field: string[];
-                message: string;
-            }[];
-        };
+  data: {
+    customerActivateByUrl: {
+      customer: {
+        id: string;
+        email: string;
+        firstName: string | null;
+        lastName: string | null;
+      } | null;
+      customerAccessToken: {
+        accessToken: string;
+        expiresAt: string;
+      } | null;
+      customerUserErrors: {
+        code: string;
+        field: string[];
+        message: string;
+      }[];
     };
-    variables: {
-        activationUrl: string;
-        password: string;
-    };
+  };
+  variables: {
+    activationUrl: string;
+    password: string;
+  };
 }
 
 // types/customer.ts
 
 // Customer type
 export interface Customer {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  phone: string | null;
+  password: string;
+  displayName: string | null;
+  defaultAddress?: {
     id: string;
-    firstName: string | null;
-    lastName: string | null;
-    email: string | null;
-    phone: string | null;
-    password: string;
-    displayName: string | null;
-    defaultAddress?: {
-        id: string;
-        formatted: string[];
-    } | null;
+    formatted: string[];
+  } | null;
 }
 
 // Order type
 export interface Order {
-    id: string;
-    orderNumber: number;
-    userErrors: {
-        message: string;
-    }[];
-    processedAt: string;
-    financialStatus: string;
-    fulfillmentStatus: string;
-    totalPrice: {
-        amount: string;
-        currencyCode: string;
-    };
-    lineItems: {
-        edges: Array<{
-            node: {
-                title: string;
-                quantity: number;
-                variant: {
-                    title: string;
-                    image: {
-                        url: string;
-                    } | null;
-                } | null;
-            };
-        }>;
-    };
+  id: string;
+  orderNumber: number;
+  userErrors: {
+    message: string;
+  }[];
+  processedAt: string;
+  financialStatus: string;
+  fulfillmentStatus: string;
+  totalPrice: {
+    amount: string;
+    currencyCode: string;
+  };
+  lineItems: {
+    edges: Array<{
+      node: {
+        title: string;
+        quantity: number;
+        variant: {
+          title: string;
+          image: {
+            url: string;
+          } | null;
+        } | null;
+      };
+    }>;
+  };
 }
 
 // Response types for the functions
 export type CustomerResponse = {
-    customer: Customer | null;
-    error?: string;
+  customer: Customer | null;
+  error?: string;
 };
 
 export interface OrdersResponse {
-    orders: Order[];
-    error?: string;
+  orders: Order[];
+  error?: string;
 }
 
 export interface CustomerUpdateInput {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    phone?: string;
-    password?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  password?: string;
 }
 
 export interface CustomerUpdateResponse {
-    success?: boolean;
-    customer?: Customer;
-    error?: string;
+  success?: boolean;
+  customer?: Customer;
+  error?: string;
 }
 
 // GraphQL operation types
 export interface ShopifyCustomerOperation {
-    data: {
-        customer: Customer | null;
-    };
-    variables: {
-        customerAccessToken: string;
-    };
+  data: {
+    customer: Customer | null;
+  };
+  variables: {
+    customerAccessToken: string;
+  };
 }
 
 export interface ShopifyCustomerOrdersOperation {
-    data: {
-        customer: {
-            orders: {
-                edges: Array<{
-                    node: Order;
-                }>;
-            };
-        } | null;
-    };
-    variables: {
-        customerAccessToken: string;
-        orderNumber?: string;
-    };
+  data: {
+    customer: {
+      orders: {
+        edges: Array<{
+          node: Order;
+        }>;
+      };
+    } | null;
+  };
+  variables: {
+    customerAccessToken: string;
+    orderNumber?: string;
+  };
 }
 
 export interface ShopifyCustomerUpdateOperation {
-    data: {
-        customerUpdate: {
-            customer?: Customer | null;
-            password?: string;
-            customerAccessToken: {
-                accessToken: string;
-                expiresAt: string;
-            } | null;
-            customerUserErrors: Array<{
-                code: string;
-                field: string[];
-                message: string;
-            }>;
-        };
+  data: {
+    customerUpdate: {
+      customer?: Customer | null;
+      password?: string;
+      customerAccessToken: {
+        accessToken: string;
+        expiresAt: string;
+      } | null;
+      customerUserErrors: Array<{
+        code: string;
+        field: string[];
+        message: string;
+      }>;
     };
-    variables: {
-        customerAccessToken: string;
-        password?: string; // At this level, not inside customer
-        customer?: {
-            firstName?: string;
-            lastName?: string;
-            email?: string;
-            phone?: string;
-        };
+  };
+  variables: {
+    customerAccessToken: string;
+    password?: string; // At this level, not inside customer
+    customer?: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      phone?: string;
     };
+  };
 }
 
 export interface ShopifyCustomerRecoverOperation {
-    data: {
-        customerRecover: {
-            customerAccessToken: {
-                accessToken: string;
-                expiresAt: string;
-            } | null;
-            customerUserErrors: {
-                code: string;
-                field: string[];
-                message: string;
-            }[];
-        };
+  data: {
+    customerRecover: {
+      customerAccessToken: {
+        accessToken: string;
+        expiresAt: string;
+      } | null;
+      customerUserErrors: {
+        code: string;
+        field: string[];
+        message: string;
+      }[];
     };
-    variables: {
-        email: string;
-    };
+  };
+  variables: {
+    email: string;
+  };
 }
 
 export interface ShopifyUpdateOrderOperation {
-    data: {
-        orderLinesUpdate: {
-            order: Order;
-        };
+  data: {
+    orderLinesUpdate: {
+      order: Order;
     };
-    variables: {
-        orderId: string;
-        lineItemId: string;
-        quantity: number;
-    };
+  };
+  variables: {
+    orderId: string;
+    lineItemId: string;
+    quantity: number;
+  };
 }
 
 export interface ShopifyCancelOrderOperation {
-    data: {
-        orderCancel: {
-            order: Order;
-        };
+  data: {
+    orderCancel: {
+      order: Order;
     };
-    variables: {
-        orderId: string;
-        reason: string;
-        refund: boolean;
-        restock: boolean;
-    };
+  };
+  variables: {
+    orderId: string;
+    reason: string;
+    refund: boolean;
+    restock: boolean;
+  };
 }

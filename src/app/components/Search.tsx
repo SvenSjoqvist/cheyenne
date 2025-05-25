@@ -15,8 +15,6 @@ export default function SearchBar () {
     const val = e.target as HTMLFormElement
     const search = val.search as HTMLFormElement
     const newParams = new URLSearchParams(searchParams.toString())
-
-    console.log(newParams);
     
     if (search.value) {
         newParams.set('q', search.value);
@@ -41,7 +39,9 @@ export default function SearchBar () {
         >
           <button
             type="submit"
-            className="p-2 hover:text-gray-600 transition-colors"
+            className={`p-2 transition-colors ${
+              isExpanded ? 'text-gray-600' : 'text-white'
+            }`}
             onClick={() => setIsExpanded(true)}
             aria-label="Search"
           >
@@ -55,7 +55,7 @@ export default function SearchBar () {
             >
               <path 
                 d="M19.361 18.217l-4.76-4.95a8.049 8.049 0 001.894-5.192C16.495 3.623 12.873 0 8.42 0 3.968 0 .345 3.623.345 8.075c0 4.453 3.623 8.075 8.075 8.075a8.01 8.01 0 004.957-1.725l4.797 4.988c.158.164.37.255.593.255a.831.831 0 00.594-.255.84.84 0 000-1.196zM8.42 14.465a6.396 6.396 0 01-6.39-6.39 6.397 6.397 0 016.39-6.39 6.397 6.397 0 016.39 6.39 6.396 6.396 0 01-6.39 6.39z" 
-                fill="currentColor"
+                fill="black"
               />
             </svg>
           </button>

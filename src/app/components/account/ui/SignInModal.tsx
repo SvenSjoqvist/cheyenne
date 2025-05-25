@@ -113,14 +113,14 @@ export default function SignInModal({ onClose, isVisible, setShowModal, setIsVis
                 type="email"
                 name="email"
                 placeholder="email"
-                className="w-full p-3 border bg-white border-gray-300 rounded mb-3 transition-all placeholder:text-black"
+                className="w-full p-3 border bg-white border-gray-300 rounded mb-3 transition-all placeholder:text-black text-black"
                 required
               />
               <input
                 type="password"
                 name="password"
                 placeholder="password"
-                className="w-full p-3 border bg-white border-gray-300 rounded transition-all placeholder:text-black"
+                className="w-full p-3 border bg-white border-gray-300 rounded transition-all placeholder:text-black text-black"
                 required
               />
             </div>
