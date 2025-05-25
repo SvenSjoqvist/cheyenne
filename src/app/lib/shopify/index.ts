@@ -69,6 +69,7 @@ import {
 import { cookies } from "next/headers";
 import { customerOrderQuery, customerQuery } from "./queries/customer";
 
+
 const domain = ensureStartWith(process.env.SHOPIFY_STORE_DOMAIN, "https://");
 const endpoint = `${domain}/api/2025-01/graphql.json`;
 const adminEndpoint = `${domain}/admin/api/2025-01/graphql.json`;
