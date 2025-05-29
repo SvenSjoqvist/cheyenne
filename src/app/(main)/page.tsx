@@ -17,10 +17,10 @@ const KilaekoPage: React.FC = async () => {
   return (
     <div className="flex overflow-hidden flex-col bg-neutral-100">
       <HeroSection {...heroSectionProps} />
-      <div className="flex relative flex-col justify-center items-center w-full min-h-[1024px] max-md:px-5 max-md:max-w-full">
+      <div className="flex relative flex-col justify-center items-center w-full min-h-[1024px] max-md:px-5 max-md:max-w-full -mt-[1px]">
       <ImageOverlay
       backgroundSrc="https://cdn.builder.io/api/v1/image/assets/df24f938eeb948889fe9ad55656873a2/f69a4747478375673d3bf50b5295aac6cd7566809f6d599e8786c19a699a02a9?apiKey=df24f938eeb948889fe9ad55656873a2&"
-      overlaySrc="https://cdn.builder.io/api/v1/image/assets/df24f938eeb948889fe9ad55656873a2/e9cafacfea9c8e1bb665842f9aedd625182e915211ca51f507a85f8b1e717158?apiKey=df24f938eeb948889fe9ad55656873a2&"
+      overlaySrc="./home.png"
     />
       </div>
       <ProductSection products={productsSlice}/>

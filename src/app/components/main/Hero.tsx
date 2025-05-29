@@ -32,17 +32,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           sizes="100vw"
         />
       </div>
-
-      {/* Content Container - Removed right padding and adjusted alignment */}
-      <div 
-        className="relative flex flex-col w-full text-white
-          max-md:py-24 max-md:max-w-full"
-        style={{ 
-          paddingTop: typeof topPadding === 'number' ? `${topPadding}px` : topPadding,
-          paddingBottom: '7rem'
-        }}
-      >
-      </div>
     </section>
   );
 };
