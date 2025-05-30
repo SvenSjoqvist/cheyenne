@@ -1,7 +1,7 @@
 import React, { Suspense } from "react";
-import ProductGrid from "../../components/product/ProductGrid";
+import ProductGrid from "@/app/components/client/product/ProductGrid";
 import { getProducts } from "@/app/lib/shopify";
-import { getCookies } from "@/app/components/account/actions";
+import { getCookies } from "@/app/components/client/account/actions";
 
 const BikiniBoutique: React.FC = async () => {
   const topProducts = await getProducts({ query: "" });

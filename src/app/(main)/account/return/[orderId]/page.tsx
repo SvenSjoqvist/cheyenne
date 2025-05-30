@@ -1,6 +1,7 @@
 "use client";
-import { useUser } from "@/app/components/account/AccountContext";
+import { useUser } from "@/app/components/client/account/AccountContext";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 
 export default function RefundPage() {
     const { orderId } = useParams();
@@ -22,7 +23,13 @@ export default function RefundPage() {
                         <div key={item.node.title} className="flex items-center mb-4">
                             <div className="flex flex-row gap-4">
                                 <div className="w-40 h-40 ml-4">
-                                    <img src={item.node.variant?.image?.url} className="w-full h-full object-contain " />
+                                    <Image 
+                                        src={item.node.variant?.image?.url || '/images/placeholder.png'} 
+                                        alt={item.node.title || 'Product image'}
+                                        width={160}
+                                        height={160}
+                                        className="w-full h-full object-contain"
+                                    />
                                 </div>
                                 <div className="flex flex-col gap-4">
                                     <span className="font-medium">{item.node.title}</span>

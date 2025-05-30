@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
-import Collections from "@/app/components/layout/search/collections";
-import FilterList from "@/app/components/layout/search/filter";
+import Collections from "@/app/components/client/layout/search/collections";
+import FilterList from "@/app/components/client/layout/search/filter";
 import { sorting } from "@/app/lib/constants";
 
 export default function SearchLayout({

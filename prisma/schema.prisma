@@ -1,0 +1,26 @@
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://kilaeko_owner:npg_6KCb9vrwLPyx@ep-shy-paper-a8ymnliq-pooler.eastus2.azure.neon.tech/kilaeko?sslmode=require"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Subscriber {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  unsubscribeToken String  @unique @default(uuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model EmailTemplate {
+  id          String   @id @default(uuid())
+  name        String
+  subject     String
+  content     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+

@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
-import { Customer } from "@/app/components/account/AccountContext";
-import OrderHistory from "@/app/components/account/OrderHistory";
-import AccountDetails from "@/app/components/account/AccountDetails";
-import LogoutButton from "@/app/components/account/ui/LogoutButton";
-import { getCookies, getCustomerOrder, Customer as fetchCustomer } from "@/app/components/account/actions";
+import { Customer } from "@/app/components/client/account/AccountContext";
+import OrderHistory from "@/app/components/client/account/OrderHistory";
+import AccountDetails from "@/app/components/client/account/AccountDetails"; 
+import LogoutButton from "@/app/components/client/account/ui/LogoutButton";
+import { getCookies, getCustomerOrder, Customer as fetchCustomer } from "@/app/components/client/account/actions";
 
 export default async function AccountDashboard() {
   // Check authentication server-side

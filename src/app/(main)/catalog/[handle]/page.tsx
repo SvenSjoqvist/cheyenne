@@ -1,8 +1,8 @@
-import { AddToCart } from "@/app/components/cart/add-to-cart";
-import { GridTileImage } from "@/app/components/grid/Tile";
-import Gallery from "@/app/components/product/gallery";
-import { ProductProvider } from "@/app/components/product/product-context";
-import { ProductDescription } from "@/app/components/product/product-description";
+import { AddToCart } from "@/app/components/client/cart/add-to-cart";
+import { GridTileImage } from "@/app/components/client/grid/Tile";
+import Gallery from "@/app/components/client/product/gallery";
+import { ProductProvider } from "@/app/components/client/product/product-context";
+import { ProductDescription } from "@/app/components/client/product/product-description";
 import { HIDDEN_PRODUCT_TAG } from "@/app/lib/constants";
 import { getProduct, getProductsByTag } from "@/app/lib/shopify";
 import { Image, Product } from "@/app/lib/shopify/types";
