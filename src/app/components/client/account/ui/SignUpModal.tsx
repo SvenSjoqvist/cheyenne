@@ -7,8 +7,55 @@ import { signup } from "@/app/components/client/account/actions";
 export default function SignUpModal({ onClose, isVisible, setIsVisible }: { onClose?: () => void, isVisible: boolean, setIsVisible: (visible: boolean) => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [passwordStrength, setPasswordStrength] = useState<{
+    score: number;
+    feedback: string[];
+  }>({ score: 0, feedback: [] });
   const router = useRouter();
-  
+
+  // Password validation rules
+  const validatePassword = (password: string) => {
+    const feedback: string[] = [];
+    let score = 0;
+
+    // Length check
+    if (password.length < 8) {
+      feedback.push("Password must be at least 8 characters long");
+    } else {
+      score += 1;
+    }
+
+    // Uppercase check
+    if (!/[A-Z]/.test(password)) {
+      feedback.push("Include at least one uppercase letter");
+    } else {
+      score += 1;
+    }
+
+    // Lowercase check
+    if (!/[a-z]/.test(password)) {
+      feedback.push("Include at least one lowercase letter");
+    } else {
+      score += 1;
+    }
+
+    // Number check
+    if (!/\d/.test(password)) {
+      feedback.push("Include at least one number");
+    } else {
+      score += 1;
+    }
+
+    // Special character check
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      feedback.push("Include at least one special character");
+    } else {
+      score += 1;
+    }
+
+    return { score, feedback };
+  };
+
   // Set visible after mount for animation
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -25,12 +72,43 @@ export default function SignUpModal({ onClose, isVisible, setIsVisible }: { onCl
     }, 300);
   };
 
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const password = e.target.value;
+    setPasswordStrength(validatePassword(password));
+  };
+
   async function handleSignup(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
     const formData = new FormData(e.currentTarget);
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
+    const email = formData.get("email") as string;
+    const confirmEmail = formData.get("confirmEmail") as string;
+
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate emails match
+    if (email !== confirmEmail) {
+      setError("Email addresses do not match");
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate password strength
+    const { score, feedback } = validatePassword(password);
+    if (score < 3) {
+      setError(`Password too weak: ${feedback.join(", ")}`);
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const result = await signup(formData);
@@ -142,7 +220,18 @@ export default function SignUpModal({ onClose, isVisible, setIsVisible }: { onCl
                 placeholder="password"
                 className="w-full p-3 border border-gray-300 rounded mb-3 bg-white placeholder:text-black focus:border-transparent transition-all text-black"
                 required
+                onChange={handlePasswordChange}
               />
+              {passwordStrength.feedback.length > 0 && (
+                <div className="mb-3 text-sm">
+                  <div className="text-white mb-1">Password requirements:</div>
+                  <ul className="list-disc list-inside text-gray-300">
+                    {passwordStrength.feedback.map((feedback, index) => (
+                      <li key={index}>{feedback}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <input
                 type="password"
                 name="confirmPassword"
