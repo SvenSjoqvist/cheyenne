@@ -17,7 +17,12 @@ export async function addSubscriber(email: string) {
     });
 
     if (existingSubscriber) {
-      throw new Error('Email already subscribed');
+      // Return success for existing subscribers
+      return { 
+        success: true, 
+        message: 'You are already subscribed to our newsletter!',
+        isExisting: true 
+      };
     }
 
     // Create new subscriber
@@ -38,7 +43,11 @@ export async function addSubscriber(email: string) {
       // Don't throw here, as the subscription was successful
     }
 
-    return subscriber;
+    return { 
+      success: true, 
+      message: 'Successfully subscribed to our newsletter!',
+      isExisting: false 
+    };
   } catch (error) {
     console.error('Failed to add subscriber:', error);
     if (error instanceof Error) {

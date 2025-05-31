@@ -8,6 +8,12 @@ const envSchema = z.object({
   SHOPIFY_REVALIDATION_SECRET: z.string(),
   SHOPIFY_STOREFRONT_ACCESS_TOKEN: z.string(),
   SHOPIFY_STORE_DOMAIN: z.string(),
+  SHOPIFY_ACCESS_TOKEN: z.string(),
+  DATABASE_URL: z.string(),
+  NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN: z.string(),
+  NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN: z.string(),
+  NEXT_PUBLIC_SHOPIFY_ACCESS_TOKEN: z.string(),
+  NEXT_PUBLIC_SHOPIFY_REVALIDATION_SECRET: z.string(),
 });
 
 envSchema.parse(process.env);

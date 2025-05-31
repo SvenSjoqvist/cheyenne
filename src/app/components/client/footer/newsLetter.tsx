@@ -5,20 +5,34 @@ import { useState } from "react";
 
 export const NewsLetter = () => {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
 
   async function handleSubmit(formData: FormData) {
     try {
       setStatus('loading');
+      setMessage('');
+      
       const email = formData.get('email') as string;
-      await addSubscriber(email);
+      
+      if (!email) {
+        throw new Error('Email is required');
+      }
+
+      const result = await addSubscriber(email);
       setStatus('success');
+      setMessage(result.message);
+      
       // Reset form
       const form = document.querySelector('form') as HTMLFormElement;
       form?.reset();
     } catch (error) {
       setStatus('error');
-      setErrorMessage(error instanceof Error ? error.message : 'Failed to subscribe');
+      if (error instanceof Error) {
+        setMessage(error.message);
+      } else {
+        setMessage('An unexpected error occurred. Please try again.');
+      }
+      console.error('Newsletter subscription error:', error);
     }
   }
 
@@ -53,10 +67,10 @@ export const NewsLetter = () => {
         </button>
       </div>
       {status === 'success' && (
-        <p className="mt-2 text-sm text-green-600">Successfully subscribed!</p>
+        <p className="mt-2 text-sm text-green-600">{message}</p>
       )}
       {status === 'error' && (
-        <p className="mt-2 text-sm text-red-600">{errorMessage}</p>
+        <p className="mt-2 text-sm text-red-600">{message}</p>
       )}
     </form>
   );
