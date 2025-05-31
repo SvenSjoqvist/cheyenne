@@ -81,6 +81,7 @@ interface DashboardStats {
   };
 }
 
+
 interface RecentItemsResponse {
   orders: DashboardStats['orders'];
   products: DashboardStats['products'];
@@ -96,15 +97,30 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         pageInfo {
           hasNextPage
         }
+        edges {
+          node {
+            id
+          }
+        }
       }
       products(first: 250) {
         pageInfo {
           hasNextPage
         }
+        edges {
+          node {
+            id
+          }
+        }
       }
       customers(first: 250) {
         pageInfo {
           hasNextPage
+        }
+        edges {
+          node {
+            id
+          }
         }
       }
     }
@@ -154,19 +170,24 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const [countsData, recentData] = await Promise.all([
     shopifyRequest<{
       shop: { name: string };
-      orders: { pageInfo: { hasNextPage: boolean } };
-      products: { pageInfo: { hasNextPage: boolean } };
-      customers: { pageInfo: { hasNextPage: boolean } };
+      orders: { pageInfo: { hasNextPage: boolean }; edges: Array<{ node: { id: string } }> };
+      products: { pageInfo: { hasNextPage: boolean }; edges: Array<{ node: { id: string } }> };
+      customers: { pageInfo: { hasNextPage: boolean }; edges: Array<{ node: { id: string } }> };
     }>(countsQuery),
     shopifyRequest<RecentItemsResponse>(recentItemsQuery)
   ]);
 
+  // Count actual items and add "+" if there are more
+  const totalOrders = countsData.orders.edges.length + (countsData.orders.pageInfo.hasNextPage ? '+' : '');
+  const totalProducts = countsData.products.edges.length + (countsData.products.pageInfo.hasNextPage ? '+' : '');
+  const totalCustomers = countsData.customers.edges.length + (countsData.customers.pageInfo.hasNextPage ? '+' : '');
+
   return {
     shop: {
       name: countsData.shop.name,
-      totalOrders: countsData.orders.pageInfo.hasNextPage ? '250+' : '250',
-      totalProducts: countsData.products.pageInfo.hasNextPage ? '250+' : '250',
-      totalCustomers: countsData.customers.pageInfo.hasNextPage ? '250+' : '250',
+      totalOrders: totalOrders.toString(),
+      totalProducts: totalProducts.toString(),
+      totalCustomers: totalCustomers.toString(),
     },
     orders: recentData.orders,
     products: recentData.products,

@@ -1,3 +1,5 @@
+"use client";
+
 import Image from 'next/image';
 import ProductItem from '@/app/components/client/product/ProductItem';
 interface ProductPrice {
