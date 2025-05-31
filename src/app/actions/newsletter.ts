@@ -182,6 +182,14 @@ export async function sendNewsletter(subject: string, content: string, recipient
 
 export async function sendTestEmail(email: string, subject: string, content: string) {
   try {
+    // Validate required environment variables
+    const requiredEnvVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'SMTP_FROM'];
+    const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
+    
+    if (missingEnvVars.length > 0) {
+      throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
+    }
+
     console.log('Sending test email:', {
       email,
       subject,
@@ -213,6 +221,9 @@ export async function sendTestEmail(email: string, subject: string, content: str
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('Failed to send test email:', error);
-    throw new Error('Failed to send test email');
+    if (error instanceof Error) {
+      throw new Error(`Failed to send test email: ${error.message}`);
+    }
+    throw new Error('Failed to send test email: Unknown error');
   }
 } 
