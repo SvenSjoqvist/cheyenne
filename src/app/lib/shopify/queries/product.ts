@@ -6,7 +6,7 @@ export const getProductsQuery = /* GraphQL */ `
     $reverse: Boolean
     $query: String
   ) {
-    products(sortKey: $sortKey, reverse: $reverse, query: $query, first: 10) {
+    products(sortKey: $sortKey, reverse: $reverse, query: $query, first: 5) {
       edges {
         node {
           ...product
