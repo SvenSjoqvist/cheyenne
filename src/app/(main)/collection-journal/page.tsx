@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default async function CollectionJournalPage() {
   return (
@@ -9,12 +10,16 @@ export default async function CollectionJournalPage() {
         a journey of self-discovery
       </h1>
       <div className="flex justify-center items-center mt-6 md:mt-10 flex-col">
-        <Image
-          className="object-cover w-full max-w-[800px]"
-          src="/images/spotifylist.png"
-          alt="the runaway collection: a journey of self-discovery"
-          width={800}
-          height={1000}
+        <iframe 
+          style={{borderRadius: "12px"}} 
+          src="https://open.spotify.com/embed/playlist/50Ln1bXzaVUuQ3OhXz3J2A?utm_source=generator" 
+          width="100%" 
+          height="352" 
+          frameBorder="0" 
+          allowFullScreen 
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+          loading="lazy"
+          className="w-full max-w-[800px]"
         />
         <p className="text-center text-lg md:text-xl lg:text-2xl font-light font-darker-grotesque max-w-[960px] mt-8 md:mt-15 px-4">
           The Runaway Collection began with a feeling we all know: the urge to escape everything familiar and find freedom. It captures those perfect summer afternoons when warm sand meets your feet and salt air settles on your skin. These moments exist outside of time, where authenticity is personified through swimwear.
