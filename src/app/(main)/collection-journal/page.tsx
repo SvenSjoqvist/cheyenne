@@ -1,7 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
 
-
 export default async function CollectionJournalPage() {
   return (
     <div className="">
@@ -12,7 +11,7 @@ export default async function CollectionJournalPage() {
       <div className="flex justify-center items-center mt-6 md:mt-10 flex-col">
         <iframe 
           style={{borderRadius: "12px"}} 
-          src="https://open.spotify.com/embed/playlist/50Ln1bXzaVUuQ3OhXz3J2A?utm_source=generator" 
+          src="https://open.spotify.com/embed/playlist/50Ln1bXzaVUuQ3OhXz3J2A?utm_source=generator&theme=0" 
           width="100%" 
           height="352" 
           frameBorder="0" 
@@ -52,21 +51,21 @@ export default async function CollectionJournalPage() {
       </div>
       <div className="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-10 mt-8 md:mt-10">
         <Image
-          src="/images/col1.jpg"
+          src="/images/col1.JPG"
           alt="the runaway collection: a journey of self-discovery"
           width={361}
           height={542}
           className="w-full max-w-[361px]"
         />
         <Image
-          src="/images/col2.jpg"
+          src="/images/col2.JPG"
           alt="the runaway collection: a journey of self-discovery"
           width={361}
           height={542}
           className="w-full max-w-[361px]"
         />
         <Image
-          src="/images/col3.jpg"
+          src="/images/col3.JPG"
           alt="the runaway collection: a journey of self-discovery"
           width={361}
           height={542}
