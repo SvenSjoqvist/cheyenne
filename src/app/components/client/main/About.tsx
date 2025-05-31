@@ -38,17 +38,17 @@ const RunawaySection = () => {
           style={{ height: containerHeight }}
         >
           <div className="flex flex-col items-start h-full py-56 pr-20 pl-9 bg-[#212121] text-neutral-100 max-md:px-5 max-md:py-24 max-md:max-w-full">
-            <h2 className="text-4xl leading-8 tracking-[2px] max-md:max-w-full">
-              <span className="font-bold font-[bero] text-[40px]">
+            <h2 className="text-4xl leading-8 tracking-[2px] max-md:max-w-full max-md:text-3xl">
+              <span className="font-bold font-[bero] text-[40px] max-md:text-[32px]">
                 an insider look behind{" "}
               </span>
               <br />
-              <span className="font-bold text-neutral-300 font-[bero] text-[40px]">
+              <span className="font-bold text-neutral-300 font-[bero] text-[40px] max-md:text-[32px]">
                 the runaway collection
               </span>
             </h2>
 
-            <p className="mt-9 text-2xl max-md:max-w-full font-darker-grotesque">
+            <p className="mt-9 text-2xl max-md:max-w-full max-md:text-xl font-darker-grotesque">
               Runaway Collection is a story about the journey to self discovery
               and life-altering decisions. The inspiration behind Runaway comes
               from the breath-taking views of coastal California.
@@ -60,10 +60,10 @@ const RunawaySection = () => {
               scelerisque ante odio. est erat mi aenean imperdiet volutpat.
             </p>
 
-            <button className="flex items-center gap-6 mt-24 text-xl text-neutral-100 max-md:mt-10">
+            <button className="flex items-center gap-6 mt-24 text-xl text-neutral-100 max-md:mt-10 max-md:text-lg">
               <span>read more</span>
               <Image
-                src="/money.svg"
+                src="/icons/readmore.svg"
                 alt="Read more arrow"
                 width={14}
                 height={9}

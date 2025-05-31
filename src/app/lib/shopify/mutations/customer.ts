@@ -149,3 +149,26 @@ mutation orderCancel($orderId: ID!, $reason: OrderCancelReason!, $refund: Boolea
   }
 }
 `;
+export const getOrderFulfillmentQuery = `
+query GetOrderFulfillment($id: ID!) {
+  order(id: $id) {
+    id
+    name
+    fulfillments {
+      trackingInfo {
+        number
+        company
+        url
+      }
+      trackingEvents {
+        status
+        location
+        timestamp
+        description
+      }
+      status
+      createdAt
+    }
+  }
+ 
+`;
