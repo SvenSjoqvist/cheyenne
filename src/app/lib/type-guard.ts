@@ -1,7 +1,7 @@
 export interface ShopifyErrorLike {
     status: number;
-    message: string; // Changed from `Error` to `string` for better usability
-    cause?: Error; // Made optional for flexibility
+    message: string; 
+    cause?: Error; 
 }
 
 export function isObject(object: unknown): object is Record<string, unknown> {
