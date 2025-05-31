@@ -26,7 +26,7 @@ export async function addSubscriber(email: string) {
     }
 
     // Create new subscriber
-    const subscriber = await prisma.subscriber.create({
+    await prisma.subscriber.create({
       data: {
         email: email,
         unsubscribeToken: crypto.randomUUID(),
