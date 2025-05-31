@@ -7,9 +7,6 @@ import { Product } from '@/app/lib/shopify/types';
 import Link from 'next/link';
 
 const KilaekoPage: React.FC = async () => {
-  const heroSectionProps = {
-    backgroundImage: "https://cdn.builder.io/api/v1/image/assets/df24f938eeb948889fe9ad55656873a2/63f22b473e11fee9c7f5ef8299ad98ab6bd5095e858350ca520d45d76223ce8d?apiKey=df24f938eeb948889fe9ad55656873a2&",
-  };
 
   // Fetch all products
   const products = await getProducts({ query: "" });
@@ -52,7 +49,7 @@ const KilaekoPage: React.FC = async () => {
   return (
     <div className="flex overflow-hidden flex-col bg-neutral-100">
       <div className="relative">
-        <HeroSection {...heroSectionProps} />
+        <HeroSection />
         <div className="relative w-full">
           <ImageOverlay
             backgroundSrc="https://cdn.builder.io/api/v1/image/assets/df24f938eeb948889fe9ad55656873a2/f69a4747478375673d3bf50b5295aac6cd7566809f6d599e8786c19a699a02a9?apiKey=df24f938eeb948889fe9ad55656873a2&"

@@ -64,11 +64,12 @@ const footerSections: FooterSection[] = [
   {
     title: "social",
     links: [
-      { label: "instagram", href: "https://instagram.com/kilaeko" },
-      { label: "spotify", href: "https://spotify.com/kilaeko" },
-      { label: "pinterest", href: "https://pinterest.com/kilaeko" },
-      { label: "tiktok", href: "https://tiktok.com/kilaeko" },
-      { label: "substack", href: "https://kilaeko.substack.com" },
+      { label: "instagram", href: "https://www.instagram.com/kilaekoswim/" },
+      { label: "spotify", href: "https://open.spotify.com/user/31htb6nn2p2wywhn4gofxjrlt6we?si=8f1b1c1d215147de" },
+      { label: "pinterest", href: "https://www.pinterest.com/015bqs6mcp6ta4frqsyu71hx8g9xpv/" },
+      { label: "tiktok", href: "https://www.instagram.com/kilaekoswim/" },
+      { label: "substack", href: "https://substack.com/@kilaeko" },
+      { label: "linkedin", href: "https://www.linkedin.com/company/kilaeko/" },
     ],
   },
 ];
