@@ -81,27 +81,6 @@ interface DashboardStats {
   };
 }
 
-interface CountsResponse {
-  shop: {
-    name: string;
-  };
-  orders: {
-    pageInfo: {
-      hasNextPage: boolean;
-    };
-  };
-  products: {
-    pageInfo: {
-      hasNextPage: boolean;
-    };
-  };
-  customers: {
-    pageInfo: {
-      hasNextPage: boolean;
-    };
-  };
-}
-
 interface RecentItemsResponse {
   orders: DashboardStats['orders'];
   products: DashboardStats['products'];
@@ -113,17 +92,17 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       shop {
         name
       }
-      orders(first: 100) {
+      orders(first: 250) {
         pageInfo {
           hasNextPage
         }
       }
-      products(first: 100) {
+      products(first: 250) {
         pageInfo {
           hasNextPage
         }
       }
-      customers(first: 100) {
+      customers(first: 250) {
         pageInfo {
           hasNextPage
         }
@@ -173,16 +152,21 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   `;
 
   const [countsData, recentData] = await Promise.all([
-    shopifyRequest<CountsResponse>(countsQuery),
+    shopifyRequest<{
+      shop: { name: string };
+      orders: { pageInfo: { hasNextPage: boolean } };
+      products: { pageInfo: { hasNextPage: boolean } };
+      customers: { pageInfo: { hasNextPage: boolean } };
+    }>(countsQuery),
     shopifyRequest<RecentItemsResponse>(recentItemsQuery)
   ]);
 
   return {
     shop: {
       name: countsData.shop.name,
-      totalOrders: countsData.orders.pageInfo.hasNextPage ? '100+' : '100',
-      totalProducts: countsData.products.pageInfo.hasNextPage ? '100+' : '100',
-      totalCustomers: countsData.customers.pageInfo.hasNextPage ? '100+' : '100',
+      totalOrders: countsData.orders.pageInfo.hasNextPage ? '250+' : '250',
+      totalProducts: countsData.products.pageInfo.hasNextPage ? '250+' : '250',
+      totalCustomers: countsData.customers.pageInfo.hasNextPage ? '250+' : '250',
     },
     orders: recentData.orders,
     products: recentData.products,
