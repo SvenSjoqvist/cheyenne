@@ -5,21 +5,44 @@ import { sendWelcomeEmail } from '@/app/actions/newsletter';
 
 export async function addSubscriber(email: string) {
   try {
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error('Invalid email format');
+    }
+
+    // Check if subscriber already exists
+    const existingSubscriber = await prisma.subscriber.findUnique({
+      where: { email }
+    });
+
+    if (existingSubscriber) {
+      throw new Error('Email already subscribed');
+    }
+
+    // Create new subscriber
     const subscriber = await prisma.subscriber.create({
       data: {
-        createdAt: new Date(),
         email: email,
+        unsubscribeToken: crypto.randomUUID(),
+        createdAt: new Date(),
         updatedAt: new Date(),
       },
     });
 
     // Send welcome email
-    await sendWelcomeEmail(email);
+    try {
+      await sendWelcomeEmail(email);
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+      // Don't throw here, as the subscription was successful
+    }
 
     return subscriber;
-  } catch (error: unknown) {
-    if (error instanceof Error && error.message.includes('Unique constraint failed on the fields: (`email`)')) {
-      throw new Error('Email already exists');
+  } catch (error) {
+    console.error('Failed to add subscriber:', error);
+    if (error instanceof Error) {
+      throw new Error(error.message);
     }
     throw new Error('Failed to add subscriber');
   }
