@@ -12,3 +12,11 @@ export function createUrl (pathname: string, params: URLSearchParams | ReadonlyU
     const queryString = `${paramsString.length ? '?' : ''}${paramsString}`
     return `${pathname}${queryString}`
 }
+
+export function formatCurrency(amount: string | number, currencyCode: string): string {
+  const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currencyCode,
+  }).format(numericAmount);
+} 

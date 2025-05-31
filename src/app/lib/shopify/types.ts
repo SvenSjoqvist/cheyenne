@@ -576,3 +576,74 @@ export interface ShopifyCancelOrderOperation {
     restock: boolean;
   };
 }
+
+export interface ShopifyMoney {
+  amount: string;
+  currencyCode: string;
+}
+
+export interface ShopifyCustomer {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  ordersCount: string;
+  totalSpent: string;
+  createdAt: string;
+}
+
+export interface ShopifyOrder {
+  id: string;
+  name: string;
+  createdAt: string;
+  totalPriceSet: {
+    shopMoney: ShopifyMoney;
+  };
+  customer?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  displayFulfillmentStatus: string;
+  displayFinancialStatus: string;
+}
+
+export interface ShopifyAdminProduct {
+  id: string;
+  title: string;
+  handle: string;
+  description: string;
+  totalInventory: number;
+  priceRangeV2: {
+    minVariantPrice: ShopifyMoney;
+  };
+  images: {
+    edges: Array<{
+      node: {
+        url: string;
+        altText: string;
+      };
+    }>;
+  };
+}
+
+export interface ShopifyShop {
+  name: string;
+  totalOrders: string;
+  totalProducts: string;
+  totalCustomers: string;
+}
+
+export interface ShopifyPageInfo {
+  hasNextPage: boolean;
+  endCursor: string;
+}
+
+export interface ShopifyEdge<T> {
+  node: T;
+}
+
+export interface ShopifyConnection<T> {
+  pageInfo: ShopifyPageInfo;
+  edges: ShopifyEdge<T>[];
+} 
