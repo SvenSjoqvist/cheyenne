@@ -10,6 +10,9 @@ export type Order = {
   processedAt: string;
   financialStatus: string;
   fulfillmentStatus: string;
+  customer?: {
+    email: string;
+  };
   totalPrice: {
     amount: string;
     currencyCode: string;
