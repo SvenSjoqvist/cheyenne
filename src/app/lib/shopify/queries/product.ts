@@ -9,12 +9,70 @@ export const getProductsQuery = /* GraphQL */ `
     products(sortKey: $sortKey, reverse: $reverse, query: $query, first: 9) {
       edges {
         node {
-          ...product
+          id
+          handle
+          availableForSale
+          title
+          description
+          descriptionHtml
+          options {
+            id
+            name
+            values
+          }
+          priceRange {
+            maxVariantPrice {
+              amount
+              currencyCode
+            }
+            minVariantPrice {
+              amount
+              currencyCode
+            }
+          }
+          variants(first: 5) {
+            edges {
+              node {
+                id
+                title
+                availableForSale
+                selectedOptions {
+                  name
+                  value
+                }
+                price {
+                  amount
+                  currencyCode
+                }
+              }
+            }
+          }
+          featuredImage {
+            url
+            altText
+            width
+            height
+          }
+          images(first: 1) {
+            edges {
+              node {
+                url
+                altText
+                width
+                height
+              }
+            }
+          }
+          seo {
+            title
+            description
+          }
+          tags
+          updatedAt
         }
       }
     }
   }
-  ${productFragment}
 `;
 
 export const getProductQuery = /* GraphQL */ `

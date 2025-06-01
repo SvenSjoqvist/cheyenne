@@ -317,13 +317,9 @@ export async function getProducts(cursor: string | null = null, limit = 10): Pro
                   currencyCode
                 }
               }
-              images(first: 1) {
-                edges {
-                  node {
-                    url
-                    altText
-                  }
-                }
+              featuredImage {
+                url
+                altText
               }
             }
           }
