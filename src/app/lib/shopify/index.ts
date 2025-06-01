@@ -268,17 +268,21 @@ export async function getProducts({
   reverse?: boolean;
   sortKey?: string;
 }): Promise<Product[]> {
-  const res = await shopifyFetch<ShopifyProductsOperation>({
-    query: getProductsQuery,
-    tags: [TAGS.products],
-    variables: { query, reverse, sortKey },
-  });
+  try {
+    const res = await shopifyFetch<ShopifyProductsOperation>({
+      query: getProductsQuery,
+      tags: [TAGS.products],
+      variables: { query, reverse, sortKey },
+    });
 
-  const processedData = removeEdgesAndNodes(res.body.data.products);
+    const processedData = removeEdgesAndNodes(res.body.data.products);
+    const reshapedProducts = reshapeProducts(processedData);
 
-  const reshapedProducts = reshapeProducts(processedData);
-
-  return reshapedProducts;
+    return reshapedProducts;
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
+  }
 }
 
 function reshapeCollection(

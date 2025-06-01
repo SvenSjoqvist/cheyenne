@@ -296,46 +296,59 @@ interface ProductsResponse {
 }
 
 export async function getProducts(cursor: string | null = null, limit = 10): Promise<ProductsResponse> {
-  const query = `
-    query getProducts($first: Int!, $after: String) {
-      products(first: $first, after: $after, sortKey: CREATED_AT, reverse: true) {
-        pageInfo {
-          hasNextPage
-          endCursor
-        }
-        edges {
-          node {
-            id
-            title
-            handle
-            description
-            totalInventory
-            priceRangeV2 {
-              minVariantPrice {
-                amount
-                currencyCode
+  try {
+    const query = `
+      query getProducts($first: Int!, $after: String) {
+        products(first: $first, after: $after, sortKey: CREATED_AT, reverse: true) {
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+          edges {
+            node {
+              id
+              title
+              handle
+              description
+              totalInventory
+              priceRangeV2 {
+                minVariantPrice {
+                  amount
+                  currencyCode
+                }
               }
-            }
-            images(first: 1) {
-              edges {
-                node {
-                  url
-                  altText
+              images(first: 1) {
+                edges {
+                  node {
+                    url
+                    altText
+                  }
                 }
               }
             }
           }
         }
       }
-    }
-  `;
+    `;
 
-  const variables = {
-    first: limit,
-    after: cursor,
-  };
+    const variables = {
+      first: limit,
+      after: cursor,
+    };
 
-  return shopifyRequest<ProductsResponse>(query, variables);
+    return await shopifyRequest<ProductsResponse>(query, variables);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return {
+      products: {
+        pageInfo: {
+          hasNextPage: false,
+          endCursor: '',
+        },
+        edges: []
+      }
+    };
+  }
 }
 
 interface CustomersResponse {

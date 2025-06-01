@@ -21,6 +21,7 @@ const HeroSection: React.FC<HeroSectionProps> = () => {
           src="/videos/home-opening.mp4"
           autoPlay
           loop
+          preload="auto"
           muted
           playsInline
           className="object-cover w-full h-full"
