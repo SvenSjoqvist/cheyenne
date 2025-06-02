@@ -5,70 +5,12 @@ export const getMainPageProductsQuery = /* GraphQL */ `
     products(first: 20) {
       edges {
         node {
-          id
-          handle
-          title
-          description
-          descriptionHtml
-          availableForSale
-          priceRange {
-            minVariantPrice {
-              amount
-              currencyCode
-            }
-            maxVariantPrice {
-              amount
-              currencyCode
-            }
-          }
-          featuredImage {
-            url
-            altText
-            width
-            height
-          }
-          images(first: 1) {
-            edges {
-              node {
-                url
-                altText
-                width
-                height
-              }
-            }
-          }
-          options {
-            id
-            name
-            values
-          }
-          variants(first: 1) {
-            edges {
-              node {
-                id
-                title
-                availableForSale
-                selectedOptions {
-                  name
-                  value
-                }
-                price {
-                  amount
-                  currencyCode
-                }
-              }
-            }
-          }
-          tags
-          seo {
-            title
-            description
-          }
-          updatedAt
+          ...product
         }
       }
     }
   }
+  ${productFragment}
 `;
 
 export const getProductsQuery = /* GraphQL */ `
@@ -80,105 +22,18 @@ export const getProductsQuery = /* GraphQL */ `
     products(sortKey: $sortKey, reverse: $reverse, query: $query, first: 9) {
       edges {
         node {
-          id
-          handle
-          title
-          description
-          priceRange {
-            minVariantPrice {
-              amount
-              currencyCode
-            }
-          }
-          featuredImage {
-            url
-            altText
-            width
-            height
-          }
-          variants(first: 1) {
-            edges {
-              node {
-                id
-                title
-                availableForSale
-                price {
-                  amount
-                  currencyCode
-                }
-              }
-            }
-          }
-          tags
+          ...product
         }
       }
     }
   }
+  ${productFragment}
 `;
 
 export const getProductQuery = /* GraphQL */ `
   query getProduct($handle: String!) {
     product(handle: $handle) {
-      id
-      handle
-      title
-      description
-      descriptionHtml
-      availableForSale
-      options {
-        id
-        name
-        values
-      }
-      priceRange {
-        maxVariantPrice {
-          amount
-          currencyCode
-        }
-        minVariantPrice {
-          amount
-          currencyCode
-        }
-      }
-      variants(first: 100) {
-        edges {
-          node {
-            id
-            title
-            availableForSale
-            selectedOptions {
-              name
-              value
-            }
-            price {
-              amount
-              currencyCode
-            }
-          }
-        }
-      }
-      featuredImage {
-        url
-        altText
-        width
-        height
-      }
-      images(first: 5) {
-        edges {
-          node {
-            url
-            altText
-            width
-            height
-          }
-        }
-      }
-      seo {
-        title
-        description
-      }
-      tags
-      updatedAt
+      ...product
       materialComposition: metafield(namespace: "custom", key: "material_composition") {
         value
       }
@@ -193,6 +48,7 @@ export const getProductQuery = /* GraphQL */ `
       }
     }
   }
+  ${productFragment}
 `;
 
 export const getProductsByTagQuery = /* GraphQL */ `
