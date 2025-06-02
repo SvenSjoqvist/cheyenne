@@ -16,40 +16,19 @@ export async function addItem(
   prevState: unknown,
   selectedVariantId: string | undefined
 ) {
-  if (!selectedVariantId) {
+  const cartId = (await cookies()).get("cartId")?.value;
+
+  if (!cartId || !selectedVariantId) {
     return "Error adding item to cart";
   }
 
   try {
-    const cookieStore = await cookies();
-    let cartId = cookieStore.get("cartId")?.value;
-
-    if (!cartId) {
-      const cart = await createCart();
-      if (!cart?.id) {
-        return "Error creating cart";
-      }
-      cartId = cart.id;
-      cookieStore.set("cartId", cartId, {
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7 // 1 week
-      });
-    }
-
-    const result = await addToCart(cartId, [
+    await addToCart(cartId, [
       { merchandiseId: selectedVariantId, quantity: 1 },
     ]);
-
-    if (!result) {
-      return "Error adding item to cart";
-    }
-
     revalidateTag(TAGS.cart);
-    return null;
   } catch (error) {
-    console.error("Error in addItem:", error);
+    console.error(error);
     return "Error adding item to cart";
   }
 }
@@ -61,9 +40,7 @@ export async function updateItemQuantity(
     quantity: number;
   }
 ) {
-  const cookieStore = await cookies();
-  const cartId = cookieStore.get("cartId")?.value;
-  
+  const cartId = (await cookies()).get("cartId")?.value;
   if (!cartId) {
     return "Missing cart ID";
   }
@@ -98,16 +75,14 @@ export async function updateItemQuantity(
     }
 
     revalidateTag(TAGS.cart);
-    return null;
   } catch (error) {
-    console.error("Error in updateItemQuantity:", error);
+    console.error(error);
     return "Error updating item quantity";
   }
 }
 
 export async function removeItem(prevState: unknown, merchandiseId: string) {
-  const cookieStore = await cookies();
-  const cartId = cookieStore.get("cartId")?.value;
+  const cartId = (await cookies()).get("cartId")?.value;
 
   if (!cartId) {
     return "Missing cart ID";
@@ -126,19 +101,17 @@ export async function removeItem(prevState: unknown, merchandiseId: string) {
     if (lineItem && lineItem.id) {
       await removeFromCart(cartId, [lineItem.id]);
       revalidateTag(TAGS.cart);
-      return null;
     } else {
       return "Item not found in cart";
     }
   } catch (error) {
-    console.error("Error in removeItem:", error);
+    console.error(error);
     return "Error removing item from cart";
   }
 }
   
 export async function redirectToCheckout() {
-  const cookieStore = await cookies();
-  const cartId = cookieStore.get("cartId")?.value;
+  const cartId = (await cookies()).get("cartId")?.value;
 
   if (!cartId) {
     throw new Error("Missing cart ID");
@@ -154,23 +127,6 @@ export async function redirectToCheckout() {
 }
 
 export async function createCartAndSetCookie() {
-  try {
-    const cart = await createCart();
-    if (!cart?.id) {
-      throw new Error("Failed to create cart");
-    }
-    
-    const cookieStore = await cookies();
-    cookieStore.set("cartId", cart.id, {
-      path: "/",
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7 // 1 week
-    });
-    
-    return cart;
-  } catch (error) {
-    console.error("Error in createCartAndSetCookie:", error);
-    throw error;
-  }
+  const cart = await createCart();
+  (await cookies()).set("cartId", cart.id!);
 }

@@ -1,4 +1,5 @@
 "use server";
+import { HIDDEN_PRODUCT_TAG, TAGS } from "../constants";
 import { isShopifyError } from "../type-guard";
 import { ensureStartWith } from "../utils";
 import {
@@ -15,7 +16,9 @@ import {
   Connection,
   Menu,
   ShopifyMenuOperation,
+  ShopifyProduct,
   ShopifyProductsOperation,
+  Image,
   Product,
   Collection,
   ShopifyCollectionsOperation,
@@ -44,7 +47,6 @@ import {
   ShopifyCustomerRecoverOperation,
   ShopifyCancelOrderOperation,
   Order,
-  ShopifyProduct,
 } from "./types";
 import { globalContent } from "./queries/globalContent";
 import { getCollectionQuery } from "./queries/collection-journal";
@@ -67,6 +69,7 @@ import {
 import { cookies } from "next/headers";
 import { customerOrderQuery, customerQuery } from "./queries/customer";
 
+
 const domain = ensureStartWith(process.env.SHOPIFY_STORE_DOMAIN, "https://");
 const endpoint = `${domain}/api/2025-01/graphql.json`;
 const adminEndpoint = `${domain}/admin/api/2025-01/graphql.json`;
@@ -80,11 +83,13 @@ export async function shopifyAdminFetch<T>({
   cache = "no-store",
   headers,
   query,
+  tags,
   variables,
 }: {
   cache?: RequestCache;
   headers?: HeadersInit;
   query: string;
+  tags?: string[];
   variables?: ExtractVariables<T>;
 }): Promise<{ status: number; body: T } | never> {
   try {
@@ -103,6 +108,7 @@ export async function shopifyAdminFetch<T>({
         ...(variables && { variables }),
       }),
       cache,
+      ...(tags && { next: { tags } }),
     });
 
     const body = await result.json();
@@ -131,19 +137,18 @@ export async function shopifyAdminFetch<T>({
     };
   }
 }
-
 export async function shopifyFetch<T>({
   cache = "force-cache",
   headers,
   query,
-  variables,
   tags,
+  variables,
 }: {
   cache?: RequestCache;
   headers?: HeadersInit;
   query: string;
-  variables?: ExtractVariables<T>;
   tags?: string[];
+  variables?: ExtractVariables<T>;
 }): Promise<{ status: number; body: T } | never> {
   try {
     const result = await fetch(endpoint, {
@@ -191,52 +196,53 @@ export async function shopifyFetch<T>({
 function removeEdgesAndNodes<T>(array: Connection<T>): T[] {
   return array.edges.map((edge) => edge?.node);
 }
-
-const reshapeProduct = (product: ShopifyProduct): Product | null => {
-  if (!product) return null;
-
+function reshapeImages(images: Connection<Image>, productTitle: string) {
+  const flattend = removeEdgesAndNodes(images);
+  return flattend.map((image) => {
+    const filename = image.url.match(/.*\/(.*)\..*/)?.[1];
+    return {
+      ...image,
+      altText: image.altText || `${productTitle} - ${filename}`,
+    };
+  });
+}
+function reshapeProduct(
+  product: ShopifyProduct,
+  filterHiddenProducts: boolean = true
+) {
+  if (
+    !product ||
+    (filterHiddenProducts && product.tags.includes(HIDDEN_PRODUCT_TAG))
+  ) {
+    return undefined;
+  }
+  const { images, variants, ...rest } = product;
   return {
-    id: product.id,
-    handle: product.handle,
-    availableForSale: product.availableForSale,
-    title: product.title,
-    description: product.description,
-    descriptionHtml: product.descriptionHtml,
-    options: product.options,
-    priceRange: product.priceRange,
-    featuredImage: product.featuredImage,
-    seo: product.seo,
-    tags: product.tags,
-    updatedAt: product.updatedAt,
-    materialComposition: product.materialComposition,
-    care: product.care,
-    sustainability: product.sustainability,
-    shippingAndReturns: product.shippingAndReturns,
-    variants: product.variants?.edges?.map(({ node }) => ({
-      id: node.id,
-      title: node.title,
-      availableForSale: node.availableForSale,
-      selectedOptions: node.selectedOptions,
-      price: node.price
-    })) || [],
-    images: product.images?.edges?.map(({ node }) => ({
-      url: node.url,
-      altText: node.altText || product.title,
-      width: node.width,
-      height: node.height
-    })) || []
+    ...rest,
+    images: reshapeImages(images, product.title),
+    variants: removeEdgesAndNodes(variants),
   };
-};
+}
 
-const reshapeProducts = (products: Connection<ShopifyProduct>) => {
-  if (!products?.edges) return [];
-  
-  return products.edges.map(({ node }) => reshapeProduct(node)).filter((product): product is Product => product !== null);
-};
+function reshapeProducts(products: ShopifyProduct[]) {
+  const reshapedProducts = [];
 
+  for (const product of products) {
+    if (product) {
+      const reshapedProduct = reshapeProduct(product);
+
+      if (reshapedProduct) {
+        reshapedProducts.push(reshapedProduct);
+      }
+    }
+  }
+
+  return reshapedProducts;
+}
 export async function getMenu(handle: string): Promise<Menu[]> {
   const res = await shopifyFetch<ShopifyMenuOperation>({
     query: getMenuQuery,
+    tags: [TAGS.collections],
     variables: {
       handle,
     },
@@ -254,61 +260,81 @@ export async function getMenu(handle: string): Promise<Menu[]> {
 }
 
 export async function getProducts({
-  sortKey = 'TITLE',
-  reverse = false,
-  query = ''
+  query,
+  reverse,
+  sortKey,
 }: {
-  sortKey?: string;
-  reverse?: boolean;
   query?: string;
-} = {}): Promise<Product[]> {
-  try {
-    const res = await shopifyFetch<ShopifyProductsOperation>({
-      query: getProductsQuery,
-      variables: {
-        sortKey,
-        reverse,
-        query
-      }
-    });
+  reverse?: boolean;
+  sortKey?: string;
+}): Promise<Product[]> {
+  const res = await shopifyFetch<ShopifyProductsOperation>({
+    query: getProductsQuery,
+    tags: [TAGS.products],
+    variables: { query, reverse, sortKey },
+  });
 
-    if (!res.body?.data?.products) {
-      console.error('Invalid response from Shopify:', res);
-      return [];
-    }
+  const processedData = removeEdgesAndNodes(res.body.data.products);
 
-    return reshapeProducts(res.body.data.products);
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    return [];
-  }
+  const reshapedProducts = reshapeProducts(processedData);
+
+  return reshapedProducts;
 }
 
-const reshapeCollections = (collections: Connection<ShopifyCollection>): Collection[] => {
-  if (!collections?.edges) return [];
+function reshapeCollection(
+  collection: ShopifyCollection
+): Collection | undefined {
+  if (!collection) return undefined;
 
-  return collections.edges.map(({ node }) => ({
-    ...node,
-    path: `/search/${node.handle}`
-  }));
-};
+  return {
+    ...collection,
+    path: `/search/${collection.handle}`,
+  };
+}
+
+function reshapeCollections(collections: ShopifyCollection[]) {
+  const reshapedCollections = [];
+
+  for (const collection of collections) {
+    if (collection) {
+      const reshapedCollection = reshapeCollection(collection);
+
+      if (reshapedCollection) {
+        reshapedCollections.push(reshapedCollection);
+      }
+    }
+  }
+
+  return reshapedCollections;
+}
 
 export async function getCollections(): Promise<Collection[]> {
-  try {
-    const res = await shopifyFetch<ShopifyCollectionsOperation>({
-      query: getCollectionsQuery,
-    });
+  const res = await shopifyFetch<ShopifyCollectionsOperation>({
+    query: getCollectionsQuery,
+    tags: [TAGS.collections],
+  });
 
-    if (!res.body?.data?.collections) {
-      console.error('Invalid response from Shopify:', res);
-      return [];
-    }
+  const shopifyCollections = removeEdgesAndNodes(res?.body?.data?.collections);
+  const collections = [
+    {
+      id: "all",
+      handle: "",
+      title: "All",
+      description: "All products",
+      seo: {
+        title: "All",
+        description: "All products",
+      },
+      path: "/search",
+      updatedAt: new Date().toISOString(),
+    },
+    // Filter out the hidden products
+    ...reshapeCollections(shopifyCollections).filter(
+      (collection) => !collection.handle.startsWith("hidden")
+    ),
+  ];
 
-    return reshapeCollections(res.body.data.collections);
-  } catch (error) {
-    console.error('Error fetching collections:', error);
-    return [];
-  }
+  return collections;
 }
 
 export async function getCollectionProducts({
@@ -322,6 +348,7 @@ export async function getCollectionProducts({
 }): Promise<Product[]> {
   const res = await shopifyFetch<ShopifyCollectionProductsOperation>({
     query: getCollectionProductsQuery,
+    tags: [TAGS.collections, TAGS.products],
     variables: {
       handle: collection,
       reverse,
@@ -333,28 +360,20 @@ export async function getCollectionProducts({
     return [];
   }
 
-  return reshapeProducts(res.body.data.collection.products);
+  return reshapeProducts(
+    removeEdgesAndNodes(res.body.data.collection.products)
+  );
 }
 
-export async function getProduct(handle: string): Promise<Product | null> {
-  try {
-    const res = await shopifyFetch<ShopifyProductOperation>({
-      query: getProductQuery,
-      variables: {
-        handle
-      }
-    });
-
-    if (!res.body?.data?.product) {
-      console.error('Invalid response from Shopify:', res);
-      return null;
-    }
-
-    return reshapeProduct(res.body.data.product);
-  } catch (error) {
-    console.error('Error fetching product:', error);
-    return null;
-  }
+export async function getProduct(handle: string): Promise<Product | undefined> {
+  const res = await shopifyFetch<ShopifyProductOperation>({
+    query: getProductQuery,
+    tags: [TAGS.products],
+    variables: {
+      handle,
+    },
+  });
+  return reshapeProduct(res.body.data.product, false);
 }
 
 // First, let's create a type for the response
@@ -382,6 +401,7 @@ type GlobalContent = {
 export async function getGlobalContent(): Promise<GlobalContent[]> {
   const res = await shopifyFetch<ShopifyGlobalContentOperation>({
     query: globalContent,
+    tags: ["global_content"],
     cache: "force-cache",
   });
 
@@ -427,6 +447,7 @@ export async function getCollectionJournal(handle: string) {
     const res = await shopifyFetch<ShopifyCollectionOperation>({
       query: getCollectionQuery,
       variables: { handle }, // Pass the handle as a variable
+      tags: [`collection_${handle}`], // Dynamic tag based on handle
       cache: "force-cache",
     });
 
@@ -473,6 +494,7 @@ export async function getCart(
   const res = await shopifyFetch<ShopifyCartOperation>({
     query: getCartQuery,
     variables: { cartId },
+    tags: [TAGS.cart],
   });
 
   // old carts becomes 'null' when you checkout
@@ -531,28 +553,29 @@ export async function addToCart(
   return reshapeCart(res.body.data.cartLinesAdd.cart);
 }
 
-export async function getProductsByTag(tag: string, productId: string, limit: number = 10): Promise<Product[]> {
-  try {
-    const res = await shopifyFetch<ShopifyProductsByTagOperation>({
-      query: getProductsByTagQuery,
-      variables: {
-        query: `tag:${tag}`,
-        limit,
-        productId
-      }
-    });
+export async function getProductsByTag(
+  tag: string,
+  productId: string,
+  limit = 5
+): Promise<Product[]> {
+  const res = await shopifyFetch<ShopifyProductsByTagOperation>({
+    query: getProductsByTagQuery,
+    tags: [TAGS.products],
+    variables: {
+      query: `tag:${tag}`,
+      limit,
+      productId,
+    },
+  });
 
-    if (!res.body?.data?.products) {
-      console.error('Invalid response from Shopify:', res);
-      return [];
-    }
+  // Filter out the current product from results
+  const products = reshapeProducts(
+    res.body.data.products.edges.map(
+      (edge: { node: ShopifyProduct }) => edge.node
+    )
+  );
 
-    const products = reshapeProducts(res.body.data.products);
-    return products.filter((product) => product.id !== productId);
-  } catch (error) {
-    console.error('Error fetching products by tag:', error);
-    return [];
-  }
+  return products.filter((product) => product.id !== productId);
 }
 
 type CustomerCreateInput = {
