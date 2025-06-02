@@ -156,7 +156,8 @@ export default function Sidebar() {
       >
         <div className="p-4 flex justify-center mt-11">
           <Link href="/dashboard">
-            <Image src="/logofooter.svg" alt="Kilaeko" width={64} height={64} />
+            <Image src="/logoFooter.svg" alt="Kilaeko" width={64} height={64} />
+            
           </Link>
         </div>
         <nav className="mt-32 overflow-y-auto h-[calc(100vh-200px)]">
