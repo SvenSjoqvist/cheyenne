@@ -77,6 +77,10 @@ export type ShopifyProduct = {
   seo: SEO;
   tags: string[];
   updatedAt: string;
+  materialComposition?: string;
+  care?: string;
+  sustainability?: string;
+  shippingAndReturns?: string;
 };
 
 export type Product = Omit<ShopifyProduct, "variants" | "images"> & {
@@ -96,11 +100,18 @@ export type ShopifyProductsOperation = {
 };
 
 export type ShopifyCollection = {
+  id: string;
   handle: string;
   title: string;
   description: string;
   seo: SEO;
   updatedAt: string;
+  image?: {
+    url: string;
+    altText: string;
+    width: number;
+    height: number;
+  };
 };
 
 export type Collection = ShopifyCollection & {
@@ -587,9 +598,20 @@ export interface ShopifyCustomer {
   firstName: string;
   lastName: string;
   email: string;
-  ordersCount: string;
-  totalSpent: string;
+  phone?: string;
   createdAt: string;
+  orders: {
+    edges: Array<{
+      node: {
+        totalPriceSet: {
+          shopMoney: {
+            amount: string;
+            currencyCode: string;
+          };
+        };
+      };
+    }>;
+  };
 }
 
 export interface ShopifyOrder {
@@ -597,15 +619,36 @@ export interface ShopifyOrder {
   name: string;
   createdAt: string;
   totalPriceSet: {
-    shopMoney: ShopifyMoney;
+    shopMoney: {
+      amount: string;
+      currencyCode: string;
+    };
   };
-  customer?: {
+  customer: {
+    id: string;
     firstName: string;
     lastName: string;
     email: string;
-  };
+    phone: string;
+  } | null;
   displayFulfillmentStatus: string;
   displayFinancialStatus: string;
+  shippingAddress?: {
+    address1: string;
+    address2?: string;
+    city: string;
+    province: string;
+    zip: string;
+    country: string;
+  };
+  billingAddress?: {
+    address1: string;
+    address2?: string;
+    city: string;
+    province: string;
+    zip: string;
+    country: string;
+  };
 }
 
 export interface ShopifyAdminProduct {

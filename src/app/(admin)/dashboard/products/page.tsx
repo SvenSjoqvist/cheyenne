@@ -30,10 +30,10 @@ export default async function ProductsPage({
             {products.edges.map(({ node: product }: { node: ShopifyAdminProduct }) => (
               <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center space-x-4">
-                  {product.images.edges[0] && (
+                  {product.images?.edges?.[0] && (
                     <img
                       src={product.images.edges[0].node.url}
-                      alt={product.images.edges[0].node.altText}
+                      alt={product.images.edges[0].node.altText || product.title}
                       className="w-16 h-16 object-cover rounded"
                     />
                   )}

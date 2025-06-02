@@ -1,41 +1,20 @@
 "use client";
 
+import React from 'react';
 import Image from 'next/image';
 import ProductItem from '@/app/components/client/product/ProductItem';
-interface ProductPrice {
-  amount: string;
-  currencyCode: string;
-}
+import { Product } from '@/app/lib/shopify/types';
 
-interface PriceRange {
-  maxVariantPrice: ProductPrice;
-  minVariantPrice: ProductPrice;
-}
 
-interface ProductImage {
-  url: string;
-  altText: string | null;
-  width: number;
-  height: number;
-}
-
-interface ShopifyProduct {
-  id: string;
-  handle: string;
-  availableForSale: boolean;
-  title: string;
-  description: string;
-  descriptionHtml: string;
-  priceRange: PriceRange;
-  featuredImage: ProductImage;
-}
 
 interface ProductGridProps {
-  products: ShopifyProduct[];
+  products: Product[];
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
-  const formatPrice = (priceRange: PriceRange) => {
+
+  console.log(products);
+  const formatPrice = (priceRange: Product['priceRange']) => {
     const { minVariantPrice } = priceRange;
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -58,9 +37,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
               />
             </div>
             <ProductItem
-              name={product.title}
+              title={product.title}
               price={formatPrice(product.priceRange)}
               handle={product.handle}
+              description={product.description}
             />
           </div>
         ))}

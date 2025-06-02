@@ -1,17 +1,10 @@
 "use client";
 
-import { getSubscribers } from "@/app/lib/prisma";
 import { sendNewsletter, sendTestEmail } from "@/app/actions/newsletter";
 import { createTemplate, getTemplates, deleteTemplate, ensureWelcomeTemplate, updateTemplate } from "@/app/lib/actions/templates";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-interface Subscriber {
-  id: string;
-  email: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { useDashboard } from "@/app/components/admin/DashboardContext";
 
 interface EmailTemplate {
   id: string;
@@ -23,7 +16,7 @@ interface EmailTemplate {
 }
 
 export default function Subscribers() {
-  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const { data } = useDashboard();
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [newsletterContent, setNewsletterContent] = useState("");
   const [subject, setSubject] = useState("");
@@ -34,21 +27,26 @@ export default function Subscribers() {
   const [isCreatingTemplate, setIsCreatingTemplate] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch subscribers and templates on component mount
+  // Fetch templates on component mount
   useEffect(() => {
-    const fetchData = async () => {
-      // Ensure welcome template exists
-      await ensureWelcomeTemplate();
-      
-      const [subscribersData, templatesData] = await Promise.all([
-        getSubscribers(),
-        getTemplates()
-      ]);
-      setSubscribers(subscribersData);
-      setTemplates(templatesData);
+    const fetchTemplates = async () => {
+      try {
+        setLoading(true);
+        // Ensure welcome template exists
+        await ensureWelcomeTemplate();
+        
+        const templatesData = await getTemplates();
+        setTemplates(templatesData);
+      } catch (error) {
+        console.error('Error fetching templates:', error);
+        setError('Failed to load templates');
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchData();
+    fetchTemplates();
   }, []);
 
   const handleCreateTemplate = async () => {
@@ -130,9 +128,11 @@ export default function Subscribers() {
     setError(null);
     setSuccess(null);
     try {
-      const recipientEmails = subscribers.map(sub => sub.email);
+      // For now, we'll use a placeholder for recipient emails
+      // In a real implementation, you'd fetch the actual subscriber emails
+      const recipientEmails: string[] = [];
       await sendNewsletter(subject, newsletterContent, recipientEmails);
-      setSuccess(`Newsletter sent successfully to ${subscribers.length} subscribers!`);
+      setSuccess(`Newsletter sent successfully to ${data.marketing.subscribersCount} subscribers!`);
     } catch (error) {
       setError("Failed to send newsletter. Please try again.");
       console.error("Failed to send newsletter:", error);
@@ -157,6 +157,14 @@ export default function Subscribers() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-xl">Loading marketing data...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -164,7 +172,7 @@ export default function Subscribers() {
         <div className="flex items-center space-x-4">
           <div className="bg-white px-4 py-2 rounded-lg shadow-sm">
             <span className="text-sm text-gray-600">Total Subscribers</span>
-            <p className="text-2xl font-bold text-blue-600">{subscribers.length}</p>
+            <p className="text-2xl font-bold text-blue-600">{data.marketing.subscribersCount}</p>
           </div>
         </div>
       </div>

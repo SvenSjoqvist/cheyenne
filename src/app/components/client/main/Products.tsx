@@ -10,7 +10,7 @@ interface ProductGroup {
   related: Product[];
 }
 
-export default function ProductSection({ productGroups }: { productGroups: ProductGroup[] }) {
+const ProductSection = ({ productGroups }: { productGroups: ProductGroup[] }) => {
   const router = useRouter();
 
   // Helper function to format price
@@ -80,5 +80,7 @@ export default function ProductSection({ productGroups }: { productGroups: Produ
       </div>
     </section>
   );
-}
+};
+
+export default ProductSection;
 

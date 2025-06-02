@@ -1,6 +1,6 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://kilaeko_owner:npg_6KCb9vrwLPyx@ep-shy-paper-a8ymnliq-pooler.eastus2.azure.neon.tech/kilaeko?sslmode=require"
 }
 
 generator client {
@@ -22,5 +22,37 @@ model EmailTemplate {
   content     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Return {
+  id              String         @id @default(cuid())
+  orderId         String
+  orderNumber     Int
+  customerEmail   String
+  customerId      String
+  status          ReturnStatus   @default(PENDING)
+  additionalNotes String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  items           ReturnItem[]
+}
+
+model ReturnItem {
+  id          String   @id @default(uuid())
+  returnId    String
+  return      Return   @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  productName String
+  variant     String
+  reason      String
+  quantity    Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum ReturnStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
 }
 

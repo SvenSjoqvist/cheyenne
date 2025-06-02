@@ -97,7 +97,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${darkerGrotesque.variable} antialiased`}
+        className={`${darkerGrotesque.variable} antialiased bg-[#F7F7F7]`}
         suppressHydrationWarning
       >
         <CartProvider cartPromise={cart}>
@@ -111,3 +111,4 @@ export default async function RootLayout({
     </html>
   );
 }
+

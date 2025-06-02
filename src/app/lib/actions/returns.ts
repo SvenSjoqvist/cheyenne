@@ -1,6 +1,7 @@
 'use server';
 
 import nodemailer from 'nodemailer';
+import { prisma } from '@/app/lib/prisma/client';
 
 // Create reusable transporter object using SMTP transport
 const transporter = nodemailer.createTransport({
@@ -13,8 +14,79 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function sendReturnRequest(orderNumber: number, items: { name: string, variant: string, reason: string }[], additionalNotes: string, customerEmail: string) {
+// Function to get existing returns for an order
+export async function getOrderReturns(orderNumber: number) {
   try {
+    const returns = await prisma.return.findMany({
+      where: {
+        orderNumber,
+        status: {
+          not: 'REJECTED' // Exclude rejected returns
+        }
+      },
+      include: {
+        items: true
+      }
+    });
+    return returns;
+  } catch (error: unknown) {
+    console.error('Failed to fetch order returns:', error);
+    throw new Error('Failed to fetch order returns');
+  }
+}
+
+export async function sendReturnRequest(
+  orderNumber: number,
+  orderId: string,
+  items: { name: string, variant: string, reason: string, quantity?: number }[],
+  additionalNotes: string,
+  customerEmail: string,
+  customerId: string
+) {
+  try {
+    // Check for existing returns
+    const existingReturns = await getOrderReturns(orderNumber);
+    
+    // Create a map of already returned items and their quantities
+    const returnedItems = new Map<string, number>();
+    existingReturns.forEach(returnRecord => {
+      returnRecord.items.forEach(item => {
+        const key = `${item.productName}-${item.variant}`;
+        returnedItems.set(key, (returnedItems.get(key) || 0) + item.quantity);
+      });
+    });
+
+    // Validate that items aren't already returned
+    for (const item of items) {
+      const key = `${item.name}-${item.variant}`;
+      const returnedQuantity = returnedItems.get(key) || 0;
+      if (returnedQuantity > 0) {
+        throw new Error(`Item "${item.name} (${item.variant})" has already been returned`);
+      }
+    }
+    
+    // Create return record in database
+    const returnRecord = await prisma.return.create({
+      data: {
+        orderNumber,
+        orderId,
+        customerEmail,
+        customerId,
+        additionalNotes,
+        items: {
+          create: items.map(item => ({
+            productName: item.name,
+            variant: item.variant,
+            reason: item.reason,
+            quantity: item.quantity || 1
+          }))
+        }
+      },
+      include: {
+        items: true
+      }
+    });
+
     // Format date in YYYY-MM-DD format to avoid locale issues
     const currentDate = new Date().toISOString().split('T')[0];
 
@@ -146,10 +218,11 @@ export async function sendReturnRequest(orderNumber: number, items: { name: stri
 
   <div class="section">
     <div class="section-title">Items to Return</div>
-    ${items.map((item) => `
+    ${returnRecord.items.map((item) => `
       <div class="item">
-        <p><span class="highlight">Product:</span> ${item.name}</p>
+        <p><span class="highlight">Product:</span> ${item.productName}</p>
         <p><span class="highlight">Variant:</span> ${item.variant}</p>
+        <p><span class="highlight">Quantity:</span> ${item.quantity}</p>
         <p><span class="highlight">Reason:</span> ${item.reason}</p>
       </div>
     `).join('')}
@@ -188,9 +261,47 @@ export async function sendReturnRequest(orderNumber: number, items: { name: stri
       html: emailContent,
     });
 
-    return { success: true };
-  } catch (error) {
+    return { success: true, returnId: returnRecord.id };
+  } catch (error: unknown) {
     console.error('Failed to send return request:', error);
     throw new Error('Failed to send return request');
+  }
+}
+
+// Function to get all returns for admin dashboard
+export async function getReturns() {
+  try {
+    const returns = await prisma.return.findMany({
+      include: {
+        items: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    return returns.map(returnRecord => ({
+      ...returnRecord,
+      orderId: returnRecord.orderId || `legacy-${returnRecord.id}`
+    }));
+  } catch (error: unknown) {
+    console.error('Failed to fetch returns:', error);
+    throw new Error('Failed to fetch returns');
+  }
+}
+
+// Function to update return status
+export async function updateReturnStatus(returnId: string, status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED') {
+  try {
+    const returnRecord = await prisma.return.update({
+      where: { id: returnId },
+      data: { status },
+      include: {
+        items: true
+      }
+    });
+    return returnRecord;
+  } catch (error) {
+    console.error('Failed to update return status:', error);
+    throw new Error('Failed to update return status');
   }
 } 

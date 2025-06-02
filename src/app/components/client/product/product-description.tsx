@@ -2,6 +2,7 @@ import { Product } from "@/app/lib/shopify/types";
 import Price from "../Price";
 import VariantSelector from "@/app/components/client/product/variant-selector";
 import { AddToCart } from "../cart/add-to-cart";
+import ProductDetails from "./ProductDetails";
 
 export function ProductDescription({ product }: { product: Product }) {
   return (
@@ -21,6 +22,7 @@ export function ProductDescription({ product }: { product: Product }) {
         Before adding to luggage, please check our size guide or contact us for
         more information.
       </p>
+      <ProductDetails description={product.description} />
     </>
   );
 }

@@ -1,50 +1,24 @@
 import { productFragment } from "../fragments/product";
 
-export const getProductsQuery = /* GraphQL */ `
-  query getProducts(
-    $sortKey: ProductSortKeys
-    $reverse: Boolean
-    $query: String
-  ) {
-    products(sortKey: $sortKey, reverse: $reverse, query: $query, first: 9) {
+export const getMainPageProductsQuery = /* GraphQL */ `
+  query getMainPageProducts {
+    products(first: 20) {
       edges {
         node {
           id
           handle
-          availableForSale
           title
           description
           descriptionHtml
-          options {
-            id
-            name
-            values
-          }
+          availableForSale
           priceRange {
-            maxVariantPrice {
-              amount
-              currencyCode
-            }
             minVariantPrice {
               amount
               currencyCode
             }
-          }
-          variants(first: 5) {
-            edges {
-              node {
-                id
-                title
-                availableForSale
-                selectedOptions {
-                  name
-                  value
-                }
-                price {
-                  amount
-                  currencyCode
-                }
-              }
+            maxVariantPrice {
+              amount
+              currencyCode
             }
           }
           featuredImage {
@@ -63,12 +37,79 @@ export const getProductsQuery = /* GraphQL */ `
               }
             }
           }
+          options {
+            id
+            name
+            values
+          }
+          variants(first: 1) {
+            edges {
+              node {
+                id
+                title
+                availableForSale
+                selectedOptions {
+                  name
+                  value
+                }
+                price {
+                  amount
+                  currencyCode
+                }
+              }
+            }
+          }
+          tags
           seo {
             title
             description
           }
-          tags
           updatedAt
+        }
+      }
+    }
+  }
+`;
+
+export const getProductsQuery = /* GraphQL */ `
+  query getProducts(
+    $sortKey: ProductSortKeys
+    $reverse: Boolean
+    $query: String
+  ) {
+    products(sortKey: $sortKey, reverse: $reverse, query: $query, first: 9) {
+      edges {
+        node {
+          id
+          handle
+          title
+          description
+          priceRange {
+            minVariantPrice {
+              amount
+              currencyCode
+            }
+          }
+          featuredImage {
+            url
+            altText
+            width
+            height
+          }
+          variants(first: 1) {
+            edges {
+              node {
+                id
+                title
+                availableForSale
+                price {
+                  amount
+                  currencyCode
+                }
+              }
+            }
+          }
+          tags
         }
       }
     }
@@ -78,10 +119,80 @@ export const getProductsQuery = /* GraphQL */ `
 export const getProductQuery = /* GraphQL */ `
   query getProduct($handle: String!) {
     product(handle: $handle) {
-      ...product
+      id
+      handle
+      title
+      description
+      descriptionHtml
+      availableForSale
+      options {
+        id
+        name
+        values
+      }
+      priceRange {
+        maxVariantPrice {
+          amount
+          currencyCode
+        }
+        minVariantPrice {
+          amount
+          currencyCode
+        }
+      }
+      variants(first: 100) {
+        edges {
+          node {
+            id
+            title
+            availableForSale
+            selectedOptions {
+              name
+              value
+            }
+            price {
+              amount
+              currencyCode
+            }
+          }
+        }
+      }
+      featuredImage {
+        url
+        altText
+        width
+        height
+      }
+      images(first: 5) {
+        edges {
+          node {
+            url
+            altText
+            width
+            height
+          }
+        }
+      }
+      seo {
+        title
+        description
+      }
+      tags
+      updatedAt
+      materialComposition: metafield(namespace: "custom", key: "material_composition") {
+        value
+      }
+      care: metafield(namespace: "custom", key: "care") {
+        value
+      }
+      sustainability: metafield(namespace: "custom", key: "sustainability") {
+        value
+      }
+      shippingAndReturns: metafield(namespace: "custom", key: "shipping_and_returns") {
+        value
+      }
     }
   }
-  ${productFragment}
 `;
 
 export const getProductsByTagQuery = /* GraphQL */ `

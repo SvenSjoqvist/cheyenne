@@ -2,8 +2,8 @@
 import { useUser } from "@/app/components/client/account/AccountContext";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { useState } from "react";
-import { sendReturnRequest } from "@/app/lib/actions/returns";
+import { useState, useEffect } from "react";
+import { sendReturnRequest, getOrderReturns } from "@/app/lib/actions/returns";
 
 const RETURN_REASONS = [
   "Wrong size",
@@ -16,14 +16,42 @@ const RETURN_REASONS = [
 
 export default function RefundPage() {
     const { orderId } = useParams();
-    const { orders } = useUser();
+    const { orders, user } = useUser();
     const router = useRouter();
     const order = orders.find((order) => order.orderNumber === Number(orderId));
     
     const [selectedItems, setSelectedItems] = useState<{[key: string]: boolean}>({});
     const [returnReasons, setReturnReasons] = useState<{[key: string]: string}>({});
+    const [returnQuantities, setReturnQuantities] = useState<{[key: string]: number}>({});
     const [additionalNotes, setAdditionalNotes] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [returnedItems, setReturnedItems] = useState<Set<string>>(new Set());
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchExistingReturns = async () => {
+            if (!order) return;
+            
+            try {
+                const existingReturns = await getOrderReturns(order.orderNumber);
+                const returned = new Set<string>();
+                
+                existingReturns.forEach(returnRecord => {
+                    returnRecord.items.forEach(item => {
+                        returned.add(`${item.productName}-${item.variant}`);
+                    });
+                });
+                
+                setReturnedItems(returned);
+            } catch (error) {
+                console.error('Error fetching existing returns:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchExistingReturns();
+    }, [order]);
 
     if (!order) {
         return <div>Order not found</div>;
@@ -43,16 +71,24 @@ export default function RefundPage() {
         }));
     };
 
+    const handleQuantityChange = (itemId: string, quantity: number) => {
+        setReturnQuantities(prev => ({
+            ...prev,
+            [itemId]: quantity
+        }));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Get selected items with their reasons
+        // Get selected items with their reasons and quantities
         const returnItems = Object.entries(selectedItems)
             .filter(([, selected]) => selected)
             .map(([itemId]) => ({
                 itemId,
-                reason: returnReasons[itemId] || "Not specified"
+                reason: returnReasons[itemId] || "Not specified",
+                quantity: returnQuantities[itemId] || 1
             }));
 
         if (returnItems.length === 0) {
@@ -73,27 +109,54 @@ export default function RefundPage() {
                 return {
                     name: lineItem.node.title,
                     variant: lineItem.node.variant.title,
-                    reason: item.reason
+                    reason: item.reason,
+                    quantity: item.quantity
                 };
             });
+
+            // Get customer email from user context
+            const customerEmail = user?.email || order.customer?.email;
+            if (!customerEmail) {
+                throw new Error("Customer email not found");
+            }
+
+            // Get customer ID from user context
+            const customerId = user?.id;
+            if (!customerId) {
+                throw new Error("Customer ID not found");
+            }
 
             // Send return request using server action
             await sendReturnRequest(
                 order.orderNumber,
+                order.id,
                 items,
                 additionalNotes,
-                order.customer?.email || "Not provided"
+                customerEmail,
+                customerId
             );
 
             alert("Return request submitted successfully. We will review your request and get back to you soon.");
             router.push('/account');
         } catch (error) {
-            alert("Failed to submit return request. Please try again or contact customer support.");
+            if (error instanceof Error) {
+                alert(error.message);
+            } else {
+                alert("Failed to submit return request. Please try again or contact customer support.");
+            }
             console.error('Error submitting return request:', error);
         } finally {
             setIsSubmitting(false);
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <p className="text-xl">Loading...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="pt-20 bg-[#F7F7F7] min-h-screen">
@@ -109,56 +172,84 @@ export default function RefundPage() {
                     <div>
                         <h2 className="text-[32px] font-darker-grotesque font-medium mb-6">Select Items to Return</h2>
                         <div className="space-y-6">
-                            {order.lineItems.edges.map((item) => (
-                                <div key={item.node.title} className="flex items-start gap-6 p-4 bg-white rounded-lg shadow-sm">
-                                    <div className="flex-shrink-0">
-                                        <input
-                                            type="checkbox"
-                                            id={`item-${item.node.title}`}
-                                            checked={selectedItems[item.node.title] || false}
-                                            onChange={() => handleItemSelect(item.node.title)}
-                                            className="w-5 h-5 mt-2"
-                                        />
-                                    </div>
-                                    <div className="flex-grow">
-                                        <div className="flex gap-6">
-                                            <div className="w-32 h-32 relative">
-                                                <Image 
-                                                    src={item.node.variant?.image?.url || '/images/placeholder.png'} 
-                                                    alt={item.node.title || 'Product image'}
-                                                    fill
-                                                    className="object-contain"
-                                                />
-                                            </div>
-                                            <div className="flex-grow">
-                                                <h3 className="font-medium text-lg">{item.node.title}</h3>
-                                                <p className="text-gray-600">{item.node.variant?.title}</p>
-                                                
-                                                {selectedItems[item.node.title] && (
-                                                    <div className="mt-4">
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Reason for Return
-                                                        </label>
-                                                        <select
-                                                            value={returnReasons[item.node.title] || ""}
-                                                            onChange={(e) => handleReasonChange(item.node.title, e.target.value)}
-                                                            className="w-full p-2 border border-gray-300 rounded-md"
-                                                            required
-                                                        >
-                                                            <option value="">Select a reason</option>
-                                                            {RETURN_REASONS.map(reason => (
-                                                                <option key={reason} value={reason}>
-                                                                    {reason}
-                                                                </option>
-                                                            ))}
-                                                        </select>
+                            {order.lineItems.edges.map((item) => {
+                                const isReturned = returnedItems.has(`${item.node.title}-${item.node.variant?.title}`);
+                                return (
+                                    <div key={item.node.title} className="flex items-start gap-6 p-4 bg-white rounded-lg shadow-sm">
+                                        <div className="flex-shrink-0">
+                                            <input
+                                                type="checkbox"
+                                                id={`item-${item.node.title}`}
+                                                checked={selectedItems[item.node.title] || false}
+                                                onChange={() => handleItemSelect(item.node.title)}
+                                                disabled={isReturned}
+                                                className="w-5 h-5 mt-2"
+                                            />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <div className="flex items-start gap-4">
+                                                {item.node.variant?.image?.url && (
+                                                    <div className="relative w-20 h-20">
+                                                        <Image
+                                                            src={item.node.variant.image.url}
+                                                            alt={item.node.title}
+                                                            fill
+                                                            className="object-cover rounded"
+                                                        />
                                                     </div>
                                                 )}
+                                                <div>
+                                                    <h3 className="font-medium">{item.node.title}</h3>
+                                                    <p className="text-sm text-gray-600">
+                                                        {item.node.variant?.title}
+                                                    </p>
+                                                    {isReturned && (
+                                                        <p className="text-sm text-red-600 mt-2">
+                                                            This item has already been returned
+                                                        </p>
+                                                    )}
+                                                    {selectedItems[item.node.title] && !isReturned && (
+                                                        <div className="mt-4 space-y-4">
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                                    Reason for Return
+                                                                </label>
+                                                                <select
+                                                                    value={returnReasons[item.node.title] || ""}
+                                                                    onChange={(e) => handleReasonChange(item.node.title, e.target.value)}
+                                                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                                                    required
+                                                                >
+                                                                    <option value="">Select a reason</option>
+                                                                    {RETURN_REASONS.map(reason => (
+                                                                        <option key={reason} value={reason}>
+                                                                            {reason}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                                    Quantity to Return
+                                                                </label>
+                                                                <input
+                                                                    type="number"
+                                                                    min="1"
+                                                                    max={item.node.quantity || 1}
+                                                                    value={returnQuantities[item.node.title] || 1}
+                                                                    onChange={(e) => handleQuantityChange(item.node.title, parseInt(e.target.value))}
+                                                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                                                    required
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
 

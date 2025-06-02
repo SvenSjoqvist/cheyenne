@@ -100,11 +100,11 @@ export default function CartModal() {
                 <div className="flex h-full flex-col justify-between overflow-hidden p-1">
                   <ul className="flex-grow overflow-auto py-4">
                     {cart.lines
-                      .sort((a, b) =>
-                        a.merchandise.product.title.localeCompare(
-                          b.merchandise.product.title
-                        )
-                      )
+                      .sort((a, b) => {
+                        const titleA = a.merchandise?.product?.title || '';
+                        const titleB = b.merchandise?.product?.title || '';
+                        return titleA.localeCompare(titleB);
+                      })
                       .map((item, i) => {
                         const merchandiseSearchParams =
                           {} as MerchandiseSearchParams;
@@ -142,10 +142,10 @@ export default function CartModal() {
                                   height={64}
                                   alt={
                                     item.merchandise.product.featuredImage
-                                      .altText || item.merchandise.product.title
+                                      ?.altText || item.merchandise.product.title || 'Product image'
                                   }
                                   src={
-                                    item.merchandise.product.featuredImage.url
+                                    item.merchandise.product.featuredImage?.url || '/placeholder.jpg'
                                   }
                                 />
                               </div>
@@ -156,7 +156,7 @@ export default function CartModal() {
                               >
                                 <div className="flex flex-1 flex-col text-base">
                                   <span className="leading-tight">
-                                    {item.merchandise.product.title}
+                                    {item.merchandise.product.title || 'Product'}
                                   </span>
                                   {item.merchandise.title !== DEFAULT_OPTION ? (
                                     <p className="text-sm text-neutral-500 dark:text-neutral-400">

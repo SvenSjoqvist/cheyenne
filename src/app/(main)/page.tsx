@@ -2,26 +2,126 @@ import HeroSection from '@/app/components/client/main/Hero';
 import ProductSection from '@/app/components/client/main/Products';
 import ImageOverlay from '@/app/components/client/main/Overlay';
 import RunawaySection from '@/app/components/client/main/About';
-import { getProducts } from '@/app/lib/shopify';
 import { Product } from '@/app/lib/shopify/types';
 import Link from 'next/link';
+import { shopifyFetch } from '@/app/lib/shopify';
+import { getMainPageProductsQuery } from '@/app/lib/shopify/queries/product';
+import { TAGS } from '@/app/lib/constants';
+
+interface ShopifyProductNode {
+  id: string;
+  handle: string;
+  title: string;
+  description: string;
+  descriptionHtml: string;
+  availableForSale: boolean;
+  priceRange: {
+    minVariantPrice: {
+      amount: string;
+      currencyCode: string;
+    };
+    maxVariantPrice: {
+      amount: string;
+      currencyCode: string;
+    };
+  };
+  featuredImage: {
+    url: string;
+    altText: string;
+    width: number;
+    height: number;
+  };
+  images: {
+    edges: Array<{
+      node: {
+        url: string;
+        altText: string;
+        width: number;
+        height: number;
+      };
+    }>;
+  };
+  options: Array<{
+    id: string;
+    name: string;
+    values: string[];
+  }>;
+  variants: {
+    edges: Array<{
+      node: {
+        id: string;
+        title: string;
+        availableForSale: boolean;
+        selectedOptions: Array<{
+          name: string;
+          value: string;
+        }>;
+        price: {
+          amount: string;
+          currencyCode: string;
+        };
+      };
+    }>;
+  };
+  tags: string[];
+  seo: {
+    title: string;
+    description: string;
+  };
+  updatedAt: string;
+}
+
+interface ShopifyProductsResponse {
+  data: {
+    products: {
+      edges: Array<{
+        node: ShopifyProductNode;
+      }>;
+    };
+  };
+}
 
 const KilaekoPage: React.FC = async () => {
+  // Fetch products using the optimized query
+  const res = await shopifyFetch<{ body: ShopifyProductsResponse }>({
+    query: getMainPageProductsQuery,
+    tags: [TAGS.products],
+    cache: 'force-cache'
+  });
 
-  // Fetch all products
-  const products = await getProducts({ query: "" });
+  const products = (res.body as unknown as ShopifyProductsResponse).data.products.edges.map(({ node }: { node: ShopifyProductNode }) => ({
+    id: node.id,
+    handle: node.handle,
+    title: node.title,
+    description: node.description,
+    descriptionHtml: node.descriptionHtml,
+    availableForSale: node.availableForSale,
+    priceRange: node.priceRange,
+    featuredImage: node.featuredImage,
+    images: node.images.edges.map(edge => edge.node),
+    options: node.options,
+    variants: node.variants.edges.map(edge => edge.node),
+    tags: node.tags,
+    seo: node.seo,
+    updatedAt: node.updatedAt
+  }));
   
   // Create a map to store product pairs
   const productPairs = new Map<string, { main: Product; related: Product[] }>();
   
   // Helper function to get the base name (without Top/Bottom)
-  const getBaseName = (title: string) => {
+  const getBaseName = (title: string | undefined) => {
+    if (!title) return '';
     return title.replace(/\s+(Top|Bottom|One Piece)$/, '');
   };
 
   // Group products by their base name
-  products.forEach(product => {
+  products.forEach((product: Product) => {
+    if (!product?.title) return; // Skip products without titles
+    
     const baseName = getBaseName(product.title);
+    if (!baseName) return; // Skip if base name is empty
+    
     if (!productPairs.has(baseName)) {
       productPairs.set(baseName, { main: product, related: [] });
     }
@@ -44,6 +144,7 @@ const KilaekoPage: React.FC = async () => {
 
   // Convert map to array and take first 4 unique products
   const productGroups = Array.from(productPairs.values())
+    .filter(group => group.main && group.main.title) // Ensure we only have valid products
     .slice(0, 4); // Take only 4 products
 
   return (
@@ -57,7 +158,7 @@ const KilaekoPage: React.FC = async () => {
           />
         </div>
       </div>
-      <ProductSection productGroups={productGroups}/>
+      {productGroups.length > 0 && <ProductSection productGroups={productGroups}/>}
       <Link className="cursor-pointer self-center px-5 py-2 mt-32 max-w-full text-2xl font-darker-grotesque tracking-wider leading-none bg-neutral-800 text-neutral-100 w-auto max-md:mt-10 inline-flex items-center justify-center" href={"/catalog"}>
         shop now
       </Link>

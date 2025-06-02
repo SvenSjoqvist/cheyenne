@@ -1,15 +1,11 @@
 import { PrismaClient } from '@prisma/client';
 
 const prismaClientSingleton = () => {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL environment variable is not set');
-  }
-
   return new PrismaClient({
     log: ['error', 'warn'],
     datasources: {
       db: {
-        url: process.env.DATABASE_URL
+        url: "postgresql://kilaeko_owner:npg_6KCb9vrwLPyx@ep-shy-paper-a8ymnliq-pooler.eastus2.azure.neon.tech/kilaeko?sslmode=require"
       }
     }
   });

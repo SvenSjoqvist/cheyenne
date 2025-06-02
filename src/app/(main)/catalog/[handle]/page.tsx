@@ -1,11 +1,11 @@
 import { AddToCart } from "@/app/components/client/cart/add-to-cart";
-import { GridTileImage } from "@/app/components/client/grid/Tile";
 import Gallery from "@/app/components/client/product/gallery";
 import { ProductProvider } from "@/app/components/client/product/product-context";
 import { ProductDescription } from "@/app/components/client/product/product-description";
 import { HIDDEN_PRODUCT_TAG } from "@/app/lib/constants";
 import { getProduct, getProductsByTag } from "@/app/lib/shopify";
-import { Image, Product } from "@/app/lib/shopify/types";
+import { Image as ImageType, Product } from "@/app/lib/shopify/types";
+import Image from "next/image";
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -74,7 +74,7 @@ export default async function ProductPage({ params }: PageProps) {
               }
             >
               <Gallery
-                images={product.images.slice(0, 5).map((image: Image) => ({
+                images={product.images.slice(0, 5).map((image: ImageType) => ({
                   src: image.url,
                   altText: image.altText,
                 }))}
@@ -87,16 +87,21 @@ export default async function ProductPage({ params }: PageProps) {
             </Suspense>
           </div>
         </div>
-        <RelatedProducts id={product.id} tags={product.tags} />
+        
+        {/* Related Products Section - centered below description */}
+        <div className="flex justify-end p-8 md:p-12">
+          <div className="w-full lg:w-1/3">
+            <RelatedProducts id={product.id} tags={product.tags} />
+          </div>
+        </div>
       </div>
     </ProductProvider>
   );
 }
 
 async function RelatedProducts({ id, tags }: { id: string; tags?: string[] }) {
-    let relatedProducts: Product[] = [];
+  let relatedProducts: Product[] = [];
 
-  // Try to get tag-based recommendations first if tags exist
   if (tags && tags.length > 0) {
     const primaryTag = tags[0];
     const taggedProducts = await getProductsByTag(primaryTag, id);
@@ -109,32 +114,50 @@ async function RelatedProducts({ id, tags }: { id: string; tags?: string[] }) {
   if (!relatedProducts || relatedProducts.length === 0) return null;
 
   return (
-    <div className="py-8">
-      <h2 className="mb-4 text-2xl font-bold">Complete the set</h2>
-      <ul className="flex w-full gap-4 overflow-x-auto pt-1">
-        {relatedProducts.map((product) => (
-          <li
-            key={product.handle}
-            className="aspect-square w-full flex-none min-[475px]:w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5"
-          >
-            <Link
-              className="relative h-full w-full"
-              href={`/catalog/${product.handle}`}
-              prefetch={true}
-            >
-              <GridTileImage
-                alt={product.title}
-                src={product.featuredImage?.url}
-                fill
-                sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, (min-width: 475px) 50vw, 100vw"
-              />
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <div className="mt-4">
-        <AddToCart product={relatedProducts[0]} />
+    <section className="w-full">
+      <header className="text-center mb-8">
+        <h2 className="text-2xl font-bold font-[bero]">Complete the set</h2>
+      </header>
+
+      <div className="grid place-items-center">
+        <div className="w-[342px]">
+          <div className="overflow-x-auto">
+            <div className="inline-flex space-x-8 pb-4">
+              {relatedProducts.map((product) => (
+                <article 
+                  key={product.handle}
+                  className="flex-none w-[342px]"
+                >
+                  <Link
+                    href={`/catalog/${product.handle}`}
+                    className="group block"
+                    prefetch={true}
+                  >
+                    <div className="space-y-4">
+                      
+                      <figure className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
+                        <Image
+                          src={product.featuredImage?.url}
+                          alt={product.title}
+                          fill
+                          sizes="342px"
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </figure>
+                    </div>
+                  </Link>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-2 flex justify-center">
+            <div className="w-[342px]">
+              <AddToCart product={relatedProducts[0]} />
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

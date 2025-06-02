@@ -6,7 +6,6 @@ export default async function AccountLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Fetch customer data and orders server-side
   const customerPromise = getCustomer();
   const ordersPromise = getCustomerOrders();
 

@@ -4,8 +4,6 @@ export const TAGS = {
     cart: 'cart',
 }
 
-export const SHOPIFY_GRAPHQL_API_ENDPOINT = "/api/2025-01/graphql.json"
-
 export const HIDDEN_PRODUCT_TAG = "nextjs-frontend-hidden";
 export const DEFAULT_OPTION = "Default Title";
 export type sortFilterItem = {

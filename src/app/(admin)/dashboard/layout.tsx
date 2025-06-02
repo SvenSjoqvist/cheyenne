@@ -1,6 +1,7 @@
 import { Darker_Grotesque } from "next/font/google";
 import "@/app/globals.css";
 import Sidebar from "@/app/components/admin/Sidebar";
+import { DashboardProvider } from "@/app/components/admin/DashboardContext";
 
 const darkerGrotesque = Darker_Grotesque({
     subsets: ["latin"],
@@ -19,10 +20,12 @@ export default async function RootLayout({
           className={`${darkerGrotesque.variable} antialiased`}
           suppressHydrationWarning
         >
-          <div className="flex h-screen bg-gray-100">
+          <div className="flex min-h-screen">
             <Sidebar />
-            <main className="flex-1">
-              {children}
+            <main className="flex-1 md:ml-[200px]">
+              <DashboardProvider>
+                {children}
+              </DashboardProvider>
             </main>
           </div>
         </body>

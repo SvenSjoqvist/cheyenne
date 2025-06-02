@@ -49,6 +49,10 @@ export type Customer = {
 type UserState = {
     customer: ShopifyCustomerResponse;
     orders: Order[];
+    user: {
+        email: string;
+        id: string;
+    } | null;
 };
 
 type UserContextType = UserState & {
@@ -74,12 +78,20 @@ export function UserProvider({
   const [state, setState] = useState<UserState>({
     customer: customerData,
     orders: ordersResponse.orders || [],
+    user: {
+      email: customerData.customer?.email || '',
+      id: customerData.customer?.id || ''
+    }
   });
 
   const setCustomer = useCallback((customer: ShopifyCustomerResponse) => {
     setState(prevState => ({
       ...prevState,
-      customer
+      customer,
+      user: {
+        email: customer.customer?.email || '',
+        id: customer.customer?.id || ''
+      }
     }));
   }, []);
 
@@ -94,6 +106,10 @@ export function UserProvider({
     setState({
       customer: customerData,
       orders: ordersResponse.orders || [],
+      user: {
+        email: customerData.customer?.email || '',
+        id: customerData.customer?.id || ''
+      }
     });
   }, [customerData, ordersResponse.orders]);
 

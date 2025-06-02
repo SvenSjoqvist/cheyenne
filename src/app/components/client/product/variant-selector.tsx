@@ -21,7 +21,7 @@ export default function VariantSelector({
   const updateURL = useUpdateURL();
   
   // Add null checks for options and variants
-  if (!options || !variants) {
+  if (!options || !variants || options.length === 0 || variants.length === 0) {
     return null;
   }
   
@@ -33,17 +33,23 @@ export default function VariantSelector({
     return null;
   }
 
-  const combinations: Combination[] = variants.map((variant) => ({
-    id: variant.id,
-    availableForSale: variant.availableForSale,
-    ...variant.selectedOptions.reduce(
+  const combinations: Combination[] = variants.map((variant) => {
+    // Add null check for selectedOptions
+    const selectedOptions = variant.selectedOptions || [];
+    const optionsObj = selectedOptions.reduce(
       (accumulator, option) => ({
         ...accumulator,
         [option.name.toLowerCase()]: option.value,
       }),
       {}
-    ),
-  }));
+    );
+    
+    return {
+      id: variant.id,
+      availableForSale: variant.availableForSale,
+      ...optionsObj,
+    };
+  });
 
   return options.map((option) => (
     <form key={option.id}>
@@ -53,25 +59,13 @@ export default function VariantSelector({
           {option.values.map((value) => {
             const optionNameLowerCase = option.name.toLowerCase();
 
-            // Base option params on current selectedOptions so we can preserve any other param state
-            const optionParams = { ...state, [optionNameLowerCase]: value };
-
-            // Filter out invalid options and check if the options combination is available for sale
-            const filtered = Object.entries(optionParams).filter(
-              ([key, value]) =>
-                options.find(
-                  (option) =>
-                    option.name.toLowerCase() === key &&
-                    option.values.includes(value)
-                )
-            );
-
-            const isAvailableForSale = combinations.find((combination) =>
-              filtered.every(
-                ([key, value]) =>
-                  combination[key] === value && combination.availableForSale
-              )
-            );
+            // Check if any variant with this option value is available
+            // If no combinations exist, default to available to prevent blocking
+            const isAvailableForSale = combinations.length === 0 ? true : combinations.some((combination) => {
+              const hasOptionValue = combination[optionNameLowerCase] === value;
+              const isAvailable = combination.availableForSale === true;
+              return hasOptionValue && isAvailable;
+            });
 
             // The option is active if it's in the selected options
             const isActive = state[optionNameLowerCase] === value;
