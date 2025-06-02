@@ -4,6 +4,7 @@ import { Product, ProductVariant } from "@/app/lib/shopify/types";
 import { useProduct } from "@/app/components/client/product/product-context";
 import { useCart } from "@/app/components/client/cart/cart-context";
 import { useActionState } from "react";
+import { startTransition } from "react";
 import clsx from "clsx";
 import { addItem } from "./actions";
 
@@ -67,13 +68,22 @@ export function AddToCart({ product }: { product: Product }) {
   const finalVariant = variants.find(
     (variant) => variant.id === selectedVariantId
   )!;
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!finalVariant) return;
+
+    startTransition(() => {
+      // First update the optimistic UI
+      addCartItem(finalVariant, product);
+
+      // Then perform the server action
+      actionWithVariant();
+    });
+  };
+
   return (
-    <form
-      action={async () => {
-        addCartItem(finalVariant, product);
-        await actionWithVariant();
-      }}
-    >
+    <form onSubmit={handleSubmit}>
       <SubmitButton
         availableForSale={availableForSale}
         selectedVariantId={selectedVariantId}
