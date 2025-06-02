@@ -1,18 +1,5 @@
 import { productFragment } from "../fragments/product";
 
-export const getMainPageProductsQuery = /* GraphQL */ `
-  query getMainPageProducts {
-    products(first: 20) {
-      edges {
-        node {
-          ...product
-        }
-      }
-    }
-  }
-  ${productFragment}
-`;
-
 export const getProductsQuery = /* GraphQL */ `
   query getProducts(
     $sortKey: ProductSortKeys

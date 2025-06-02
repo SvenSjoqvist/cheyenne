@@ -194,13 +194,7 @@ export async function shopifyFetch<T>({
 }
 
 function removeEdgesAndNodes<T>(array: Connection<T>): T[] {
-  if (!array?.edges) {
-    console.error('Invalid connection structure:', array);
-    return [];
-  }
-  return array.edges
-    .filter((edge): edge is { node: T } => edge?.node !== undefined)
-    .map((edge) => edge.node);
+  return array.edges.map((edge) => edge?.node);
 }
 function reshapeImages(images: Connection<Image>, productTitle: string) {
   const flattend = removeEdgesAndNodes(images);
@@ -231,25 +225,15 @@ function reshapeProduct(
 }
 
 function reshapeProducts(products: ShopifyProduct[]) {
-  if (!products || !Array.isArray(products)) {
-    console.error('Invalid products array:', products);
-    return [];
-  }
-
   const reshapedProducts = [];
 
   for (const product of products) {
-    try {
-      if (product) {
-        const reshapedProduct = reshapeProduct(product);
-        if (reshapedProduct) {
-          reshapedProducts.push(reshapedProduct);
-        }
+    if (product) {
+      const reshapedProduct = reshapeProduct(product);
+
+      if (reshapedProduct) {
+        reshapedProducts.push(reshapedProduct);
       }
-    } catch (error) {
-      console.error('Error reshaping product:', error, product);
-      // Continue with the next product
-      continue;
     }
   }
 
@@ -285,45 +269,15 @@ export async function getProducts({
   sortKey?: string;
 }): Promise<Product[]> {
   try {
-    console.log('Fetching products with params:', { query, reverse, sortKey });
-    
     const res = await shopifyFetch<ShopifyProductsOperation>({
       query: getProductsQuery,
       tags: [TAGS.products],
       variables: { query, reverse, sortKey },
     });
 
-    console.log('Raw Shopify response:', JSON.stringify(res, null, 2));
-
-    // Check if we have a valid response structure
-    if (!res?.body?.data?.products) {
-      console.error('Invalid response structure:', res);
-      return [];
-    }
-
-    // Check if we have edges
-    if (!res.body.data.products.edges) {
-      console.error('No edges in products response:', res.body.data.products);
-      return [];
-    }
-
-    // Ensure we have a valid connection structure
-    const products = res.body.data.products;
-    if (!products || typeof products !== 'object') {
-      console.error('Invalid products object:', products);
-      return [];
-    }
-
-    const processedData = removeEdgesAndNodes(products);
-    
-    // Check if we have valid processed data
-    if (!processedData || !Array.isArray(processedData)) {
-      console.error('Invalid processed data:', processedData);
-      return [];
-    }
-
+    const processedData = removeEdgesAndNodes(res.body.data.products);
     const reshapedProducts = reshapeProducts(processedData);
-    console.log('Processed products:', reshapedProducts.length);
+
     return reshapedProducts;
   } catch (error) {
     console.error('Error fetching products:', error);
