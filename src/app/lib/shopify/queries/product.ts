@@ -11,9 +11,9 @@ export const getProductsQuery = /* GraphQL */ `
         node {
           ...product
         }
-      }
-    }
-  }
+                }
+              }
+            }
   ${productFragment}
 `;
 

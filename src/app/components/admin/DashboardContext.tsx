@@ -24,6 +24,13 @@ interface DashboardData {
   awaitingShipment: number;
   marketing: {
     subscribersCount: number;
+    subscribers?: Array<{
+      id: string;
+      email: string;
+      unsubscribeToken: string;
+      createdAt: Date;
+      updatedAt: Date;
+    }>;
   };
   returns: {
     totalReturns: number;

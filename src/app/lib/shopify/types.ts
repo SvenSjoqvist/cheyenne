@@ -617,38 +617,64 @@ export interface ShopifyCustomer {
 export interface ShopifyOrder {
   id: string;
   name: string;
+  orderNumber: string;
   createdAt: string;
+  displayFulfillmentStatus: string;
+  displayFinancialStatus: string;
   totalPriceSet: {
     shopMoney: {
       amount: string;
       currencyCode: string;
     };
   };
-  customer: {
+  customer?: {
     id: string;
     firstName: string;
     lastName: string;
     email: string;
     phone: string;
-  } | null;
-  displayFulfillmentStatus: string;
-  displayFinancialStatus: string;
+  };
   shippingAddress?: {
-    address1: string;
+    address1?: string;
     address2?: string;
-    city: string;
-    province: string;
-    zip: string;
-    country: string;
+    city?: string;
+    province?: string;
+    zip?: string;
+    country?: string;
   };
   billingAddress?: {
-    address1: string;
+    address1?: string;
     address2?: string;
-    city: string;
-    province: string;
-    zip: string;
-    country: string;
+    city?: string;
+    province?: string;
+    zip?: string;
+    country?: string;
   };
+  lineItems?: {
+    edges: Array<{
+      node: {
+        quantity: number;
+      };
+    }>;
+  };
+  discountApplications?: {
+    edges: Array<{
+      node: {
+        code: string;
+      };
+    }>;
+  };
+  shippingLine?: {
+    title: string;
+    price: string;
+  };
+  paymentGatewayNames?: string[];
+  fulfillments?: Array<{
+    trackingInfo: {
+      number: string;
+      url: string;
+    };
+  }>;
 }
 
 export interface ShopifyAdminProduct {

@@ -44,21 +44,10 @@ const sidebarItems: SidebarItems = {
   support: {
     label: "Support",
     items: [
-      { 
-        label: "Tickets", 
-        href: "/dashboard/tickets",
-        subItems: [
-          { label: "View Tickets", href: "/dashboard/tickets/view" },
-          { label: "Create Tickets", href: "/dashboard/tickets/create" },
-        ]
-      },
       { label: "Cancellations", href: "/dashboard/cancellations" },
       { 
         label: "Returns", 
         href: "/dashboard/returns",
-        subItems: [
-          { label: "View Returns", href: "/dashboard/returns/view" },
-        ]
       },
     ]
   }
@@ -97,7 +86,7 @@ export default function Sidebar() {
   };
 
   const getSvgHeight = (section: string) => {
-    if (section === 'performance') {
+    if (section === 'performance' || section === 'support') {
       return '32';
     }
     return '83';
@@ -183,48 +172,29 @@ export default function Sidebar() {
               </button>
               {openSections[key] && (
                 <div className="pl-4 relative ml-3">
-                  {key === 'support' ? (
-                    <svg 
-                      width="21" 
-                      height="133" 
-                      viewBox="0 0 21 133" 
-                      fill="none" 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className="absolute left-2 top-2"
-                    >
-                      <line x1="0.5" y1="2.18557e-08" x2="0.499994" y2="132" stroke="#212121"/>
-                      <path d="M7.99609 81.5C8.27224 81.5 8.49609 81.2761 8.49609 81C8.49609 80.7239 8.27224 80.5 7.99609 80.5V81.5ZM0.996094 81V81.5H7.99609V81V80.5H0.996094V81Z" fill="#212121"/>
-                      <path d="M8.00391 110.5C8.28005 110.5 8.50391 110.276 8.50391 110C8.50391 109.724 8.28005 109.5 8.00391 109.5V110.5ZM1.00391 110V110.5H8.00391V110V109.5H1.00391V110Z" fill="#212121"/>
-                      <path d="M20 31.5C20.2761 31.5 20.5 31.2761 20.5 31C20.5 30.7239 20.2761 30.5 20 30.5V31.5ZM1 31V31.5H20V31V30.5H1V31Z" fill="#212121"/>
-                      <path d="M20 58.5C20.2761 58.5 20.5 58.2761 20.5 58C20.5 57.7239 20.2761 57.5 20 57.5V58.5ZM1 58V58.5H20V58V57.5H1V58Z" fill="#212121"/>
-                      <path d="M20 132.5C20.2761 132.5 20.5 132.276 20.5 132C20.5 131.724 20.2761 131.5 20 131.5V132.5ZM0 132V132.5H20V132V131.5H0V132Z" fill="#212121"/>
-                      <path d="M7 7.5C7.27614 7.5 7.5 7.27614 7.5 7C7.5 6.72386 7.27614 6.5 7 6.5V7.5ZM1 7V7.5H7V7V6.5H1V7Z" fill="#212121"/>
-                    </svg>
-                  ) : (
-                    <svg 
-                      width="8" 
-                      height={getSvgHeight(key)} 
-                      viewBox={`0 0 8 ${getSvgHeight(key)}`} 
-                      fill="none" 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className="absolute left-2 top-2"
-                    >
-                      <line x1="0.5" y1="1.53422e-05" x2="0.497484" y2={getSvgHeight(key)} stroke="#212121"/>
-                      {key === 'performance' ? (
-                        <>
-                          <path d="M7.00391 32C7.28005 32 7.50391 31.7761 7.50391 31.5C7.50391 31.2239 7.28005 31 7.00391 31V32ZM1.00391 31.5V32H7.00391V31.5V31H1.00391V31.5Z" fill="#212121"/>
-                          <path d="M7.00391 7.5C7.28005 7.5 7.50391 7.27614 7.50391 7C7.50391 6.72386 7.28005 6.5 7.00391 6.5V7.5ZM1.00391 7V7.5H7.00391V7V6.5H1.00391V7Z" fill="#212121"/>
-                        </>
-                      ) : (
-                        <>
-                          <path d="M7 32C7.27614 32 7.5 31.7761 7.5 31.5C7.5 31.2239 7.27614 31 7 31V32ZM1 31.5V32H7V31.5V31H1V31.5Z" fill="#212121"/>
-                          <path d="M7 57.5C7.27614 57.5 7.5 57.2761 7.5 57C7.5 56.7239 7.27614 56.5 7 56.5V57.5ZM1 57V57.5H7V57V56.5H1V57Z" fill="#212121"/>
-                          <path d="M7 82.5C7.27614 82.5 7.5 82.2761 7.5 82C7.5 81.7239 7.27614 81.5 7 81.5V82.5ZM0 82V82.5H7V82V81.5H0V82Z" fill="#212121"/>
-                          <path d="M7 7.5C7.27614 7.5 7.5 7.27614 7.5 7C7.5 6.72386 7.27614 6.5 7 6.5V7.5ZM1 7V7.5H7V7V6.5H1V7Z" fill="#212121"/>
-                        </>
-                      )}
-                    </svg>
-                  )}
+                  <svg 
+                    width="8" 
+                    height={getSvgHeight(key)} 
+                    viewBox={`0 0 8 ${getSvgHeight(key)}`} 
+                    fill="none" 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    className="absolute left-2 top-2"
+                  >
+                    <line x1="0.5" y1="1.53422e-05" x2="0.497484" y2={getSvgHeight(key)} stroke="#212121"/>
+                    {(key === 'performance' || key === 'support') ? (
+                      <>
+                        <path d="M7.00391 32C7.28005 32 7.50391 31.7761 7.50391 31.5C7.50391 31.2239 7.28005 31 7.00391 31V32ZM1.00391 31.5V32H7.00391V31.5V31H1.00391V31.5Z" fill="#212121"/>
+                        <path d="M7.00391 7.5C7.28005 7.5 7.50391 7.27614 7.50391 7C7.50391 6.72386 7.28005 6.5 7.00391 6.5V7.5ZM1.00391 7V7.5H7.00391V7V6.5H1.00391V7Z" fill="#212121"/>
+                      </>
+                    ) : (
+                      <>
+                        <path d="M7 32C7.27614 32 7.5 31.7761 7.5 31.5C7.5 31.2239 7.27614 31 7 31V32ZM1 31.5V32H7V31.5V31H1V31.5Z" fill="#212121"/>
+                        <path d="M7 57.5C7.27614 57.5 7.5 57.2761 7.5 57C7.5 56.7239 7.27614 56.5 7 56.5V57.5ZM1 57V57.5H7V57V56.5H1V57Z" fill="#212121"/>
+                        <path d="M7 82.5C7.27614 82.5 7.5 82.2761 7.5 82C7.5 81.7239 7.27614 81.5 7 81.5V82.5ZM0 82V82.5H7V82V81.5H0V82Z" fill="#212121"/>
+                        <path d="M7 7.5C7.27614 7.5 7.5 7.27614 7.5 7C7.5 6.72386 7.27614 6.5 7 6.5V7.5ZM1 7V7.5H7V7V6.5H1V7Z" fill="#212121"/>
+                      </>
+                    )}
+                  </svg>
                   {section.items.map((item) => (
                     <div key={item.href}>
                       <Link

@@ -9,7 +9,6 @@ import { useState } from 'react';
 export default function DashboardPage() {
   const { data, loading, error, refreshData } = useDashboard();
   const [showQuickActions, setShowQuickActions] = useState(false);
-  console.log(data);
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">

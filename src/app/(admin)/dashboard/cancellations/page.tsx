@@ -1,15 +1,29 @@
 import { Suspense } from "react";
 import { getCancelledOrders } from "@/app/lib/shopify/admin/shopify-admin";
-import CancellationsWrapper from "@/app/components/admin/cancellations/CancellationsWrapper";
+import DataTable from "@/app/components/admin/DataTable";
+import { CancellationData } from "@/app/components/admin/types";
 
 type Props = {
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-  };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
 
 export default async function CancellationsPage({ searchParams }: Props) {
-    const params = await searchParams;
-    const ids = typeof params.ids === 'string' ? params.ids : undefined;
-  const { orders } = await getCancelledOrders(10, ids);
+  const params = await searchParams;
+  const cursor = typeof params.cursor === 'string' ? params.cursor : undefined;
+  const { orders, pageInfo } = await getCancelledOrders(10, cursor);
+
+  // Transform the data to match DataTable's expected format
+  const transformedData = orders.map(order => ({
+    node: {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      customerId: order.customerId,
+      totalAmount: order.totalAmount,
+      currency: order.currency,
+      createdAt: order.createdAt.toISOString(),
+      status: order.status
+    } as CancellationData
+  }));
 
   return (
     <div className="pt-20 bg-[#F7F7F7] min-h-screen">
@@ -19,9 +33,12 @@ export default async function CancellationsPage({ searchParams }: Props) {
         </div>
 
         <Suspense fallback={<div>Loading cancellations...</div>}>
-          <CancellationsWrapper
-            cancellations={orders}
-            maxSelection={5}
+          <DataTable
+            data={transformedData}
+            hasNextPage={pageInfo.hasNextPage}
+            endCursor={pageInfo.endCursor}
+            baseUrl="/dashboard/cancellations"
+            type="cancellations"
           />
         </Suspense>
       </div>

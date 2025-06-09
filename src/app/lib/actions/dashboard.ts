@@ -30,7 +30,7 @@ export async function getMarketingData() {
     return { 
       success: true, 
       subscribersCount: subscribers.length,
-      data: subscribers 
+      subscribers: subscribers
     };
   } catch (error) {
     console.error('Error fetching marketing data:', error);
@@ -38,7 +38,7 @@ export async function getMarketingData() {
       success: false, 
       error: 'Failed to fetch marketing data', 
       subscribersCount: 0,
-      data: [] 
+      subscribers: []
     };
   }
 }
@@ -111,7 +111,8 @@ export async function getDashboardData() {
           currency: averageCartValueResult.currency
         },
         marketing: {
-          subscribersCount: marketingResult.subscribersCount
+          subscribersCount: marketingResult.subscribersCount,
+          subscribers: marketingResult.subscribers
         },
         returns: {
           totalReturns: returnsResult.totalReturns,
@@ -136,7 +137,7 @@ export async function getDashboardData() {
       data: {
         abandonedCarts: 0,
         averageCartValue: { amount: 0, currency: 'USD' },
-        marketing: { subscribersCount: 0 },
+        marketing: { subscribersCount: 0, subscribers: [] },
         returns: { totalReturns: 0, pendingReturns: 0 },
         orderStatus: { chartData: [] },
         countryOrders: { countries: [], totalOrders: 0 },

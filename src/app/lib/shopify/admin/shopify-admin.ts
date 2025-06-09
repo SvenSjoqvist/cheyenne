@@ -2,14 +2,12 @@ import { ShopifyCustomer, ShopifyOrder } from '../types';
 
 const SHOPIFY_ADMIN_API_URL = `https://kilaeko-application.myshopify.com/admin/api/2024-01/graphql.json`;
 
-console.log(process.env.SHOPIFY_ACCESS_TOKEN);
-
 async function shopifyRequest<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
   try {
     const response = await fetch(SHOPIFY_ADMIN_API_URL, {
       method: 'POST',
       headers: {
-        'X-Shopify-Access-Token': "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",
+        'X-Shopify-Access-Token': process.env.SHOPIFY_ACCESS_TOKEN || '',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -116,7 +114,7 @@ export async function getCustomers(first: number = 10, after?: string, customerI
   });
 }
 
-export async function getOrders(first: number = 10, after?: string, customerId?: string): Promise<OrdersResponse> {
+export async function getOrders(first: number, after?: string, customerId?: string): Promise<{ edges: Array<{ node: ShopifyOrder }>; pageInfo: { hasNextPage: boolean; endCursor: string } }> {
   const query = `
     query GetOrders($first: Int!, $after: String, $query: String) {
       orders(first: $first, after: $after, query: $query) {
@@ -125,6 +123,8 @@ export async function getOrders(first: number = 10, after?: string, customerId?:
             id
             name
             createdAt
+            displayFulfillmentStatus
+            displayFinancialStatus
             totalPriceSet {
               shopMoney {
                 amount
@@ -133,9 +133,26 @@ export async function getOrders(first: number = 10, after?: string, customerId?:
             }
             customer {
               id
+              firstName
+              lastName
+              email
+              phone
             }
-            displayFulfillmentStatus
-            displayFinancialStatus
+            shippingAddress {
+              address1
+              address2
+              city
+              province
+              zip
+              country
+            }
+            lineItems(first: 10) {
+              edges {
+                node {
+                  quantity
+                }
+              }
+            }
           }
         }
         pageInfo {
@@ -146,29 +163,14 @@ export async function getOrders(first: number = 10, after?: string, customerId?:
     }
   `;
 
-  // Format the query string properly for customer ID filtering
-  const queryString = customerId ? `customer_id:${customerId}` : null;
-
-  console.log('Fetching orders with params:', { first, after, query: queryString });
-
-  const response = await shopifyRequest<OrdersResponse>(query, { 
-    first, 
+  const variables = {
+    first,
     after,
-    query: queryString  // Changed from customerId to query
-  });
+    query: customerId ? `customer_id:${customerId}` : undefined
+  };
 
-  console.log('Raw Shopify API Response:', JSON.stringify(response, null, 2));
-  
-  // Log each order's customer data
-  response.orders.edges.forEach(({ node }) => {
-    console.log('Order customer data:', {
-      orderId: node.id,
-      customerId: node.customer?.id,
-      customerData: node.customer
-    });
-  });
-
-  return response;
+  const response = await shopifyRequest<OrdersResponse>(query, variables);
+  return response.orders;
 }
 
 
@@ -925,6 +927,26 @@ export async function getOrder(id: string): Promise<ShopifyOrder | null> {
           zip
           country
         }
+        discountApplications(first: 1) {
+          edges {
+            node {
+              ... on DiscountCodeApplication {
+                code
+              }
+            }
+          }
+        }
+shippingLine {
+  title
+  price
+}
+        paymentGatewayNames
+        fulfillments {
+          trackingInfo {
+            number
+            url
+          }
+        }
       }
     }
   `;
@@ -935,5 +957,128 @@ export async function getOrder(id: string): Promise<ShopifyOrder | null> {
   } catch (error) {
     console.error('Error fetching order:', error);
     return null;
+  }
+}
+
+interface DetailedProductResponse {
+  products: {
+    edges: Array<{
+      node: {
+        id: string;
+        title: string;
+        description: string;
+        totalInventory: number;
+        vendor: string;
+        productType: string;
+        category: {
+          id: string;
+          name: string;
+          fullName: string;
+        };
+        variants: {
+          edges: Array<{
+            node: {
+              sku: string;
+            };
+          }>;
+        };
+      };
+    }>;
+    pageInfo: {
+      hasNextPage: boolean;
+      endCursor: string;
+    };
+  };
+}
+
+export async function getDetailedProducts(first: number = 10, after?: string): Promise<DetailedProductResponse> {
+  try {
+    const query = `
+      query getDetailedProducts($first: Int!, $after: String) {
+        products(first: $first, after: $after) {
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+          edges {
+            node {
+              id
+              title
+              description
+              totalInventory
+              vendor
+              productType
+              category {
+                id
+                name
+                fullName
+              }
+              variants(first: 1) {
+                edges {
+                  node {
+                    sku
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const variables = {
+      first,
+      after
+    };
+
+    return await shopifyRequest<DetailedProductResponse>(query, variables);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return {
+      products: {
+        pageInfo: {
+          hasNextPage: false,
+          endCursor: '',
+        },
+        edges: []
+      }
+    };
+  }
+}
+
+export async function getProductsServerAction(first: number = 10, after?: string) {
+  'use server';
+  
+  try {
+    const response = await getDetailedProducts(first, after);
+    return {
+      products: response.products.edges.map(edge => {
+        const inventory = edge.node.totalInventory;
+        let stock: 'in_stock' | 'low_stock' | 'out_of_stock';
+        
+        if (inventory <= 0) {
+          stock = 'out_of_stock';
+        } else if (inventory <= 5) {
+          stock = 'low_stock';
+        } else {
+          stock = 'in_stock';
+        }
+
+        return {
+          id: edge.node.id,
+          title: edge.node.title,
+          description: edge.node.description,
+          totalInventory: edge.node.totalInventory,
+          sku: edge.node.variants.edges[0]?.node.sku || 'N/A',
+          category: edge.node.category?.name || 'Uncategorized',
+          stock
+        };
+      }),
+      hasNextPage: response.products.pageInfo.hasNextPage,
+      endCursor: response.products.pageInfo.endCursor
+    };
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    throw new Error('Failed to fetch products');
   }
 } 

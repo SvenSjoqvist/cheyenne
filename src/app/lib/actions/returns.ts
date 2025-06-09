@@ -304,4 +304,35 @@ export async function updateReturnStatus(returnId: string, status: 'PENDING' | '
     console.error('Failed to update return status:', error);
     throw new Error('Failed to update return status');
   }
+}
+
+// Function to get customer refunds
+export async function getCustomerRefunds(customerId: string) {
+  try {
+    const returns = await prisma.return.findMany({
+      where: {
+        customerId: customerId,
+        status: 'APPROVED' // Only count approved returns
+      },
+      include: {
+        items: true
+      }
+    });
+
+    // Calculate total items returned
+    const totalItems = returns.reduce((sum, returnRecord) => {
+      return sum + returnRecord.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
+    }, 0);
+
+    return {
+      totalRefunds: returns.length,
+      totalItemsReturned: totalItems
+    };
+  } catch (error) {
+    console.error('Failed to fetch customer refunds:', error);
+    return {
+      totalRefunds: 0,
+      totalItemsReturned: 0
+    };
+  }
 } 
