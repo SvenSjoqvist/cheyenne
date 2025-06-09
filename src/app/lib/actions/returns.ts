@@ -2,6 +2,7 @@
 
 import nodemailer from 'nodemailer';
 import { prisma } from '@/app/lib/prisma/client';
+import { Return } from '@/app/lib/types/returns';
 
 // Create reusable transporter object using SMTP transport
 const transporter = nodemailer.createTransport({
@@ -269,7 +270,7 @@ export async function sendReturnRequest(
 }
 
 // Function to get all returns for admin dashboard
-export async function getReturns() {
+export async function getReturns(): Promise<Return[]> {
   try {
     const returns = await prisma.return.findMany({
       include: {
@@ -279,18 +280,25 @@ export async function getReturns() {
         createdAt: 'desc'
       }
     });
+
     return returns.map(returnRecord => ({
       ...returnRecord,
-      orderId: returnRecord.orderId || `legacy-${returnRecord.id}`
+      createdAt: new Date(returnRecord.createdAt),
+      updatedAt: new Date(returnRecord.updatedAt),
+      items: returnRecord.items.map(item => ({
+        ...item,
+        createdAt: new Date(item.createdAt),
+        updatedAt: new Date(item.updatedAt)
+      }))
     }));
-  } catch (error: unknown) {
-    console.error('Failed to fetch returns:', error);
-    throw new Error('Failed to fetch returns');
+  } catch (error) {
+    console.error('Error fetching returns:', error);
+    throw error;
   }
 }
 
 // Function to update return status
-export async function updateReturnStatus(returnId: string, status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED') {
+export async function updateReturnStatus(returnId: string, status: Return['status']): Promise<Return> {
   try {
     const returnRecord = await prisma.return.update({
       where: { id: returnId },
@@ -299,10 +307,20 @@ export async function updateReturnStatus(returnId: string, status: 'PENDING' | '
         items: true
       }
     });
-    return returnRecord;
+
+    return {
+      ...returnRecord,
+      createdAt: new Date(returnRecord.createdAt),
+      updatedAt: new Date(returnRecord.updatedAt),
+      items: returnRecord.items.map(item => ({
+        ...item,
+        createdAt: new Date(item.createdAt),
+        updatedAt: new Date(item.updatedAt)
+      }))
+    };
   } catch (error) {
-    console.error('Failed to update return status:', error);
-    throw new Error('Failed to update return status');
+    console.error('Error updating return status:', error);
+    throw error;
   }
 }
 

@@ -722,34 +722,28 @@ export async function getOrdersByCountry() {
   }
 }
 
-interface CancelledOrderResponse {
-  orders: {
-    edges: Array<{
-      node: {
-        id: string;
-        name: string;
-        createdAt: string;
-        cancelledAt: string;
-        cancelReason: string | null;
-        totalPriceSet: {
-          shopMoney: {
-            amount: string;
-            currencyCode: string;
-          };
-        };
-        customer: {
-          id: string;
-          email: string;
-        } | null;
-        displayFulfillmentStatus: string;
-      };
-      cursor: string;
-    }>;
-    pageInfo: {
-      hasNextPage: boolean;
-      endCursor: string;
+
+interface CancelledOrderNode {
+  id: string;
+  name: string;
+  customer: {
+    id: string;
+    email: string;
+  } | null;
+  createdAt: string;
+  cancelledAt: string;
+  cancelReason: string | null;
+  totalPriceSet: {
+    shopMoney: {
+      amount: string;
+      currencyCode: string;
     };
   };
+  displayFulfillmentStatus: string;
+}
+
+interface CancelledOrderEdge {
+  node: CancelledOrderNode;
 }
 
 interface CancelledOrder {
@@ -757,8 +751,8 @@ interface CancelledOrder {
   orderNumber: string;
   customerId: string;
   customerEmail: string;
-  createdAt: Date;
-  cancelledAt: Date;
+  createdAt: string;
+  cancelledAt: string;
   reason: string;
   totalAmount: number;
   currency: string;
@@ -786,7 +780,10 @@ interface OrderUpdateResponse {
   };
 }
 
-export async function getCancelledOrders(first: number = 10, after?: string): Promise<CancelledOrdersResult> {
+export async function getCancelledOrders(
+  first: number = 10,
+  after?: string
+): Promise<CancelledOrdersResult> {
   const query = `
     query getCancelledOrders($first: Int!, $after: String) {
       orders(first: $first, after: $after, query: "status:cancelled") {
@@ -794,6 +791,10 @@ export async function getCancelledOrders(first: number = 10, after?: string): Pr
           node {
             id
             name
+            customer {
+              id
+              email
+            }
             createdAt
             cancelledAt
             cancelReason
@@ -803,13 +804,8 @@ export async function getCancelledOrders(first: number = 10, after?: string): Pr
                 currencyCode
               }
             }
-            customer {
-              id
-              email
-            }
             displayFulfillmentStatus
           }
-          cursor
         }
         pageInfo {
           hasNextPage
@@ -819,33 +815,44 @@ export async function getCancelledOrders(first: number = 10, after?: string): Pr
     }
   `;
 
-  const variables = {
-    first,
-    after
-  };
+  const response = await fetch(SHOPIFY_ADMIN_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Shopify-Access-Token': process.env.SHOPIFY_ACCESS_TOKEN || '',
+    },
+    body: JSON.stringify({
+      query,
+      variables: {
+        first,
+        after,
+      },
+    }),
+  });
 
-  try {
-    const response = await shopifyRequest<CancelledOrderResponse>(query, variables);
-    
-    return {
-      orders: response.orders.edges.map(({ node }) => ({
-        id: node.id,
-        orderNumber: node.name.replace('#', ''),
-        customerId: node.customer?.id || '',
-        customerEmail: node.customer?.email || '',
-        createdAt: new Date(node.createdAt),
-        cancelledAt: new Date(node.cancelledAt),
-        reason: node.cancelReason || 'No reason provided',
-        totalAmount: parseFloat(node.totalPriceSet.shopMoney.amount),
-        currency: node.totalPriceSet.shopMoney.currencyCode,
-        status: node.displayFulfillmentStatus === 'UNFULFILLED' ? 'PENDING' : 'COMPLETED'
-      })),
-      pageInfo: response.orders.pageInfo
-    };
-  } catch (error) {
-    console.error('Error fetching cancelled orders:', error);
-    throw error;
+  const result = await response.json();
+
+  if (result.errors) {
+    throw new Error(result.errors[0].message);
   }
+
+  const orders = result.data.orders.edges.map((edge: CancelledOrderEdge) => ({
+    id: edge.node.id,
+    orderNumber: edge.node.name,
+    customerId: edge.node.customer?.id,
+    customerEmail: edge.node.customer?.email,
+    createdAt: new Date(edge.node.createdAt),
+    cancelledAt: new Date(edge.node.cancelledAt),
+    reason: edge.node.cancelReason,
+    totalAmount: parseFloat(edge.node.totalPriceSet.shopMoney.amount),
+    currency: edge.node.totalPriceSet.shopMoney.currencyCode,
+    status: edge.node.displayFulfillmentStatus,
+  }));
+
+  return {
+    orders,
+    pageInfo: result.data.orders.pageInfo,
+  };
 }
 
 export async function updateCancellationStatus(orderId: string, status: string): Promise<{ id: string; displayFulfillmentStatus: string }> {

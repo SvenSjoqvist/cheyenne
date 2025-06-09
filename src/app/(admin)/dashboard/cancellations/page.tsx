@@ -10,9 +10,12 @@ type Props = {
 export default async function CancellationsPage({ searchParams }: Props) {
   const params = await searchParams;
   const cursor = typeof params.cursor === 'string' ? params.cursor : undefined;
-  const { orders, pageInfo } = await getCancelledOrders(10, cursor);
+  const { orders, pageInfo } = await getCancelledOrders(
+    10,
+    cursor
+  );
 
-  // Transform the data to match DataTable's expected format
+  // Transform the data to match CancellationData type
   const transformedData = orders.map(order => ({
     node: {
       id: order.id,
@@ -20,7 +23,7 @@ export default async function CancellationsPage({ searchParams }: Props) {
       customerId: order.customerId,
       totalAmount: order.totalAmount,
       currency: order.currency,
-      createdAt: order.createdAt.toISOString(),
+      createdAt: new Date(order.createdAt),
       status: order.status
     } as CancellationData
   }));

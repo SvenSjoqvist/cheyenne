@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/app/lib/utils';
 import { ShopifyAdminProduct } from '@/app/lib/shopify/types';
 
-// Use Next.js's expected type - searchParams is always a Promise
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
@@ -11,9 +10,8 @@ interface PageProps {
 export default async function ProductsPage({
   searchParams,
 }: PageProps) {
-  // Always await searchParams since Next.js provides it as a Promise
-  const params = await searchParams;
-  const cursor = typeof params.cursor === 'string' ? params.cursor : null;
+  const resolvedParams = await searchParams;
+  const cursor = typeof resolvedParams.cursor === 'string' ? resolvedParams.cursor : null;
   const data = await getProducts(cursor);
   const { products } = data;
 

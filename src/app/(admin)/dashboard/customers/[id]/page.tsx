@@ -122,8 +122,8 @@ export default async function CustomerViewPage({
   params,
 }: PageProps) {
   const resolvedParams = await params;
-  const customers = await getCustomerDetails([resolvedParams.id]);
-  const customer = customers[0];
+  const customerPromise = getCustomerDetails([resolvedParams.id]);
+  const customer = (await customerPromise)[0];
 
   const orderDetails = [
     {
@@ -170,17 +170,19 @@ export default async function CustomerViewPage({
           currencyCode: edge.node.totalPriceSet.shopMoney.currencyCode
         }
       },
-      createdAt: new Date(edge.node.createdAt).toLocaleDateString(),
+      createdAt: new Date(edge.node.createdAt),
       displayFulfillmentStatus: edge.node.status,
-      displayFinancialStatus: edge.node.financialStatus,
+      displayFinancialStatus: edge.node.financialStatus || '',
       billingAddress: null,
       shippingAddress: null,
-      discountApplications: undefined,
+      discountApplications: { edges: [] },
       shippingLine: null,
-      paymentGatewayNames: undefined,
-      fulfillments: undefined
-    }
+      paymentGatewayNames: [],
+      fulfillments: []
+    } as OrderData
   }));
+
+  const customers = await customerPromise;
 
   return (
     <div className="pt-16 bg-[#F7F7F7] min-h-screen">

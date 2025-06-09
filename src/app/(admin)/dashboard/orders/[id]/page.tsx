@@ -46,7 +46,7 @@ export default async function OrderPage({ params }: Props) {
       phone: order.customer.phone || ''
     } : null,
     totalPriceSet: order.totalPriceSet,
-    createdAt: order.createdAt,
+    createdAt: new Date(order.createdAt),
     displayFulfillmentStatus: order.displayFulfillmentStatus,
     displayFinancialStatus: order.displayFinancialStatus,
     billingAddress: order.billingAddress,

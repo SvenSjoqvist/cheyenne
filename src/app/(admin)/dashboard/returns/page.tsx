@@ -3,31 +3,7 @@ import { useEffect, useState } from "react";
 import { getReturns, updateReturnStatus } from "@/app/lib/actions/returns";
 import { useDashboard } from "@/app/components/admin/DashboardContext";
 import DataTable from "@/app/components/admin/DataTable";
-import { ReturnData } from "@/app/components/admin/types";
-
-type ReturnItem = {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-  returnId: string;
-  productName: string;
-  variant: string;
-  reason: string;
-  quantity: number;
-};
-
-type Return = {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-  orderId: string;
-  orderNumber: number;
-  customerId: string;
-  customerEmail: string;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED";
-  additionalNotes: string | null;
-  items: ReturnItem[];
-};
+import { Return } from "@/app/lib/types/returns";
 
 type StatusUpdateEvent = CustomEvent<{
   returnId: string;
@@ -46,6 +22,7 @@ export default function ReturnsPage() {
         setLoading(true);
         const data = await getReturns();
         setReturns(data);
+        console.log(data);
       } catch (error) {
         console.error('Error fetching returns:', error);
         setError('Failed to load returns');
@@ -107,31 +84,6 @@ export default function ReturnsPage() {
     );
   }
 
-  // Transform the data to match ReturnData interface
-  const transformedData = returns.map(returnRequest => ({
-    node: {
-      id: returnRequest.id,
-      orderId: returnRequest.orderId,
-      orderNumber: returnRequest.orderNumber,
-      customerId: returnRequest.customerId,
-      customerEmail: returnRequest.customerEmail,
-      status: returnRequest.status,
-      createdAt: returnRequest.createdAt.toISOString(),
-      updatedAt: returnRequest.updatedAt.toISOString(),
-      additionalNotes: returnRequest.additionalNotes,
-      items: returnRequest.items.map(item => ({
-        id: item.id,
-        returnId: item.returnId,
-        productName: item.productName,
-        variant: item.variant,
-        reason: item.reason,
-        quantity: item.quantity,
-        createdAt: item.createdAt.toISOString(),
-        updatedAt: item.updatedAt.toISOString()
-      }))
-    } as ReturnData
-  }));
-
   return (
     <div className="pt-20 bg-[#F7F7F7] min-h-screen">
       <div className="max-w-7xl mx-auto px-4">
@@ -140,7 +92,7 @@ export default function ReturnsPage() {
         </div>
 
         <DataTable
-          data={transformedData}
+          data={returns.map(returnRequest => ({ node: returnRequest }))}
           hasNextPage={false}
           endCursor=""
           baseUrl="/dashboard/returns"

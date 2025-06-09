@@ -2,61 +2,8 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { formatCurrency } from "@/app/lib/utils";
-import { TableData, Column, DataTableProps, CustomerData } from './types';
-
-type OrderValue = {
-  id?: string;
-  customer?: { id: string };
-  totalPriceSet?: { shopMoney: { amount: string; currencyCode: string } };
-  createdAt?: string;
-  displayFulfillmentStatus?: string;
-};
-
-type CustomerValue = {
-  id?: string;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-  orders?: {
-    edges: Array<{
-      node: {
-        totalPriceSet: {
-          shopMoney: {
-            amount: string;
-          };
-        };
-      };
-    }>;
-  };
-};
-
-type CancellationValue = {
-  orderNumber?: string;
-  customerId?: string;
-  totalAmount?: number;
-  currency?: string;
-  createdAt?: string;
-  status?: string;
-};
-
-type ReturnValue = {
-  id?: string;
-  customerId?: string;
-  orderId?: string;
-  createdAt?: string;
-  status?: string;
-  items?: Array<{ reason: string }>;
-};
-
-type ProductValue = {
-  sku?: string;
-  title?: string;
-  description?: string;
-  totalInventory?: number;
-  category?: string;
-  stock?: 'in_stock' | 'low_stock' | 'out_of_stock';
-};
+import { TableData, Column, DataTableProps, CustomerData, CancellationData } from './types';
+import React from 'react';
 
 export default function DataTable<T extends TableData>({ 
   data, 
@@ -120,41 +67,42 @@ export default function DataTable<T extends TableData>({
           { header: 'Description', accessor: 'description' as keyof T },
           { header: 'Quantity', accessor: 'totalInventory' as keyof T },
           { header: 'Category', accessor: 'category' as keyof T },
-          { header: 'Status', accessor: 'stock' as keyof T }
+          { header: 'Status', accessor: 'status' as keyof T }
         ] as Column<T>[];
     }
   };
 
-  const formatValue = (value: unknown, column: Column<T>, row: T) => {
+  const formatValue = (value: unknown, column: Column<T>, row: T): string | React.ReactElement => {
     if (value === undefined || value === null) return '-';
 
     switch (type) {
       case 'orders':
-        const orderValue = value as OrderValue;
         switch (column.accessor) {
           case 'id':
-            return String(orderValue.id).split('/').pop() || orderValue.id;
+            return String(value).split('/').pop() || String(value);
           case 'customer':
-            if (!orderValue.customer?.id) return 'Guest';
-            return String(orderValue.customer.id).split('/').pop();
+            const customer = value as { id?: string };
+            if (!customer?.id) return 'Guest';
+            return String(customer.id).split('/').pop() || 'Guest';
           case 'totalPriceSet':
-            return formatCurrency(orderValue.totalPriceSet?.shopMoney.amount || '0', orderValue.totalPriceSet?.shopMoney.currencyCode || 'USD');
+            const priceSet = value as { shopMoney: { amount: string; currencyCode: string } };
+            return formatCurrency(priceSet.shopMoney.amount, priceSet.shopMoney.currencyCode);
           case 'createdAt':
-            return new Date(orderValue.createdAt || '').toISOString().split('T')[0];
+            return (value as Date).toISOString().split('T')[0];
           default:
             return String(value);
         }
       case 'customers':
-        const customerValue = value as CustomerValue;
         const customerRow = row as CustomerData;
         switch (column.accessor) {
           case 'id':
-            return String(customerValue.id).split('/').pop() || customerValue.id;
+            return String(value).split('/').pop() || String(value);
           case 'firstName':
-            return `${customerValue.firstName} ${customerRow.lastName || ''}`;
+            return `${String(value)} ${customerRow.lastName || ''}`;
           case 'orders':
-            if (!customerValue.orders?.edges?.length) return formatCurrency(0, 'USD');
-            const total = customerValue.orders.edges.reduce((sum: number, edge) => {
+            const orders = value as { edges?: Array<{ node: { totalPriceSet: { shopMoney: { amount: string } } } }> };
+            if (!orders?.edges?.length) return formatCurrency(0, 'USD');
+            const total = orders.edges.reduce((sum: number, edge) => {
               const amount = parseFloat(edge.node.totalPriceSet.shopMoney.amount);
               return sum + (isNaN(amount) ? 0 : amount);
             }, 0);
@@ -163,36 +111,33 @@ export default function DataTable<T extends TableData>({
             return String(value);
         }
       case 'cancellations':
-        const cancellationValue = value as CancellationValue;
+        const cancellationRow = row as CancellationData;
         switch (column.accessor) {
           case 'customerId':
-            if (!cancellationValue.customerId) return '-';
-            return String(cancellationValue.customerId).split('/').pop();
+            if (!value) return '-';
+            return String(value).split('/').pop() || '-';
           case 'totalAmount':
-            return formatCurrency(cancellationValue.totalAmount || 0, cancellationValue.currency || 'USD');
+            return formatCurrency(value as number, cancellationRow.currency);
           case 'createdAt':
-            return new Date(cancellationValue.createdAt || '').toISOString().split('T')[0];
+            return (value as Date).toISOString().split('T')[0];
           default:
             return String(value);
         }
       case 'returns':
-        const returnValue = value as ReturnValue;
         switch (column.accessor) {
           case 'customerId':
-            if (!returnValue.customerId) return '-';
-            return String(returnValue.customerId).split('/').pop()?.split('?')[0] || '-';
           case 'orderId':
-            if (!returnValue.orderId) return '-';
-            return String(returnValue.orderId).split('/').pop()?.split('?')[0] || '-';
+            if (!value) return '-';
+            return String(value).split('/').pop()?.split('?')[0] || '-';
           case 'createdAt':
-            return new Date(returnValue.createdAt || '').toLocaleDateString();
+            return (value as Date).toLocaleDateString();
           case 'items':
-            return returnValue.items?.[0]?.reason || '-';
+            const items = value as Array<{ reason?: string }>;
+            return items?.[0]?.reason || '-';
           default:
             return String(value);
         }
       case 'products':
-        const productValue = value as ProductValue;
         switch (column.accessor) {
           case 'stock':
             const stockStatusStyles = {
@@ -205,15 +150,17 @@ export default function DataTable<T extends TableData>({
               low_stock: 'Low Stock',
               out_of_stock: 'Out of Stock'
             };
+            const stockValue = value as keyof typeof stockStatusStyles;
+            if (!stockValue || !(stockValue in stockStatusStyles)) return '-';
+            const statusLabel = stockStatusLabels[stockValue];
             return (
-              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${stockStatusStyles[productValue.stock || 'out_of_stock']}`}>
-                {stockStatusLabels[productValue.stock || 'out_of_stock']}
+              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${stockStatusStyles[stockValue]}`}>
+                {statusLabel}
               </span>
             );
           case 'description':
-            return productValue.description && productValue.description.length > 100 
-              ? `${productValue.description.substring(0, 100)}...` 
-              : productValue.description;
+            const desc = value as string;
+            return desc.length > 100 ? `${desc.substring(0, 100)}...` : desc;
           default:
             return String(value);
         }

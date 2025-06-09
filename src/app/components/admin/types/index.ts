@@ -110,7 +110,7 @@ export interface CancellationData {
   customerId: string;
   totalAmount: number;
   currency: string;
-  createdAt: Date;
+  createdAt: string;
   status: string;
 }
 
@@ -118,7 +118,7 @@ export interface ReturnData {
   id: string;
   customerId: string;
   orderId: string;
-  createdAt: Date;
+  createdAt: string;
   status: string;
   items: Array<{ reason: string }>;
 }

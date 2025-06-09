@@ -15,6 +15,7 @@ export interface CustomerData extends BaseTableData {
         totalPriceSet: {
           shopMoney: {
             amount: string;
+            currencyCode: string;
           };
         };
       };
@@ -39,7 +40,7 @@ export interface OrderData extends BaseTableData {
       currencyCode: string;
     };
   };
-  createdAt: string;
+  createdAt: Date;
   displayFulfillmentStatus: string;
   displayFinancialStatus: string;
   billingAddress: {
@@ -72,14 +73,14 @@ export interface CancellationData extends BaseTableData {
   customerId: string;
   totalAmount: number;
   currency: string;
-  createdAt: string;
+  createdAt: Date;
   status: string;
 }
 
 export interface ReturnData extends BaseTableData {
   customerId: string;
   orderId: string;
-  createdAt: string;
+  createdAt: Date;
   status: string;
   items: Array<{
     reason: string;

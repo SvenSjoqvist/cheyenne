@@ -15,6 +15,8 @@ export default async function OrdersPage({ searchParams }: Props) {
   const transformedOrders = orders.edges.map(edge => ({
     node: {
       id: edge.node.id,
+      name: edge.node.name,
+      orderNumber: edge.node.name,
       customer: edge.node.customer ? {
         id: edge.node.customer.id,
         firstName: edge.node.customer.firstName || '',
@@ -23,8 +25,15 @@ export default async function OrdersPage({ searchParams }: Props) {
         phone: edge.node.customer.phone || ''
       } : null,
       totalPriceSet: edge.node.totalPriceSet,
-      createdAt: edge.node.createdAt,
-      displayFulfillmentStatus: edge.node.displayFulfillmentStatus
+      createdAt: new Date(edge.node.createdAt),
+      displayFulfillmentStatus: edge.node.displayFulfillmentStatus,
+      displayFinancialStatus: edge.node.displayFinancialStatus || '',
+      billingAddress: edge.node.billingAddress || null,
+      shippingAddress: edge.node.shippingAddress || null,
+      discountApplications: { edges: [] },
+      shippingLine: null,
+      paymentGatewayNames: [],
+      fulfillments: []
     } as OrderData
   }));
 
