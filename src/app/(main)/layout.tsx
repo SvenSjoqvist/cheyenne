@@ -33,28 +33,28 @@ const footerSections: FooterSection[] = [
   {
     title: "concierge",
     links: [
-      { label: "contact", href: "/contact" },
-      { label: "size & fit", href: "/size-guide" },
-      { label: "track an order", href: "/order-tracking" },
-      { label: "shipping & delivery", href: "/shipping" },
-      { label: "account", href: "/account" },
+      { label: "Contact", href: "/contact" },
+      { label: "Size & fit", href: "/size-guide" },
+      { label: "Track an order", href: "/order-tracking" },
+      { label: "Shipping & delivery", href: "/shipping" },
+      { label: "Account", href: "/account" },
       { label: "FAQ", href: "/faq" },
     ],
   },
   {
     title: "company",
     links: [
-      { label: "who we are", href: "/about" },
-      { label: "sustainability", href: "/sustainability" },
+      { label: "Who we are", href: "/about" },
+      { label: "Sustainability", href: "/sustainability" },
     ],
   },
   {
     title: "legal",
     links: [
-      { label: "return & cancellation policy", href: "/returns" },
-      { label: "accessibility policy", href: "/accessibility" },
-      { label: "privacy policy", href: "/privacy" },
-      { label: "terms of service", href: "/tos" },
+      { label: "Return & cancellation policy", href: "/returns" },
+      { label: "Accessibility policy", href: "/accessibility" },
+      { label: "Privacy policy", href: "/privacy" },
+      { label: "Terms of service", href: "/tos" },
       {
         label: "do not sell or share my personal data​",
         href: "/privacy/do-not-sell",
@@ -62,14 +62,14 @@ const footerSections: FooterSection[] = [
     ],
   },
   {
-    title: "social",
+    title: "socials",
     links: [
-      { label: "instagram", href: "https://www.instagram.com/kilaekoswim/" },
-      { label: "spotify", href: "https://open.spotify.com/user/31htb6nn2p2wywhn4gofxjrlt6we?si=8f1b1c1d215147de" },
-      { label: "pinterest", href: "https://www.pinterest.com/015bqs6mcp6ta4frqsyu71hx8g9xpv/" },
-      { label: "tiktok", href: "https://www.instagram.com/kilaekoswim/" },
-      { label: "substack", href: "https://substack.com/@kilaeko" },
-      { label: "linkedin", href: "https://www.linkedin.com/company/kilaeko/" },
+      { label: "Instagram", href: "https://www.instagram.com/kilaekoswim/" },
+      { label: "Spotify", href: "https://open.spotify.com/user/31htb6nn2p2wywhn4gofxjrlt6we?si=8f1b1c1d215147de" },
+      { label: "Pinterest", href: "https://www.pinterest.com/015bqs6mcp6ta4frqsyu71hx8g9xpv/" },
+      { label: "TikTok", href: "https://www.instagram.com/kilaekoswim/" },
+      { label: "Substack", href: "https://substack.com/@kilaeko" },
+      { label: "LinkedIn", href: "https://www.linkedin.com/company/kilaeko/" },
     ],
   },
 ];

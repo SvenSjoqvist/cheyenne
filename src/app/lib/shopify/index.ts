@@ -6,7 +6,6 @@ import {
   getCollectionProductsQuery,
   getCollectionsQuery,
 } from "./queries/collection";
-import { getMenuQuery } from "./queries/Menu";
 import {
   getProductQuery,
   getProductsByTagQuery,
@@ -14,8 +13,6 @@ import {
 } from "./queries/product";
 import {
   Connection,
-  Menu,
-  ShopifyMenuOperation,
   ShopifyProduct,
   ShopifyProductsOperation,
   Image,
@@ -238,25 +235,6 @@ function reshapeProducts(products: ShopifyProduct[]) {
   }
 
   return reshapedProducts;
-}
-export async function getMenu(handle: string): Promise<Menu[]> {
-  const res = await shopifyFetch<ShopifyMenuOperation>({
-    query: getMenuQuery,
-    tags: [TAGS.collections],
-    variables: {
-      handle,
-    },
-  });
-
-  return (
-    res.body?.data?.menu?.items.map((item: { title: string; url: string }) => ({
-      title: item.title,
-      path: item.url
-        .replace(domain, "")
-        .replace("/collections", "/search")
-        .replace("/pages", ""),
-    })) || []
-  );
 }
 
 export async function getProducts({

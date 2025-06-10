@@ -26,8 +26,8 @@ export const Footer = ({ sections }: FooterProps) => {
             <h3 className="text-xl font-bold tracking-wider font-[bero]">
               {section.title}
             </h3>
-            <hr className="shrink-0 self-stretch mt-4 mr-10 h-px border-0.5 border-solid bg-neutral-800 border-neutral-800" />
-            <nav className="flex flex-col mt-4 text-base font-medium tracking-wider">
+            <hr className="shrink-0 self-stretch mr-10 h-px border-0.5 border-solid bg-neutral-800 border-neutral-800" />
+            <nav className="flex flex-col mt-2 text-left font-medium tracking-wider font-darker-grotesque leading-4">
               {section.links.map((link, linkIndex) => (
                 <Link
                   href={link.href}

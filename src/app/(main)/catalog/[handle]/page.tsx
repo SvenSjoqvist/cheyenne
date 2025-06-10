@@ -66,7 +66,7 @@ export default async function ProductPage({ params }: PageProps) {
   return (
     <ProductProvider>
       <div className="mx-auto max-w-screen-2xl pt-10">
-        <div className="flex flex-col bg-white p-8 md:p-12 lg:flex-row lg:gap-8">
+        <div className="flex flex-col bg-[#F5F5F5] p-8 md:p-12 lg:flex-row lg:gap-8">
           <div className="h-full w-full basis-full lg:basis-4/6">
             <Suspense
               fallback={

@@ -37,12 +37,12 @@ export const NewsLetter = () => {
   }
 
   return (
-    <form action={handleSubmit} className="flex flex-col w-full max-w-md mx-auto leading-none text-neutral-800 mt-4">
-      <p className="text-sm sm:text-sm tracking-wider leading-5 font-darker-grotesque">
-        receive early access and behind-the-scenes looks at our latest
+    <form action={handleSubmit} className="flex flex-col w-full max-w-md mx-auto leading-none text-neutral-800 mt-2">
+      <p className="text-sm sm:text-sm tracking-wider leading-4 font-darker-grotesque">
+        Receive early access and behind-the-scenes looks at our latest
         collections.
       </p>
-      <div className="flex items-center mt-4 w-full text-base tracking-wider text-stone-500">
+      <div className="flex items-center mt-2 mb-1 w-full text-base tracking-wider text-stone-500">
         <input
           type="email"
           name="email"
