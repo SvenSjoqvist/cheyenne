@@ -25,27 +25,31 @@ const ProductSection = ({ productGroups }: { productGroups: ProductGroup[] }) =>
 
   return (
     <section className="self-center mt-32 w-full max-w-[1376px] max-md:mt-10 max-md:max-w-full">
-      <div className="flex gap-5 max-md:flex-col">
+      <div className="grid grid-cols-4 gap-8 max-[1200px]:grid-cols-2 max-[640px]:grid-cols-1">
         {productGroups.map((group, index) => (
-          <article key={index} className="flex flex-col w-3/12 max-md:ml-0 max-md:w-full">
-            <div className="flex flex-col w-full text-xl font-medium tracking-wider leading-none text-neutral-800 max-md:mt-6">
-              <Image 
-                src={group.main.featuredImage.url} 
-                alt={group.main.title} 
-                width={408} 
-                height={408} 
-              />
+          <article key={index} className="flex flex-col">
+            <div className="flex flex-col text-xl font-medium tracking-wider leading-none text-neutral-800 w-[325px] mx-auto">
+              <div className="relative w-[325px] h-[488px]">
+                <Image 
+                  src={group.main.featuredImage.url} 
+                  alt={group.main.title} 
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                  className="object-cover"
+                  priority={index < 4}
+                />
+              </div>
               
-              <h2 className="self-center mt-4 font-darker-grotesque">{getCleanTitle(group.main.title)}</h2>
+              <h2 className="self-center mt-6 font-darker-grotesque text-center text-2xl">{getCleanTitle(group.main.title)}</h2>
               
-              <div className="flex gap-10 justify-between items-center mt-4">
-                <p className="self-stretch my-auto font-darker-grotesque">
+              <div className="flex justify-between items-center mt-6">
+                <p className="font-darker-grotesque min-w-[140px] text-lg">
                   {group.main.title.includes('One Piece') ? 'One Piece' : 'Top'}: {formatPrice(group.main.priceRange.minVariantPrice.amount)}
                 </p>
-                <div className="flex flex-col self-stretch my-auto rounded-none w-[89px]">
+                <div className="flex flex-col">
                   <button 
                     onClick={() => router.push(`/catalog/${group.main.handle}`)} 
-                    className="cursor-pointer font-darker-grotesque text-xl"
+                    className="cursor-pointer font-darker-grotesque text-xl whitespace-nowrap"
                   >
                     add to bag
                   </button>
@@ -55,16 +59,16 @@ const ProductSection = ({ productGroups }: { productGroups: ProductGroup[] }) =>
 
               {/* Related products */}
               {group.related.length > 0 && (
-                <div className="mt-4 space-y-2">
+                <div className="mt-6 space-y-4">
                   {group.related.map((relatedProduct) => (
                     <div key={relatedProduct.id} className="flex justify-between items-center">
-                      <p className="font-darker-grotesque text-lg">
+                      <p className="font-darker-grotesque text-lg min-w-[140px]">
                         Bottom: {formatPrice(relatedProduct.priceRange.minVariantPrice.amount)}
                       </p>
-                      <div className="flex flex-col self-stretch my-auto rounded-none w-[89px]">
+                      <div className="flex flex-col">
                         <button 
                           onClick={() => router.push(`/catalog/${relatedProduct.handle}`)}
-                          className="cursor-pointer font-darker-grotesque text-xl"
+                          className="cursor-pointer font-darker-grotesque text-xl whitespace-nowrap"
                         >
                           add to bag
                         </button>

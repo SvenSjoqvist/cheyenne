@@ -18,9 +18,9 @@ export const NewsLetter = () => {
         throw new Error('Email is required');
       }
 
-      const result = await addSubscriber(email);
+      await addSubscriber(email);
       setStatus('success');
-      setMessage(result.message);
+      setMessage('Thank you for subscribing to our newsletter!');
       
       // Reset form
       const form = document.querySelector('form') as HTMLFormElement;

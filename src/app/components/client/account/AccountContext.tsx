@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo, useState, useCallback } from 'react';
 import { use } from 'react';
-import { CustomerResponse as ShopifyCustomerResponse, OrdersResponse } from '@/app/lib/shopify/types';
+import { CustomerResponse as ShopifyCustomerResponse, OrdersResponse, Customer } from '@/app/lib/shopify/types';
 
 export type Order = {
   id: string;
@@ -20,6 +20,7 @@ export type Order = {
   lineItems: {
     edges: Array<{
       node: {
+        id: string;
         title: string;
         quantity: number;
         variant: {
@@ -33,21 +34,9 @@ export type Order = {
   };
 };
 
-export type Customer = {
-  id: string;
-  firstName: string | null;
-  lastName: string | null;
-  email: string;
-  phone: string | null;
-  displayName: string;
-  defaultAddress?: {
-    id: string;
-    formatted: string[];
-  } | null;
-};
 
 type UserState = {
-    customer: ShopifyCustomerResponse;
+    customer: Customer | null;
     orders: Order[];
     user: {
         email: string;
@@ -57,7 +46,7 @@ type UserState = {
 
 type UserContextType = UserState & {
   fetchUserData: () => Promise<void>;
-  setCustomer: (customer: ShopifyCustomerResponse) => void;
+  setCustomer: (customer: Customer | null) => void;
   setOrders: (orders: Order[]) => void;
 };
 
@@ -76,7 +65,7 @@ export function UserProvider({
   const ordersResponse = use(ordersPromise);
   
   const [state, setState] = useState<UserState>({
-    customer: customerData,
+    customer: customerData.customer,
     orders: ordersResponse.orders || [],
     user: {
       email: customerData.customer?.email || '',
@@ -84,13 +73,13 @@ export function UserProvider({
     }
   });
 
-  const setCustomer = useCallback((customer: ShopifyCustomerResponse) => {
+  const setCustomer = useCallback((customer: Customer | null) => {
     setState(prevState => ({
       ...prevState,
       customer,
       user: {
-        email: customer.customer?.email || '',
-        id: customer.customer?.id || ''
+        email: customer?.email || '',
+        id: customer?.id || ''
       }
     }));
   }, []);
@@ -104,14 +93,14 @@ export function UserProvider({
 
   const fetchUserData = useCallback(async () => {
     setState({
-      customer: customerData,
+      customer: customerData.customer,
       orders: ordersResponse.orders || [],
       user: {
         email: customerData.customer?.email || '',
         id: customerData.customer?.id || ''
       }
     });
-  }, [customerData, ordersResponse.orders]);
+  }, [customerData.customer, ordersResponse.orders]);
 
   const value = useMemo(
     () => ({

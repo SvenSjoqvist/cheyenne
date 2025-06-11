@@ -2,8 +2,9 @@
 "use client";
 
 import { useState } from "react";
-import { Customer } from "@/app/components/client/account/AccountContext";
+
 import { updateCustomerPassword } from "@/app/lib/shopify";
+import { Customer } from "@/app/lib/shopify/types";
 // Define an interface for the form data
 interface CustomerFormData {
   firstName: string;
@@ -16,7 +17,7 @@ export default function AccountDetails({ customer }: { customer: Customer }) {
   const [formData, setFormData] = useState<CustomerFormData>({
     firstName: customer.firstName || "",
     lastName: customer.lastName || "",
-    email: customer.email,
+    email: customer.email || "",
     newPassword: "",
   });
 
@@ -71,7 +72,7 @@ export default function AccountDetails({ customer }: { customer: Customer }) {
     type="email" 
     id="username" 
     name="username" 
-    defaultValue={customer.email}
+    defaultValue={customer.email || ""}
     autoComplete="username" 
     className="hidden"
     aria-hidden="true"

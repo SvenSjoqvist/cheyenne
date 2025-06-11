@@ -423,9 +423,9 @@ export interface Customer {
   id: string;
   firstName: string | null;
   lastName: string | null;
-  email: string | null;
+  email?: string | null;
   phone: string | null;
-  password: string;
+  password?: string;
   displayName: string | null;
   defaultAddress?: {
     id: string;
@@ -450,6 +450,7 @@ export interface Order {
   lineItems: {
     edges: Array<{
       node: {
+        id: string;
         title: string;
         quantity: number;
         variant: {

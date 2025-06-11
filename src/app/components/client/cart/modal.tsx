@@ -51,7 +51,7 @@ export default function CartModal() {
 
   return (
     <>
-      <button aria-label="Open cart" onClick={openCart}>
+      <button aria-label="Open cart" onClick={openCart} className="px-1">
         <OpenCart quantity={cart?.totalQuantity} />
       </button>
       <Transition show={isOpen}>
@@ -83,6 +83,7 @@ export default function CartModal() {
                   alt="Luggage"
                   width={24}
                   height={24}
+                  className="w-6 h-6"
                 />
                 <p className="text-lg font-semibold">My Cart</p>
                 <button aria-label="Close cart" onClick={closeCart}>

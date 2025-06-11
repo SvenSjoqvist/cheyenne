@@ -30,7 +30,7 @@ const BikiniBoutique: React.FC = async () => {
   }
 
   return (
-    <div className="flex overflow-hidden flex-col bg-white pb-10">
+    <div className="flex overflow-hidden flex-col bg-[#F5F5F5] pb-10">
       <Suspense fallback={<div>Loading...</div>}>
         <ProductGrid products={topProducts} />
       </Suspense>

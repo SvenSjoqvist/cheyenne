@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation";
-import { Customer } from "@/app/components/client/account/AccountContext";
 import OrderHistory from "@/app/components/client/account/OrderHistory";
 import AccountDetails from "@/app/components/client/account/AccountDetails"; 
 import LogoutButton from "@/app/components/client/account/ui/LogoutButton";
 import { getCookies, getCustomerOrder, Customer as fetchCustomer } from "@/app/components/client/account/actions";
-
+import { Customer } from "@/app/lib/shopify/types";
 export default async function AccountDashboard() {
   // Check authentication server-side
   const token = await getCookies({ cookieName: 'customerAccessToken' });
@@ -12,6 +11,7 @@ export default async function AccountDashboard() {
   if (!token) {
     redirect('/');
   }
+  
   
   // Fetch customer data server-side
   const customerData = await fetchCustomer();

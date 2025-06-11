@@ -10,6 +10,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import Reviews from "@/app/components/client/product/Reviews";
 
 export async function generateMetadata({
   params,
@@ -87,12 +88,28 @@ export default async function ProductPage({ params }: PageProps) {
             </Suspense>
           </div>
         </div>
-        
-        {/* Related Products Section - centered below description */}
-        <div className="flex justify-end p-8 md:p-12">
-          <div className="w-full lg:w-1/3">
+
+        <div className="flex flex-col lg:flex-row">
+          <div className="w-full lg:w-4/6 flex justify-center items-center">
+            <video 
+              src="/videos/video-under-product.mov" 
+              autoPlay 
+              loop 
+              muted 
+              playsInline 
+              className="w-[700px] h-[428px] object-cover ml-44" 
+            />
+          </div>
+          <div className="w-full lg:w-2/6 md:p-12">
             <RelatedProducts id={product.id} tags={product.tags} />
           </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4">
+          <Reviews productName={product.title} />
+        </div>
+        <div className="text-center px-16 py-24 w-full text-4xl font-bold leading-none bg-[#588FAE] text-neutral-100 tracking-[2px] max-md:px-5 max-md:max-w-full font-[bero]">
+          no restocks, limited quantity.
         </div>
       </div>
     </ProductProvider>
@@ -114,48 +131,46 @@ async function RelatedProducts({ id, tags }: { id: string; tags?: string[] }) {
   if (!relatedProducts || relatedProducts.length === 0) return null;
 
   return (
-    <section className="w-full">
-      <header className="text-center mb-8">
+    <section className="w-full max-w-7xl mx-auto">
+      <header className="text-center mb-5">
         <h2 className="text-2xl font-bold font-[bero]">Complete the set</h2>
       </header>
 
-      <div className="grid place-items-center">
-        <div className="w-[342px]">
-          <div className="overflow-x-auto">
-            <div className="inline-flex space-x-8 pb-4">
-              {relatedProducts.map((product) => (
-                <article 
-                  key={product.handle}
-                  className="flex-none w-[342px]"
+      <div className="flex flex-col items-center">
+        <div className="w-full overflow-x-auto">
+          <div className="flex gap-8 pb-4 min-w-max">
+            {relatedProducts.map((product) => (
+              <article 
+                key={product.handle}
+                className="flex-none w-[342px]"
+              >
+                <Link
+                  href={`/catalog/${product.handle}`}
+                  className="group block"
+                  prefetch={true}
                 >
-                  <Link
-                    href={`/catalog/${product.handle}`}
-                    className="group block"
-                    prefetch={true}
-                  >
-                    <div className="space-y-4">
-                      
-                      <figure className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
-                        <Image
-                          src={product.featuredImage?.url}
-                          alt={product.title}
-                          fill
-                          sizes="342px"
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                      </figure>
+                  <div className="space-y-4">
+                    <figure className="relative w-[342px] h-[428px] overflow-hidden">
+                      <Image
+                        src={product.featuredImage?.url}
+                        alt={product.title}
+                        fill
+                        sizes="(min-width: 342px) 342px, 100vw"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </figure>
+                    <div className="text-center">
+                      <h3 className="font-darker-grotesque text-lg">{product.title}</h3>
                     </div>
-                  </Link>
-                </article>
-              ))}
-            </div>
+                  </div>
+                </Link>
+              </article>
+            ))}
           </div>
-
-          <div className="mt-2 flex justify-center">
-            <div className="w-[342px]">
-              <AddToCart product={relatedProducts[0]} />
-            </div>
-          </div>
+        </div>
+        
+        <div className="w-full max-w-[450px] ml-32">
+          <AddToCart product={relatedProducts[0]} />
         </div>
       </div>
     </section>

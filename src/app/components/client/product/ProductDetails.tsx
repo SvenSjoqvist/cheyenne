@@ -4,11 +4,11 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 
 interface ProductDetailsProps {
-  description: string;
+  descriptionHtml: string;
 }
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({
-  description
+  descriptionHtml
 }) => {
   const [openSection, setOpenSection] = useState<string | null>(null);
 
@@ -17,7 +17,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   };
 
   const sections = [
-    { id: 'description', title: 'Description', content: description },
+    { id: 'description', title: 'Description', content: descriptionHtml },
     { 
       id: 'material', 
       title: 'Material, Composition, Care', 
@@ -41,7 +41,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         <div key={section.id} className="border-b border-neutral-200">
           <button
             onClick={() => toggleSection(section.id)}
-            className="flex justify-between items-center w-full py-4 text-left font-darker-grotesque text-lg"
+            className="flex justify-between items-center w-full py-4 text-left font-darker-grotesque text-lg cursor-pointer"
           >
             <span>{section.title}</span>
             <Image
@@ -53,9 +53,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
             />
           </button>
           {openSection === section.id && section.content && (
-            <div className="pb-4 text-sm text-neutral-700 font-darker-grotesque">
-              {section.content}
-            </div>
+            <div 
+              className="pb-4 text-sm text-neutral-700 font-darker-grotesque [&>p]:mb-4 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-4 [&>ul>li]:mb-2"
+              dangerouslySetInnerHTML={{ __html: section.content }}
+            />
           )}
         </div>
       ))}

@@ -7,24 +7,18 @@ interface HeroSectionProps {
 }
 
 const HeroSection: React.FC<HeroSectionProps> = () => {
-
   return (
-    <section 
-      className="relative w-full"
-      style={{ 
-        minHeight: '866px'
-      }}
-    >
+    <section className="relative w-full overflow-hidden">
       {/* Background Image Container */}
-      <div className="absolute inset-0">
+      <div className="relative w-full aspect-[16/9]">
         <video
           src="/videos/home-opening.mp4"
           autoPlay
           loop
-          preload="aut>?G"
+          preload="auto"
           muted
           playsInline
-          className="object-cover w-full h-full"
+          className="absolute inset-0 w-full h-full object-cover"
         />
       </div>
     </section>

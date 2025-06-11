@@ -22,7 +22,7 @@ export function ProductDescription({ product }: { product: Product }) {
         Before adding to luggage, please check our size guide or contact us for
         more information.
       </p>
-      <ProductDetails description={product.description} />
+      <ProductDetails descriptionHtml={product.descriptionHtml} />
     </>
   );
 }

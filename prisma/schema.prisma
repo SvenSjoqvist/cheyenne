@@ -49,10 +49,45 @@ model ReturnItem {
   updatedAt   DateTime @updatedAt
 }
 
+model Review {
+  id            String       @id @default(cuid())
+  orderId       String
+  orderNumber   Int
+  customerEmail String
+  customerId    String
+  customerName  String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  items         ReviewItem[]
+}
+
+model ReviewItem {
+  id            String   @id @default(uuid())
+  reviewId      String
+  review        Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  productName   String
+  variant       String
+  fitRating     FitRating
+  height        String?
+  waistSize     String?
+  purchasedSize String
+  title         String
+  description   String
+  rating        Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 enum ReturnStatus {
   PENDING
   APPROVED
   REJECTED
   COMPLETED
+}
+
+enum FitRating {
+  RUNS_SMALL
+  TRUE_TO_SIZE
+  RUNS_LARGE
 }
 

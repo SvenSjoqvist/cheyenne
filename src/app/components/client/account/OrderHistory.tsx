@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 
 export default function OrderHistory({ orders }: { orders: Order[] }) {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
-  const [editingOrder, setEditingOrder] = useState<string | null>(null);
+  const [reviewOrder, setReviewOrder] = useState<string | null>(null);
   const [cancelingOrderId, setCancelingOrderId] = useState<string | null>(null);
   const [isCanceling, setIsCanceling] = useState(false);
   const router = useRouter();
@@ -38,17 +38,17 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
 
   const isOrderEditable = (order: Order) => {
     const nonEditableStatuses = ["FULFILLED", "PARTIALLY_FULFILLED", "SHIPPED"];
+    const orderDate = new Date(order.processedAt);
+    const now = new Date();
+    const hoursSinceOrder = (now.getTime() - orderDate.getTime()) / (1000 * 60 * 60);
     
     return (
       !nonEditableStatuses.includes(order.fulfillmentStatus) && 
-      order.financialStatus !== "REFUNDED"
+      order.financialStatus !== "REFUNDED" &&
+      hoursSinceOrder <= 24
     );
   };
 
-  const handleEditOrder = (orderId: string, e: React.MouseEvent) => {
-    e.stopPropagation(); 
-    setEditingOrder(orderId);
-  };
 
   const handleCancelOrder = async (orderId: string, orderNumber: number, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -75,26 +75,8 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
     }
   };
 
-  const handleUpdateQuantity = (orderId: string, lineItemId: string, newQuantity: number) => {
-    // Implementation remains the same
-    console.log(orderId, lineItemId, newQuantity);
-  };
 
-  const handleRemoveItem = (orderId: string, lineItemId: string) => {
-    // Implementation remains the same
-    console.log(orderId, lineItemId);
-  };
 
-  const handleSaveChanges = (orderId: string) => {
-    // Implementation remains the same
-    console.log(orderId);
-    setEditingOrder(null);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingOrder(null);
-    setCancelingOrderId(null);
-  };
 
   if (orders.length === 0) {
     return (
@@ -155,22 +137,23 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
                   <td className="border border-gray-300 p-3">
                     <div className="flex flex-col space-y-1">
                       <button className="text-xs text-blue-600 hover:underline cursor-pointer" onClick={(e) => { e.stopPropagation(); router.push(`/account/return/${order.orderNumber}`); }}>Request Return</button>
+                      <button 
+                        className="text-xs text-blue-600 hover:underline cursor-pointer" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/account/review/${order.orderNumber}`);
+                        }}
+                      >
+                        Create Review
+                      </button>
                       {isOrderEditable(order) && (
-                        <>
-                          <button 
-                            className="text-xs text-blue-600 hover:underline cursor-pointer" 
-                            onClick={(e) => handleEditOrder(order.id, e)}
-                          >
-                            Edit Order
-                          </button>
-                          <button 
-                            className="text-xs text-red-600 hover:underline cursor-pointer" 
-                            onClick={(e) => handleCancelOrder(order.id, order.orderNumber, e)}
-                            disabled={isCanceling}
-                          >
-                            {cancelingOrderId === order.id ? "Confirm Cancel" : "Cancel Order"}
-                          </button>
-                        </>
+                        <button 
+                          className="text-xs text-red-600 hover:underline cursor-pointer" 
+                          onClick={(e) => handleCancelOrder(order.id, order.orderNumber, e)}
+                          disabled={isCanceling}
+                        >
+                          {cancelingOrderId === order.id ? "Confirm Cancel" : "Cancel Order"}
+                        </button>
                       )}
                       <button className="text-xs text-blue-600 hover:underline cursor-pointer">Reorder</button>
                     </div>
@@ -204,7 +187,7 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
                                   </p>
                                 )}
                                 <div className="flex items-center mt-1">
-                                  {editingOrder === order.id ? (
+                                  {reviewOrder === order.id ? (
                                     <>
                                       <label className="text-sm mr-2">Quantity:</label>
                                       <input 
@@ -212,18 +195,9 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
                                         min="0" 
                                         defaultValue={edge.node.quantity}
                                         className="w-16 p-1 border border-gray-300 rounded"
-                                        onChange={(e) => handleUpdateQuantity(
-                                          order.id, 
-                                          `${index}`, // Using index as a placeholder for lineItemId
-                                          parseInt(e.target.value)
-                                        )}
                                       />
                                       <button 
                                         className="ml-4 text-xs text-red-600 hover:underline"
-                                        onClick={() => handleRemoveItem(
-                                          order.id, 
-                                          `${index}` // Using index as a placeholder for lineItemId
-                                        )}
                                       >
                                         Remove
                                       </button>
@@ -239,17 +213,17 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
                           ))}
                         </div>
                         
-                        {editingOrder === order.id && (
+                        {reviewOrder === order.id && (
                           <div className="mt-4 flex justify-end space-x-3">
                             <button 
                               className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-                              onClick={handleCancelEdit}
+                              onClick={() => setReviewOrder(null)}
                             >
                               Cancel
                             </button>
                             <button 
                               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                              onClick={() => handleSaveChanges(order.id)}
+                              onClick={() => setReviewOrder(null)}
                             >
                               Save Changes
                             </button>

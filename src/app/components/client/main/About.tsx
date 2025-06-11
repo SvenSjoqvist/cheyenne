@@ -2,8 +2,10 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const RunawaySection = () => {
+  const router = useRouter();
   const leftContainerRef = useRef<HTMLDivElement>(null);
   const rightContainerRef = useRef<HTMLDivElement>(null);
   const [containerHeight, setContainerHeight] = useState("auto");
@@ -60,7 +62,7 @@ const RunawaySection = () => {
               scelerisque ante odio. est erat mi aenean imperdiet volutpat.
             </p>
 
-            <button className="flex items-center gap-6 mt-24 text-xl text-neutral-100 max-md:mt-10 max-md:text-lg">
+            <button onClick={() => router.push("/about")} className="flex items-center gap-6 mt-24 text-xl text-neutral-100 max-md:mt-10 max-md:text-lg cursor-pointer">
               <span>read more</span>
               <Image
                 src="/icons/readmore.svg"

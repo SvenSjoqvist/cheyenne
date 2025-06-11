@@ -19,14 +19,14 @@ export default function OpenForm() {
   };
 
   return (
-    <div>
-      <button onClick={handleOpenModal}>
+    <div className="flex items-center">
+      <button onClick={handleOpenModal} className="px-1">
         <Image
           src="/icons/human.svg"
-          alt="Cart"
-          width={23}
-          height={23}
-          className="cursor-pointer"
+          alt="Account"
+          width={24}
+          height={24}
+          className="w-6 h-6 cursor-pointer"
         />
       </button>
 
