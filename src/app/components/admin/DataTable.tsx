@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { formatCurrency } from "@/app/lib/utils";
 import { TableData, Column, DataTableProps, CustomerData, CancellationData } from './types';
 import React from 'react';
+import Image from 'next/image';
 
 export default function DataTable<T extends TableData>({ 
   data, 
@@ -68,6 +69,28 @@ export default function DataTable<T extends TableData>({
           { header: 'Quantity', accessor: 'totalInventory' as keyof T },
           { header: 'Category', accessor: 'category' as keyof T },
           { header: 'Status', accessor: 'status' as keyof T }
+        ] as Column<T>[];
+      case 'inventory-detail':
+        return [
+          { header: 'SKU', accessor: 'sku' as keyof T },
+          { header: 'Name', accessor: 'name' as keyof T },
+          { header: 'Color Description', accessor: 'colorDescription' as keyof T },
+          { header: 'Category', accessor: 'category' as keyof T }
+        ] as Column<T>[];
+      case 'inventory-quantity':
+        return [
+          { header: 'Total Quantity', accessor: 'totalQuantity' as keyof T },
+          { header: 'XS Quantity', accessor: 'xsQuantity' as keyof T },
+          { header: 'S Quantity', accessor: 'sQuantity' as keyof T },
+          { header: 'M Quantity', accessor: 'mQuantity' as keyof T },
+          { header: 'L Quantity', accessor: 'lQuantity' as keyof T },
+          { header: 'XL Quantity', accessor: 'xlQuantity' as keyof T }
+        ] as Column<T>[];
+      case 'product-detail':
+        return [
+          { header: 'Images', accessor: 'images' as keyof T },
+          { header: 'Description', accessor: 'description' as keyof T },
+          { header: 'Product Info', accessor: 'productInfo' as keyof T }
         ] as Column<T>[];
     }
   };
@@ -161,6 +184,41 @@ export default function DataTable<T extends TableData>({
           case 'description':
             const desc = value as string;
             return desc.length > 100 ? `${desc.substring(0, 100)}...` : desc;
+          default:
+            return String(value);
+        }
+      case 'inventory-detail':
+        switch (column.accessor) {
+          case 'colorDescription':
+            const desc = value as string;
+            return desc.length > 50 ? `${desc.substring(0, 50)}...` : desc;
+          default:
+            return String(value);
+        }
+      case 'inventory-quantity':
+        return String(value);
+      case 'product-detail':
+        switch (column.accessor) {
+          case 'images':
+            const images = value as { edges?: Array<{ node: { url: string; altText: string } }> };
+            if (!images?.edges?.length) return 'No images';
+            return (
+              <div className="flex gap-1">
+                {images.edges.slice(0, 3).map((edge, index) => (
+                  <Image
+                    key={index}
+                    src={edge.node.url}
+                    alt={edge.node.altText || 'Product image'}
+                    className="w-12 h-12 object-cover rounded"
+                  />
+                ))}
+                {images.edges.length > 3 && (
+                  <span className="text-xs text-gray-500">+{images.edges.length - 3}</span>
+                )}
+              </div>
+            );
+          case 'description':
+            return value as string;
           default:
             return String(value);
         }

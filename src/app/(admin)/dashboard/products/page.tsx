@@ -2,6 +2,7 @@ import { getProducts } from '@/app/lib/shopify/admin/shopify-admin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/app/lib/utils';
 import { ShopifyAdminProduct } from '@/app/lib/shopify/types';
+import Image from 'next/image';
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -29,7 +30,7 @@ export default async function ProductsPage({
               <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center space-x-4">
                   {product.images?.edges?.[0] && (
-                    <img
+                    <Image
                       src={product.images.edges[0].node.url}
                       alt={product.images.edges[0].node.altText || product.title}
                       className="w-16 h-16 object-cover rounded"

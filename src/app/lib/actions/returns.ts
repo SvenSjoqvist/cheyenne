@@ -3,6 +3,7 @@
 import nodemailer from 'nodemailer';
 import { prisma } from '@/app/lib/prisma/client';
 import { Return } from '@/app/lib/types/returns';
+import { protectServerAction, sanitizeInput } from '@/app/lib/auth-utils';
 
 // Create reusable transporter object using SMTP transport
 const transporter = nodemailer.createTransport({
@@ -22,7 +23,7 @@ export async function getOrderReturns(orderNumber: number) {
       where: {
         orderNumber,
         status: {
-          not: 'REJECTED' // Exclude rejected returns
+          not: 'REJECTED'
         }
       },
       include: {
@@ -272,6 +273,9 @@ export async function sendReturnRequest(
 // Function to get all returns for admin dashboard
 export async function getReturns(): Promise<Return[]> {
   try {
+    // Protect admin function
+    await protectServerAction();
+    
     const returns = await prisma.return.findMany({
       include: {
         items: true
@@ -280,47 +284,39 @@ export async function getReturns(): Promise<Return[]> {
         createdAt: 'desc'
       }
     });
-
-    return returns.map(returnRecord => ({
-      ...returnRecord,
-      createdAt: new Date(returnRecord.createdAt),
-      updatedAt: new Date(returnRecord.updatedAt),
-      items: returnRecord.items.map(item => ({
-        ...item,
-        createdAt: new Date(item.createdAt),
-        updatedAt: new Date(item.updatedAt)
-      }))
-    }));
-  } catch (error) {
-    console.error('Error fetching returns:', error);
-    throw error;
+    
+    return returns;
+  } catch (error: unknown) {
+    console.error('Failed to fetch returns:', error);
+    throw new Error('Failed to fetch returns');
   }
 }
 
 // Function to update return status
 export async function updateReturnStatus(returnId: string, status: Return['status']): Promise<Return> {
   try {
-    const returnRecord = await prisma.return.update({
-      where: { id: returnId },
-      data: { status },
+    // Protect admin function
+    await protectServerAction();
+    
+    // Sanitize inputs
+    const sanitizedReturnId = sanitizeInput(returnId);
+    
+    const updatedReturn = await prisma.return.update({
+      where: {
+        id: sanitizedReturnId
+      },
+      data: {
+        status
+      },
       include: {
         items: true
       }
     });
-
-    return {
-      ...returnRecord,
-      createdAt: new Date(returnRecord.createdAt),
-      updatedAt: new Date(returnRecord.updatedAt),
-      items: returnRecord.items.map(item => ({
-        ...item,
-        createdAt: new Date(item.createdAt),
-        updatedAt: new Date(item.updatedAt)
-      }))
-    };
-  } catch (error) {
-    console.error('Error updating return status:', error);
-    throw error;
+    
+    return updatedReturn;
+  } catch (error: unknown) {
+    console.error('Failed to update return status:', error);
+    throw new Error('Failed to update return status');
   }
 }
 
@@ -352,5 +348,166 @@ export async function getCustomerRefunds(customerId: string) {
       totalRefunds: 0,
       totalItemsReturned: 0
     };
+  }
+}
+
+export async function updateReturnCustomerInfo(returnId: string, customerData: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}) {
+  try {
+    // Protect admin function
+    await protectServerAction();
+    
+    // Sanitize inputs
+    const sanitizedReturnId = sanitizeInput(returnId);
+    const sanitizedData = {
+      firstName: sanitizeInput(customerData.firstName),
+      lastName: sanitizeInput(customerData.lastName),
+      email: sanitizeInput(customerData.email),
+      phone: sanitizeInput(customerData.phone)
+    };
+    
+    // Update return with customer info
+    const updatedReturn = await prisma.return.update({
+      where: {
+        id: sanitizedReturnId
+      },
+      data: {
+        customerEmail: sanitizedData.email,
+        // Note: You might need to add these fields to your Return model
+        // firstName: sanitizedData.firstName,
+        // lastName: sanitizedData.lastName,
+        // phone: sanitizedData.phone
+      },
+      include: {
+        items: true
+      }
+    });
+    
+    return updatedReturn;
+  } catch (error: unknown) {
+    console.error('Failed to update return customer info:', error);
+    throw new Error('Failed to update return customer info');
+  }
+}
+
+export async function updateReturnProductInfo(returnId: string, productData: Array<{
+  id: string;
+  productName: string;
+  quantity: number;
+  reason: string;
+  variant: string;
+}>) {
+  try {
+    // Protect admin function
+    await protectServerAction();
+    
+    // Sanitize inputs
+    const sanitizedReturnId = sanitizeInput(returnId);
+    const sanitizedProductData = productData.map(item => ({
+      id: sanitizeInput(item.id),
+      productName: sanitizeInput(item.productName),
+      quantity: Math.max(1, Math.min(100, item.quantity)), // Ensure reasonable quantity
+      reason: sanitizeInput(item.reason),
+      variant: sanitizeInput(item.variant)
+    }));
+    
+    // Delete existing items and create new ones
+    await prisma.returnItem.deleteMany({
+      where: {
+        returnId: sanitizedReturnId
+      }
+    });
+    
+    const updatedReturn = await prisma.return.update({
+      where: {
+        id: sanitizedReturnId
+      },
+      data: {
+        items: {
+          create: sanitizedProductData.map(item => ({
+            productName: item.productName,
+            variant: item.variant,
+            reason: item.reason,
+            quantity: item.quantity
+          }))
+        }
+      },
+      include: {
+        items: true
+      }
+    });
+    
+    return updatedReturn;
+  } catch (error: unknown) {
+    console.error('Failed to update return product info:', error);
+    throw new Error('Failed to update return product info');
+  }
+}
+
+// Function to handle return approval/denial with email notification
+export async function handleReturnAction(
+  returnId: string, 
+  action: 'confirm' | 'deny', 
+  emailTo: string, 
+  message: string
+) {
+  try {
+    // Protect admin function
+    await protectServerAction();
+    
+    // Sanitize inputs
+    const sanitizedReturnId = sanitizeInput(returnId);
+    const sanitizedEmail = sanitizeInput(emailTo);
+    const sanitizedMessage = sanitizeInput(message);
+    
+    // Determine new status
+    const newStatus: Return['status'] = action === 'confirm' ? 'APPROVED' : 'REJECTED';
+    
+    // Update return status
+    const updatedReturn = await prisma.return.update({
+      where: {
+        id: sanitizedReturnId
+      },
+      data: {
+        status: newStatus
+      },
+      include: {
+        items: true
+      }
+    });
+    
+    // Send email notification
+    const emailSubject = action === 'confirm' 
+      ? 'Return Request Approved' 
+      : 'Return Request Update';
+    
+    const emailContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #333;">Return Request ${action === 'confirm' ? 'Approved' : 'Denied'}</h2>
+        <p style="color: #666; line-height: 1.6;">
+          Your return request for order ${updatedReturn.orderId} has been ${action === 'confirm' ? 'approved' : 'denied'}.
+        </p>
+        ${sanitizedMessage ? `<p style="color: #666; line-height: 1.6;"><strong>Message:</strong> ${sanitizedMessage}</p>` : ''}
+        <p style="color: #666; line-height: 1.6;">
+          If you have any questions, please contact our support team.
+        </p>
+      </div>
+    `;
+    
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: sanitizedEmail,
+      subject: emailSubject,
+      html: emailContent
+    });
+    
+    return updatedReturn;
+  } catch (error: unknown) {
+    console.error('Failed to handle return action:', error);
+    throw new Error('Failed to handle return action');
   }
 } 

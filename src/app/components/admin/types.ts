@@ -96,9 +96,38 @@ export interface ProductData extends BaseTableData {
   stock: string;
 }
 
-export type TableData = CustomerData | OrderData | CancellationData | ReturnData | ProductData;
+export interface InventoryDetailData extends BaseTableData {
+  sku: string;
+  name: string;
+  colorDescription: string;
+  category: string;
+}
 
-export type TableType = 'orders' | 'customers' | 'cancellations' | 'returns' | 'products';
+export interface InventoryQuantityData extends BaseTableData {
+  totalQuantity: number;
+  xsQuantity: number;
+  sQuantity: number;
+  mQuantity: number;
+  lQuantity: number;
+  xlQuantity: number;
+}
+
+export interface ProductDetailData extends BaseTableData {
+  images: {
+    edges: Array<{
+      node: {
+        url: string;
+        altText: string;
+      };
+    }>;
+  };
+  description: string;
+  productInfo: string;
+}
+
+export type TableData = CustomerData | OrderData | CancellationData | ReturnData | ProductData | InventoryDetailData | InventoryQuantityData | ProductDetailData;
+
+export type TableType = 'orders' | 'customers' | 'cancellations' | 'returns' | 'products' | 'inventory-detail' | 'inventory-quantity' | 'product-detail';
 
 export interface Column<T extends TableData> {
   header: string;

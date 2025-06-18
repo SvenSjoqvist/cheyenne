@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { getDashboardData, getOrderStatusBreakdown } from '@/app/lib/actions/dashboard';
+import { getDashboardData, getOrderStatusBreakdown, getSalesData, getMonthlyRevenueData } from '@/app/lib/actions/dashboard';
 
 interface PieChartData {
   label: string;
@@ -22,6 +22,17 @@ interface DashboardData {
   helpTickets: number;
   refundRequests: number;
   awaitingShipment: number;
+  sales: {
+    totalRevenue: { amount: number; formatted: string };
+    todaysRevenue: { amount: number; formatted: string };
+    totalOrders: number;
+    currency: string;
+  };
+  monthlyRevenue: Array<{
+    month: string;
+    revenue: number;
+    formattedRevenue: string;
+  }>;
   marketing: {
     subscribersCount: number;
     subscribers?: Array<{
@@ -68,7 +79,14 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     totalProducts: 0,
     helpTickets: 0,
     refundRequests: 0, 
-    awaitingShipment: 0,   
+    awaitingShipment: 0,
+    sales: {
+      totalRevenue: { amount: 0, formatted: '$0.00' },
+      todaysRevenue: { amount: 0, formatted: '$0.00' },
+      totalOrders: 0,
+      currency: 'USD'
+    },
+    monthlyRevenue: [],
     marketing: {
       subscribersCount: 0
     },
@@ -92,9 +110,13 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       setError(null);
       
-      const result = await getDashboardData();
+      const [result, salesResult, monthlyRevenueResult] = await Promise.all([
+        getDashboardData(),
+        getSalesData(),
+        getMonthlyRevenueData()
+      ]);
       
-      if (result.success) {
+      if (result.success && salesResult.success && monthlyRevenueResult.success) {
         // Get order status breakdown for awaiting shipment count
         const orderStatusResult = await getOrderStatusBreakdown();
         
@@ -106,6 +128,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
           returns: result.data.returns,
           orderStatus: result.data.orderStatus,
           countryOrders: result.data.countryOrders || { countries: [], totalOrders: 0 },
+          sales: salesResult.data,
+          monthlyRevenue: monthlyRevenueResult.data,
           // Update static values with real data
           totalOrders: result.data.countryOrders.totalOrders,
           totalProducts: parseInt(result.data.shop?.totalProducts || '0'),
@@ -113,7 +137,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
           awaitingShipment: orderStatusResult.fulfillmentStatusCounts["Awaiting shipment"] || 0
         }));
       } else {
-        setError(result.error || 'Failed to fetch dashboard data');
+        setError(result.error || salesResult.error || monthlyRevenueResult.error || 'Failed to fetch dashboard data');
       }
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);

@@ -49,6 +49,10 @@ const sidebarItems: SidebarItems = {
         label: "Returns", 
         href: "/dashboard/returns",
       },
+      { 
+        label: "Team", 
+        href: "/dashboard/team",
+      }
     ]
   }
 };

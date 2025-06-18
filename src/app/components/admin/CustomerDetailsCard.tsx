@@ -16,7 +16,7 @@ export default function CustomerDetailsCard({data, bgColor = 'white' }: Customer
   const borderClass = isDark ? '' : 'border-2 border-[#E0E0E0]';
 
   return (
-    <div className={`h-auto w-full ${borderClass} rounded-2xl ${isDark ? 'bg-[#212121]' : 'bg-white'}`}>
+    <div className={`h-auto w-full ${borderClass} rounded-2xl ${isDark ? 'bg-[#212121]' : 'bg-[#F7F7F7]'}`}>
       <table className='w-full h-full'>
         <tbody>
           {data.map((item, index) => (

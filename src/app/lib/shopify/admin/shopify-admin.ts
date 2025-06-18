@@ -1088,4 +1088,95 @@ export async function getProductsServerAction(first: number = 10, after?: string
     console.error('Error fetching products:', error);
     throw new Error('Failed to fetch products');
   }
+}
+
+interface SingleProductResponse {
+  product: {
+    id: string;
+    title: string;
+    description: string;
+    totalInventory: number;
+    vendor: string;
+    productType: string;
+    category: {
+      id: string;
+      name: string;
+      fullName: string;
+    };
+    images: {
+      edges: Array<{
+        node: {
+          url: string;
+          altText: string;
+        };
+      }>;
+    };
+    variants: {
+      edges: Array<{
+        node: {
+          id: string;
+          sku: string;
+          title: string;
+          inventoryQuantity: number;
+          selectedOptions: Array<{
+            name: string;
+            value: string;
+          }>;
+        };
+      }>;
+    };
+  };
+}
+
+export async function getProductById(productId: string): Promise<SingleProductResponse> {
+  try {
+    const query = `
+      query getProductById($id: ID!) {
+        product(id: $id) {
+          id
+          title
+          description
+          totalInventory
+          vendor
+          productType
+          category {
+            id
+            name
+            fullName
+          }
+          images(first: 10) {
+            edges {
+              node {
+                url
+                altText
+              }
+            }
+          }
+          variants(first: 50) {
+            edges {
+              node {
+                id
+                sku
+                title
+                inventoryQuantity
+                selectedOptions {
+                  name
+                  value
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const variables = {
+      id: productId
+    };
+
+    return await shopifyRequest<SingleProductResponse>(query, variables);
+  } catch (error) {
+    console.error('Error fetching product by ID:', error);
+    throw new Error('Failed to fetch product');
+  }
 } 
