@@ -3,11 +3,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useState, useEffect, useRef } from 'react';
 import { createUrl } from '@/app/lib/utils';
 
-interface SearchBarProps {
-  isMenuOpen?: boolean;
-}
-
-export default function SearchBar({ isMenuOpen = false }: SearchBarProps) {
+export default function SearchBar() {
   const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter();   
   const searchParams = useSearchParams();
@@ -40,7 +36,7 @@ export default function SearchBar({ isMenuOpen = false }: SearchBarProps) {
   };
 
   return (
-    <div className="relative" ref={searchRef}>
+    <>
       {/* Search Icon Button */}
       <button
         type="button"
@@ -63,27 +59,27 @@ export default function SearchBar({ isMenuOpen = false }: SearchBarProps) {
         </svg>
       </button>
 
-      {/* Search Dropdown */}
+      {/* Full Width Search Bar */}
       {isExpanded && (
-        <div className={`fixed ${isMenuOpen ? 'top-[240px]' : 'top-[160px]'} left-0 right-0 w-full bg-neutral-100 border-b border-zinc-300 shadow-md z-50`}>
-          <form onSubmit={handleSubmit} className="w-full max-w-[100vw] px-4 py-3">
-            <div className="relative max-w-2xl mx-auto">
+        <div className="absolute top-[75px] left-0 right-0 w-screen -ml-5 -mr-5 max-[1004px]:-ml-5 max-[1004px]:-mr-5 lg:-ml-8 lg:-mr-8 bg-neutral-100 border-b border-zinc-300 shadow-md z-50" ref={searchRef}>
+          <form onSubmit={handleSubmit} className="w-full py-4 px-2">
+            <div className="relative w-full mx-auto">
               <input
                 type="text"
                 placeholder="Search for products..."
                 name="search"
                 autoComplete="off"
-                className="w-full p-3 pl-10 border rounded-lg outline-none bg-neutral-50"
+                className="w-full p-4 pl-12 pr-4 border-2 border-zinc-300 rounded-lg outline-none bg-white text-lg font-darker-grotesque focus:border-black transition-colors"
                 defaultValue={searchParams?.get("q") || ""}
                 autoFocus
               />
-              <div className="absolute left-3 top-1/2 -translate-y-1/2">
+              <div className="absolute left-6 top-1/2 -translate-y-1/2">
                 <svg 
                   width="20" 
                   height="20" 
                   viewBox="0 0 20 20" 
                   fill="none" 
-                  className="w-5 h-5 text-gray-400"
+                  className="w-5 h-5 text-gray-500"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path 
@@ -92,10 +88,20 @@ export default function SearchBar({ isMenuOpen = false }: SearchBarProps) {
                   />
                 </svg>
               </div>
+              <button
+                type="button"
+                onClick={() => setIsExpanded(false)}
+                className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black transition-colors"
+                aria-label="Close search"
+              >
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="w-5 h-5">
+                    <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                </button>
             </div>
           </form>
         </div>
       )}
-    </div>
+    </>
   );
 }

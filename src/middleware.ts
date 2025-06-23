@@ -12,11 +12,9 @@ export default withAuth(
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
     response.headers.set('X-XSS-Protection', '1; mode=block');
-    
-    // Content Security Policy - More permissive for external connections
     response.headers.set(
       'Content-Security-Policy',
-      "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com https:; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+      "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com https:; connect-src 'self' https:; frame-src 'self' https://open.spotify.com https://www.youtube.com https://www.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
     );
     
     return response;

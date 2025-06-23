@@ -5,6 +5,7 @@ import { CartProvider } from "@/app/components/client/cart/cart-context";
 import { cookies } from "next/headers";
 import { getCart } from "@/app/lib/shopify";
 import SizeGuide from "@/app/components/client/SizeGuide";
+import CartModal from "../components/client/cart/modal";
 
 type FooterSection = {
   title: string;
@@ -85,6 +86,7 @@ export default async function MainLayout({
     <CartProvider cartPromise={cart}>
       <Header />
       <Navbar />
+      <CartModal />
       {children}
       <Footer sections={footerSections} paymentMethods={paymentMethods} />
       <SizeGuide />

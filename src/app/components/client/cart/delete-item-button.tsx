@@ -2,6 +2,7 @@
   import { CartItem } from "@/app/lib/shopify/types";
 import { useActionState } from "react";
 import { removeItem } from "./actions";
+import Image from "next/image";
 
 type OptimisticUpdate = (merchandiseId: string, action: "delete") => void;
 
@@ -26,8 +27,8 @@ export function DeleteItemButton({
       <button
         type="submit"
         aria-label="Remove cart item"
-        className="flex h-[24px] w-[24px] items-center justify-center rounded-full bg-neutral-500"
-      >XX      </button>
+        className="flex h-[24px] w-[24px] items-center justify-center rounded-full bg-neutral-500 cursor-pointer"
+      ><Image src="/icons/delete.svg" alt="Delete" width={16} height={16} className="w-4 h-4" /></button>
       <p aria-live="polite" className="sr-only" role="status">
         {message}
       </p>
