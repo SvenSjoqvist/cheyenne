@@ -8,7 +8,7 @@ export default function ProductGridItems({products} : { products: Product[]}) {
         <>
         {products.map((product) => (
             <Grid.Item key={product.handle}>
-                <Link href={`/product/${product.handle}`} className="relative inline-block h-full w-full" prefetch={true}>
+                <Link href={`/catalog/${product.handle}`} className="relative inline-block h-full w-full" prefetch={true}>
                 <GridTileImage alt={product.title} 
                 label={{
                     title: product.title,

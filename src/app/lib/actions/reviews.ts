@@ -94,7 +94,13 @@ export async function sendReview(
       },
       select: {
         productName: true,
-        variant: true
+        variant: true,
+        review: {
+          select: {
+            orderNumber: true,
+            customerId: true
+          }
+        }
       }
     });
 
@@ -106,7 +112,7 @@ export async function sendReview(
     const newItems = items.filter(item => !reviewedProducts.has(`${item.name}-${item.variant}`));
 
     if (newItems.length === 0) {
-      throw new Error('You have already reviewed all selected products');
+      throw new Error('All selected products have already been reviewed. Please select different products to review.');
     }
 
     const review = await prisma.review.create({
@@ -145,17 +151,22 @@ export async function sendReview(
     
     // Sanitize errors before sending to client
     if (error instanceof Error) {
+      
+      
       // Only allow specific error messages to be sent to client
       const allowedErrors = [
         'Missing required review information',
         'No items provided for review',
         'Invalid item data provided',
         'Rating must be between 1 and 5',
-        'You have already reviewed all selected products'
+        'All selected products have already been reviewed. Please select different products to review.'
       ];
       
       if (allowedErrors.includes(error.message)) {
+        console.log('Error is in allowed list, throwing original error');
         throw error;
+      } else {
+        console.log('Error not in allowed list, throwing generic error');
       }
     }
     
