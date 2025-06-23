@@ -22,14 +22,15 @@ export default function Reviews() {
   const [ratings, setRatings] = useState<{[key: string]: number}>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reviewedProducts, setReviewedProducts] = useState<Set<string>>(new Set());
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Fetch existing reviews for this order
     const fetchExistingReviews = async () => {
-      if (!order || !user?.id) return;
+      if (!order?.orderNumber || !user?.id) return;
       
       try {
-        const reviews = await getExistingReviews(order.id, user.id);
+        const reviews = await getExistingReviews(order.orderNumber.toString(), user.id);
         
         if (reviews) {
           const reviewed = new Set<string>(
@@ -39,14 +40,30 @@ export default function Reviews() {
         }
       } catch (error) {
         console.error('Error fetching existing reviews:', error);
+        setError('Failed to load existing reviews');
       }
     };
 
     fetchExistingReviews();
-  }, [order, user?.id]);
+  }, [order?.orderNumber, user?.id]);
 
   if (!order) {
-    return <div>Order not found</div>;
+    return (
+      <div className="pt-20 bg-[#F7F7F7] min-h-screen">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="text-center">
+            <h1 className="text-[40px] font-[bero] mb-4">Order Not Found</h1>
+            <p className="text-gray-600 mb-6">The order you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to access it.</p>
+            <button 
+              onClick={() => router.push('/account')}
+              className="px-6 py-3 bg-black text-white rounded-md hover:bg-gray-800"
+            >
+              Back to Account
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const handleItemSelect = (itemId: string, selected: boolean) => {
@@ -106,6 +123,7 @@ export default function Reviews() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     const reviewItems = Object.entries(selectedItems)
       .filter(([, selected]) => selected)
@@ -172,7 +190,6 @@ export default function Reviews() {
 
       const result = await sendReview(
         order.orderNumber,
-        order.id,
         items,
         customerEmail,
         customerId,
@@ -187,7 +204,7 @@ export default function Reviews() {
       
       // Update the reviewed products set
       const newReviewedProducts = new Set(reviewedProducts);
-      items.forEach(item => newReviewedProducts.add(item.name));
+      items.forEach(item => newReviewedProducts.add(`${item.name}-${item.variant}`));
       setReviewedProducts(newReviewedProducts);
       
       // Reset form
@@ -202,8 +219,10 @@ export default function Reviews() {
       router.push('/account');
     } catch (error) {
       if (error instanceof Error) {
+        setError(error.message);
         alert(error.message);
       } else {
+        setError("Failed to submit review. Please try again or contact customer support.");
         alert("Failed to submit review. Please try again or contact customer support.");
       }
       console.error('Error submitting review:', error);
@@ -221,6 +240,12 @@ export default function Reviews() {
             Help other customers by sharing your experience with these products. Your feedback is valuable to us and our community.
           </p>
         </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-800">{error}</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div>

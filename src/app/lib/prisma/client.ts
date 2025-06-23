@@ -5,7 +5,7 @@ const prismaClientSingleton = () => {
     log: ['error', 'warn'],
     datasources: {
       db: {
-        url: "postgresql://kilaeko_owner:npg_6KCb9vrwLPyx@ep-shy-paper-a8ymnliq-pooler.eastus2.azure.neon.tech/kilaeko?sslmode=require"
+        url: process.env.DATABASE_URL
       }
     }
   });

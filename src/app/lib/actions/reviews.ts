@@ -18,21 +18,24 @@ interface ReviewData {
   customerName: string;
 }
 
-export async function getExistingReviews(orderId: string, customerId: string) {
+export async function getExistingReviews(orderNumber: string, customerId: string) {
   try {
+    // Validate inputs
+    if (!orderNumber || !customerId) {
+      throw new Error('Invalid request parameters');
+    }
+
     const reviews = await prisma.reviewItem.findMany({
       where: {
         review: {
-          orderId: orderId,
+          orderNumber: parseInt(orderNumber),
           customerId: customerId
         }
       },
-      include: {
-        review: {
-          select: {
-            customerName: true
-          }
-        }
+      select: {
+        productName: true,
+        variant: true,
+        id: true
       },
       orderBy: {
         id: 'asc'
@@ -43,20 +46,38 @@ export async function getExistingReviews(orderId: string, customerId: string) {
     return reviews;
   } catch (error) {
     console.error('Error fetching reviews:', error);
-    throw new Error('Failed to fetch reviews');
+    // Don't expose database errors to client
+    throw new Error('Failed to fetch existing reviews');
   }
 }
 
 export async function sendReview(
   orderNumber: number,
-  orderId: string,
   items: ReviewItem[],
   customerEmail: string,
   customerId: string,
   reviewData: ReviewData
 ) {
   try {
-    console.log('Received reviewData:', reviewData); // Debug log
+    // Validate inputs
+    if (!orderNumber || !customerEmail || !customerId || !reviewData?.customerName) {
+      throw new Error('Missing required review information');
+    }
+
+    if (!Array.isArray(items) || items.length === 0) {
+      throw new Error('No items provided for review');
+    }
+
+    // Validate each item
+    for (const item of items) {
+      if (!item.name || !item.variant || !item.title || !item.description || !item.rating || !item.fitRating) {
+        throw new Error('Invalid item data provided');
+      }
+      
+      if (item.rating < 1 || item.rating > 5) {
+        throw new Error('Rating must be between 1 and 5');
+      }
+    }
     
     // Check for existing reviews for these products by this customer
     const existingReviews = await prisma.reviewItem.findMany({
@@ -71,8 +92,9 @@ export async function sendReview(
           ]
         }))
       },
-      include: {
-        review: true
+      select: {
+        productName: true,
+        variant: true
       }
     });
 
@@ -87,17 +109,9 @@ export async function sendReview(
       throw new Error('You have already reviewed all selected products');
     }
 
-    console.log('Creating review with data:', { // Debug log
-      orderId,
-      orderNumber,
-      customerEmail,
-      customerId,
-      reviewData
-    });
-
     const review = await prisma.review.create({
       data: {
-        orderId,
+        orderId: orderNumber.toString(),
         orderNumber,
         customerEmail,
         customerId,
@@ -107,8 +121,8 @@ export async function sendReview(
             productName: item.name,
             variant: item.variant,
             fitRating: mapFitRating(item.fitRating),
-            height: item.height,
-            waistSize: item.waistSize,
+            height: item.height || null,
+            waistSize: item.waistSize || null,
             purchasedSize: item.variant.split('/')[0].trim(), // Extract size from variant (e.g., "M / Black" -> "M")
             title: item.title,
             description: item.description,
@@ -119,12 +133,34 @@ export async function sendReview(
     });
 
     return {
-      review,
+      review: {
+        id: review.id,
+        orderNumber: review.orderNumber,
+        createdAt: review.createdAt
+      },
       skippedItems: items.length - newItems.length
     };
   } catch (error) {
     console.error('Error creating review:', error);
-    throw error;
+    
+    // Sanitize errors before sending to client
+    if (error instanceof Error) {
+      // Only allow specific error messages to be sent to client
+      const allowedErrors = [
+        'Missing required review information',
+        'No items provided for review',
+        'Invalid item data provided',
+        'Rating must be between 1 and 5',
+        'You have already reviewed all selected products'
+      ];
+      
+      if (allowedErrors.includes(error.message)) {
+        throw error;
+      }
+    }
+    
+    // Generic error for any other issues
+    throw new Error('Failed to submit review. Please try again.');
   }
 }
 
@@ -146,11 +182,27 @@ function mapFitRating(fitRating: string): FitRating {
 
 export async function getProductReviews(productName: string) {
   try {
+    if (!productName) {
+      throw new Error('Product name is required');
+    }
+
     const reviews = await prisma.reviewItem.findMany({
       where: {
         productName: productName
       },
-      include: {
+      select: {
+        id: true,
+        productName: true,
+        variant: true,
+        fitRating: true,
+        height: true,
+        waistSize: true,
+        purchasedSize: true,
+        title: true,
+        description: true,
+        rating: true,
+        createdAt: true,
+        updatedAt: true,
         review: {
           select: {
             customerName: true

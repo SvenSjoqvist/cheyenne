@@ -117,6 +117,9 @@ const nextConfig: NextConfig = {
   // Experimental features
   experimental: {
     // Removed serverComponentsExternalPackages as it's now at root level
+    serverActions: {
+      bodySizeLimit: '10mb', // Increase limit for image uploads
+    },
   },
 
   // Webpack configuration for security

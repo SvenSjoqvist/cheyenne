@@ -81,6 +81,7 @@ export default async function MainLayout({
   const cart = getCart(cartId);
 
   return (
+    <div className="bg-[#F5F5F5]">
     <CartProvider cartPromise={cart}>
       <Header />
       <Navbar />
@@ -88,6 +89,7 @@ export default async function MainLayout({
       <Footer sections={footerSections} paymentMethods={paymentMethods} />
       <SizeGuide />
     </CartProvider>
+    </div>
   );
 }
 

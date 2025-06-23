@@ -162,6 +162,29 @@ export default function DataTable<T extends TableData>({
         }
       case 'products':
         switch (column.accessor) {
+          case 'variants':
+            const variants = value as { edges?: Array<{ node: { sku?: string; title?: string; selectedOptions?: Array<{ name: string; value: string }> } }> };
+            if (!variants?.edges?.length) return '-';
+            // For SKU column, show the first variant's SKU
+            if (column.header === 'SKU') {
+              return variants.edges[0]?.node?.sku || '-';
+            }
+            // For Description column, show color information
+            if (column.header === 'Description') {
+              const colors = new Set<string>();
+              variants.edges.forEach(edge => {
+                edge.node.selectedOptions?.forEach(option => {
+                  if (option.name.toLowerCase().includes('color') || option.name.toLowerCase().includes('colour')) {
+                    colors.add(option.value);
+                  }
+                });
+              });
+              return colors.size > 0 ? Array.from(colors).join(', ') : '-';
+            }
+            return '-';
+          case 'category':
+            const category = value as { name?: string; fullName?: string };
+            return category?.name || category?.fullName || '-';
           case 'stock':
             const stockStatusStyles = {
               in_stock: 'bg-green-100 text-green-800',
@@ -209,6 +232,8 @@ export default function DataTable<T extends TableData>({
                     key={index}
                     src={edge.node.url}
                     alt={edge.node.altText || 'Product image'}
+                    width={48}
+                    height={48}
                     className="w-12 h-12 object-cover rounded"
                   />
                 ))}

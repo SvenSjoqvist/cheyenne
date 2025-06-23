@@ -1,8 +1,7 @@
-import { getProducts } from '@/app/lib/shopify/admin/shopify-admin';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatCurrency } from '@/app/lib/utils';
-import { ShopifyAdminProduct } from '@/app/lib/shopify/types';
-import Image from 'next/image';
+import { getDetailedProducts } from '@/app/lib/shopify/admin/shopify-admin';
+import DataTable from '@/app/components/admin/DataTable';
+import AddProductForm from '@/app/components/admin/AddProductForm';
+import { ProductData } from '@/app/components/admin/types';
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -12,60 +11,37 @@ export default async function ProductsPage({
   searchParams,
 }: PageProps) {
   const resolvedParams = await searchParams;
-  const cursor = typeof resolvedParams.cursor === 'string' ? resolvedParams.cursor : null;
-  const data = await getProducts(cursor);
+  const cursor = typeof resolvedParams.cursor === 'string' ? resolvedParams.cursor : undefined;
+  const data = await getDetailedProducts(10, cursor);
   const { products } = data;
+
+  // Transform Shopify data to match ProductData interface
+  const transformedProducts: Array<{ node: ProductData }> = products.edges.map(edge => ({
+    node: {
+      id: edge.node.id,
+      title: edge.node.title,
+      description: edge.node.description,
+      totalInventory: edge.node.totalInventory,
+      sku: edge.node.variants.edges[0]?.node.sku || 'N/A',
+      category: edge.node.category?.name || 'Uncategorized',
+      stock: edge.node.totalInventory > 0 ? 'In Stock' : 'Out of Stock'
+    }
+  }));
 
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-6">Products</h1>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Products</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {products.edges.map(({ node: product }: { node: ShopifyAdminProduct }) => (
-              <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center space-x-4">
-                  {product.images?.edges?.[0] && (
-                    <Image
-                      src={product.images.edges[0].node.url}
-                      alt={product.images.edges[0].node.altText || product.title}
-                      className="w-16 h-16 object-cover rounded"
-                    />
-                  )}
-                  <div>
-                    <p className="font-medium">{product.title}</p>
-                    <p className="text-sm text-gray-500">{product.handle}</p>
-                    <p className="text-sm text-gray-500 line-clamp-2">{product.description}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium">
-                    {formatCurrency(product.priceRangeV2.minVariantPrice.amount, product.priceRangeV2.minVariantPrice.currencyCode)}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {product.totalInventory} in stock
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+      <DataTable
+        data={transformedProducts}
+        hasNextPage={products.pageInfo.hasNextPage}
+        endCursor={products.pageInfo.endCursor}
+        baseUrl="/dashboard/products"
+        type="products"
+        hideActions={false}
+      />
 
-          {products.pageInfo.hasNextPage && (
-            <div className="mt-6 text-center">
-              <a
-                href={`/dashboard/products?cursor=${encodeURIComponent(products.pageInfo.endCursor)}`}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-              >
-                Load More
-              </a>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <AddProductForm />
     </div>
   );
 }

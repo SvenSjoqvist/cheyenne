@@ -1,5 +1,5 @@
 "use client";
-import { addSubscriber } from "@/app/lib/prisma";
+import { subscribeToNewsletter } from "@/app/lib/actions/newsletter";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -12,26 +12,22 @@ export const NewsLetter = () => {
       setStatus('loading');
       setMessage('');
       
-      const email = formData.get('email') as string;
+      const result = await subscribeToNewsletter(formData);
       
-      if (!email) {
-        throw new Error('Email is required');
+      if (result.success) {
+        setStatus('success');
+        setMessage(result.message);
+        
+        // Reset form
+        const form = document.querySelector('form') as HTMLFormElement;
+        form?.reset();
+      } else {
+        setStatus('error');
+        setMessage(result.message);
       }
-
-      await addSubscriber(email);
-      setStatus('success');
-      setMessage('Thank you for subscribing to our newsletter!');
-      
-      // Reset form
-      const form = document.querySelector('form') as HTMLFormElement;
-      form?.reset();
     } catch (error) {
       setStatus('error');
-      if (error instanceof Error) {
-        setMessage(error.message);
-      } else {
-        setMessage('An unexpected error occurred. Please try again.');
-      }
+      setMessage('An unexpected error occurred. Please try again.');
       console.error('Newsletter subscription error:', error);
     }
   }

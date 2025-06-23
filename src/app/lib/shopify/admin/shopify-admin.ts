@@ -986,6 +986,11 @@ interface DetailedProductResponse {
           edges: Array<{
             node: {
               sku: string;
+              title: string;
+              selectedOptions: Array<{
+                name: string;
+                value: string;
+              }>;
             };
           }>;
         };
@@ -1020,10 +1025,15 @@ export async function getDetailedProducts(first: number = 10, after?: string): P
                 name
                 fullName
               }
-              variants(first: 1) {
+              variants(first: 10) {
                 edges {
                   node {
                     sku
+                    title
+                    selectedOptions {
+                      name
+                      value
+                    }
                   }
                 }
               }

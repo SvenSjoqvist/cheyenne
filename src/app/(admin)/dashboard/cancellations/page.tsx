@@ -42,6 +42,7 @@ export default async function CancellationsPage({ searchParams }: Props) {
             endCursor={pageInfo.endCursor}
             baseUrl="/dashboard/cancellations"
             type="cancellations"
+            hideActions={true}
           />
         </Suspense>
       </div>
