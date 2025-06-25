@@ -27,15 +27,8 @@ export function DeleteItemButton({
       <button
         type="submit"
         aria-label="Remove cart item"
-<<<<<<< HEAD
-        className="flex h-[24px] w-[24px] items-center justify-center rounded-full bg-neutral-500"
-      >
-        X{" "}
-      </button>
-=======
         className="flex h-[24px] w-[24px] items-center justify-center rounded-full bg-neutral-500 cursor-pointer"
       ><Image src="/icons/delete.svg" alt="Delete" width={16} height={16} className="w-4 h-4" /></button>
->>>>>>> 21a137751ab57d9b16f378e976a8e0b4833dc845
       <p aria-live="polite" className="sr-only" role="status">
         {message}
       </p>

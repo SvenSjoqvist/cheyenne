@@ -7,7 +7,7 @@ Disallow: /private
 Disallow: /dashboard
 
 # Host
-Host: https://cheyenne-pearl.vercel.app
+Host: https://testing.kilaeko.com
 
 # Sitemaps
-Sitemap: https://cheyenne-pearl.vercel.app/sitemap.xml
+Sitemap: https://testing.kilaeko.com/sitemap.xml

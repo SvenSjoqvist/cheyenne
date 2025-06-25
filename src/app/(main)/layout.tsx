@@ -10,65 +10,6 @@ import { UserProvider } from "../components/client/account/AccountContext";
 import { Metadata } from 'next';
 import Script from 'next/script';
 
-<<<<<<< HEAD
-type FooterSection = {
-  title: string;
-  links: Array<{
-    label: string;
-    href: string;
-  }>;
-};
-
-// Updated footer sections with proper links
-const footerSections: FooterSection[] = [
-  {
-    title: "Concierge",
-    links: [
-      { label: "Contact", href: "/contact" },
-      { label: "Size & fit", href: "/size-guide" },
-      { label: "Track an Order", href: "/order-tracking" },
-      { label: "Shipping & Delivery", href: "/shipping" },
-      { label: "Account", href: "/account" },
-      { label: "FAQ", href: "/faq" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "Who We Are", href: "/about" },
-      { label: "Sustainability", href: "/sustainability" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { label: "Return & Cancellation Policy", href: "/returns" },
-      { label: "Accessibility Policy", href: "/accessibility" },
-      { label: "Privacy Policy", href: "/privacy" },
-      { label: "Terms of Service", href: "/tos" },
-      // {
-      //   label: "do not sell or share my personal data​",
-      //   href: "/privacy/do-not-sell",
-      // },
-    ],
-  },
-  {
-    title: "Socials",
-    links: [
-      { label: "Instagram", href: "https://www.instagram.com/kilaekoswim/" },
-      {
-        label: "Spotify",
-        href: "https://open.spotify.com/user/31htb6nn2p2wywhn4gofxjrlt6we?si=8f1b1c1d215147de",
-      },
-      {
-        label: "Pinterest",
-        href: "https://www.pinterest.com/015bqs6mcp6ta4frqsyu71hx8g9xpv/",
-      },
-      { label: "TikTok", href: "https://www.instagram.com/kilaekoswim/" },
-      { label: "Substack", href: "https://substack.com/@kilaeko" },
-      { label: "LinkedIn", href: "https://www.linkedin.com/company/kilaeko/" },
-    ],
-=======
 export const metadata: Metadata = {
   metadataBase: new URL('https://testing.kilaeko.com'),
   title: {
@@ -123,7 +64,6 @@ export const metadata: Metadata = {
     title: 'Kilaeko | Luxury Swimwear & Sustainable Fashion',
     description: 'Discover Kilaeko\'s luxury swimwear collection. Sustainable, ethical, and timeless pieces crafted with intention.',
     images: ['/images/og-image.jpg'],
->>>>>>> 21a137751ab57d9b16f378e976a8e0b4833dc845
   },
   robots: {
     index: true,
@@ -260,17 +200,6 @@ export default async function MainLayout({
   };
   
   return (
-<<<<<<< HEAD
-    <div className="bg-[#F5F5F5]">
-      <CartProvider cartPromise={cart}>
-        <Header />
-        <Navbar />
-        {children}
-        <Footer sections={footerSections} paymentMethods={paymentMethods} />
-        {/* <SizeGuide /> */}
-      </CartProvider>
-    </div>
-=======
     <>
       <Script
         id="main-layout-structured-data"
@@ -294,6 +223,5 @@ export default async function MainLayout({
         </CartProvider>
       </div>
     </>
->>>>>>> 21a137751ab57d9b16f378e976a8e0b4833dc845
   );
 }
