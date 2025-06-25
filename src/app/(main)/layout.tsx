@@ -11,7 +11,7 @@ import { Metadata } from 'next';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://kilaeko.com'),
+  metadataBase: new URL('https://testing.kilaeko.com'),
   title: {
     default: 'Kilaeko | Luxury Swimwear & Sustainable Fashion',
     template: '%s | Kilaeko'
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://kilaeko.com',
+    url: 'https://testing.kilaeko.com',
     siteName: 'Kilaeko',
     title: 'Kilaeko | Luxury Swimwear & Sustainable Fashion',
     description: 'Discover Kilaeko\'s luxury swimwear collection. Sustainable, ethical, and timeless pieces crafted with intention. Shop limited edition swimwear made in Bali.',
@@ -82,7 +82,7 @@ export const metadata: Metadata = {
     yahoo: 'your-yahoo-verification-code',
   },
   alternates: {
-    canonical: 'https://kilaeko.com',
+    canonical: 'https://testing.kilaeko.com',
   },
   other: {
     'theme-color': '#F5F5F5',
@@ -111,23 +111,23 @@ export default async function MainLayout({
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'Kilaeko',
-    url: 'https://kilaeko.com',
+    url: 'https://testing.kilaeko.com',
     description: 'Luxury swimwear brand focused on sustainability and ethical production',
     potentialAction: {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: 'https://kilaeko.com/search?q={search_term_string}'
+        urlTemplate: 'https://testing.kilaeko.com/search?q={search_term_string}'
       },
       'query-input': 'required name=search_term_string'
     },
     publisher: {
       '@type': 'Organization',
       name: 'Kilaeko',
-      url: 'https://kilaeko.com',
+      url: 'https://testing.kilaeko.com',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://kilaeko.com/logo.png',
+        url: 'https://testing.kilaeko.com/logo.png',
         width: 200,
         height: 60
       },
@@ -153,10 +153,10 @@ export default async function MainLayout({
       '@type': 'Organization',
       name: 'Kilaeko',
       description: 'Luxury swimwear brand committed to sustainability and ethical production',
-      url: 'https://kilaeko.com',
+      url: 'https://testing.kilaeko.com',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://kilaeko.com/logo.png'
+        url: 'https://testing.kilaeko.com/logo.png'
       },
       foundingDate: '2020',
       knowsAbout: [

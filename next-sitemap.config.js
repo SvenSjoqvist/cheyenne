@@ -2,7 +2,7 @@ const { getAllRoutes } = require('./scripts/sitemap-generator');
 
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: process.env.SITE_URL || 'https://cheyenne-pearl.vercel.app',
+  siteUrl: process.env.SITE_URL || 'https://testing.kilaeko.com',
   generateRobotsTxt: true,
   generateIndexSitemap: false, // Set to true if you have many URLs (>50k)
   

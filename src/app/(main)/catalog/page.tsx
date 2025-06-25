@@ -36,7 +36,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       type: "website",
-      url: "https://kilaeko.com/catalog",
+      url: "https://testing.kilaeko.com/catalog",
       siteName: "Kilaeko",
       images: [
         {
@@ -68,7 +68,7 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     alternates: {
-      canonical: "https://kilaeko.com/catalog",
+      canonical: "https://testing.kilaeko.com/catalog",
     },
     other: {
       "theme-color": "#F5F5F5",
@@ -87,7 +87,7 @@ const BikiniBoutique: React.FC = async () => {
     "@type": "CollectionPage",
     "name": "Kilaeko Swimwear Collection",
     "description": "Luxury swimwear collection designed on the California coast, artisan made in Bali",
-    "url": "https://kilaeko.com/catalog",
+    "url": "https://testing.kilaeko.com/catalog",
     "brand": {
       "@type": "Brand",
       "name": "Kilaeko",
@@ -109,7 +109,7 @@ const BikiniBoutique: React.FC = async () => {
           "@type": "Product",
           "name": product.title,
           "description": product.description,
-          "url": `https://kilaeko.com/catalog/${product.handle}`,
+          "url": `https://testing.kilaeko.com/catalog/${product.handle}`,
           "image": product.featuredImage?.url,
           "brand": {
             "@type": "Brand",
@@ -122,7 +122,7 @@ const BikiniBoutique: React.FC = async () => {
             "availability": product.availableForSale 
               ? "https://schema.org/InStock" 
               : "https://schema.org/OutOfStock",
-            "url": `https://kilaeko.com/catalog/${product.handle}`
+            "url": `https://testing.kilaeko.com/catalog/${product.handle}`
           }
         }
       }))
@@ -141,7 +141,7 @@ const BikiniBoutique: React.FC = async () => {
               "@type": "WebPage",
               "name": "New Collection Coming Soon | Kilaeko",
               "description": "Join our exclusive community for early access to our upcoming limited-edition swimwear collection.",
-              "url": "https://kilaeko.com/catalog"
+              "url": "https://testing.kilaeko.com/catalog"
             })
           }}
         />
@@ -179,7 +179,7 @@ const BikiniBoutique: React.FC = async () => {
         <div className="container mx-auto px-4 max-w-[1376px] mt-20">
           <header className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold font-[bero] mb-4">
-              {topProducts.length > 0 ? "Swimwear Collection" : "New Collection"}
+              {topProducts.length > 0 ? "Runaway Collection" : "New Collection"}
             </h1>
             {topProducts.length > 0 && (
               <p className="text-lg md:text-xl font-light font-darker-grotesque text-gray-700 max-w-2xl mx-auto">

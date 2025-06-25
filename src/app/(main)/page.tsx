@@ -132,7 +132,7 @@ const KilaekoPage: React.FC = async () => {
           '@type': 'Product',
           name: group.main.title,
           description: group.main.description || `Luxury ${group.main.title} from Kilaeko`,
-          url: `https://kilaeko.com/products/${group.main.handle}`,
+          url: `https://testing.kilaeko.com/products/${group.main.handle}`,
           image: group.main.featuredImage?.url,
           brand: {
             '@type': 'Brand',

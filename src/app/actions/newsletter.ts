@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
 
 function addUnsubscribeLink(content: string, unsubscribeToken: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://testing.kilaeko.com';
     const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${unsubscribeToken}`;
     return content.replace('{{unsubscribe_link}}', unsubscribeUrl);
   } catch (error) {
