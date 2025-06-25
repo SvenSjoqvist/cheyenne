@@ -155,7 +155,7 @@ export default async function Privacy() {
           __html: JSON.stringify(structuredData)
         }}
       />
-<div className="bg-[#F7F7F7] pt-20 pb-32">Add commentMore actions
+<div className="bg-[#F7F7F7] pt-20 pb-32">
       <h1 className="text-[40px] font-[bero] text-center px-4">
         Privacy Policy
       </h1>
