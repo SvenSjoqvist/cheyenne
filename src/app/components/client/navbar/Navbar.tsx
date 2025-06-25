@@ -127,15 +127,6 @@ const Navigation = () => {
               <SearchBar />
             </Suspense>
             <OpenForm />
-            <div className="flex items-center">
-              <Image
-                src="/icons/money.svg"
-                alt="Wishlist"
-                width={24}
-                height={24}
-                className="w-6 h-6 hover:opacity-70 transition-opacity"
-              />
-            </div>
             <button 
               aria-label="Open cart" 
               onClick={openCart}

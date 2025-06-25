@@ -1,0 +1,13 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /private
+Disallow: /dashboard
+
+# Host
+Host: https://cheyenne-pearl.vercel.app
+
+# Sitemaps
+Sitemap: https://cheyenne-pearl.vercel.app/sitemap.xml

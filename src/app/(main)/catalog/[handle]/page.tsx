@@ -5,6 +5,7 @@ import { ProductDescription } from "@/app/components/client/product/product-desc
 import { HIDDEN_PRODUCT_TAG } from "@/app/lib/constants";
 import { getProduct, getProductsByTag } from "@/app/lib/shopify";
 import { Image as ImageType, Product } from "@/app/lib/shopify/types";
+import { generateProductSEO } from "@/app/lib/seo-generator";
 import Image from "next/image";
 import { Metadata } from "next";
 import Link from "next/link";
@@ -22,12 +23,14 @@ export async function generateMetadata({
 
   if (!product) return notFound();
 
-  const { url, width, height, altText: alt } = product.featuredImage || {};
+  // Use our SEO generator for comprehensive metadata
+  const seoData = await generateProductSEO(product);
   const indexable = !product.tags.includes(HIDDEN_PRODUCT_TAG);
 
   return {
-    title: product.seo?.title || product.title,
-    description: product.seo?.description || product.description,
+    title: seoData.title,
+    description: seoData.description,
+    keywords: seoData.keywords,
     robots: {
       index: indexable,
       follow: indexable,
@@ -36,18 +39,30 @@ export async function generateMetadata({
         follow: indexable,
       },
     },
-    openGraph: url
-      ? {
-          images: [
-            {
-              url,
-              width,
-              height,
-              alt,
-            },
-          ],
+    alternates: {
+      canonical: seoData.canonical,
+    },
+    openGraph: seoData.openGraph ? {
+      title: seoData.openGraph.title,
+      description: seoData.openGraph.description,
+      type: seoData.openGraph.type === 'product' ? 'website' : seoData.openGraph.type as 'website' | 'article',
+      url: seoData.openGraph.url,
+      siteName: seoData.openGraph.siteName,
+      images: seoData.openGraph.image ? [
+        {
+          url: seoData.openGraph.image,
+          width: 1200,
+          height: 630,
+          alt: seoData.openGraph.title,
         }
-      : null,
+      ] : undefined,
+    } : undefined,
+    twitter: seoData.twitter ? {
+      card: seoData.twitter.card as 'summary' | 'summary_large_image',
+      title: seoData.twitter.title,
+      description: seoData.twitter.description,
+      images: seoData.twitter.image ? [seoData.twitter.image] : undefined,
+    } : undefined,
   };
 }
 
@@ -56,7 +71,6 @@ interface PageProps {
 }
 
 export default async function ProductPage({ params }: PageProps) {
-  // Await the params to get the handle value
   const resolvedParams = await params;
   const handle = resolvedParams.handle;
   

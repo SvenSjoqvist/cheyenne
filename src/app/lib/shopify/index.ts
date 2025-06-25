@@ -387,7 +387,6 @@ export async function getGlobalContent(): Promise<GlobalContent[]> {
     cache: "force-cache",
   });
 
-  // Add error checking and logging
   if (!res.body?.data?.metaobjects?.edges) {
     console.error("Invalid response structure:", res);
     return [];

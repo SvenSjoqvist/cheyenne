@@ -99,7 +99,12 @@ export default function DashboardPage() {
               </div>
               <div className="flex flex-col items-start">
                 <p className="text-[20px] font-regular text-[#212121] font-darker-grotesque tracking-wider">Average Cart Value</p>
-                <p className="text-[26px] font-semibold font-darker-grotesque tracking-wider">${data.averageCartValue.amount}</p>
+                <p className="text-[26px] font-semibold font-darker-grotesque tracking-wider">
+                  {new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: data.averageCartValue.currency,
+                  }).format(data.averageCartValue.amount)}
+                </p>
               </div>
             </div>
           </div>

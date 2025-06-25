@@ -1,0 +1,59 @@
+SEO Data Generation Report
+Generated: 2025-06-24T22:13:06.031Z
+=====================================
+
+SUMMARY:
+- Total Routes: 13
+- Static Routes: 13
+- Dynamic Routes: 0
+- Product Routes: 0
+- Collection Routes: 0
+
+PRIORITY BREAKDOWN:
+- Priority 1.0 (Homepage): 1
+- Priority 0.9 (Catalog): 0
+- Priority 0.8 (Products): 12
+- Priority 0.7 (Collections): 0
+- Priority 0.6 (Main pages): 0
+- Priority 0.5 (Info pages): 0
+- Priority 0.3 (Legal pages): 0
+
+ROUTES BY CATEGORY:
+==================
+
+STATIC ROUTES:
+- / (Priority: 1, Change: daily)
+- /catalog (Priority: 0.8, Change: weekly)
+- /about (Priority: 0.8, Change: weekly)
+- /contact (Priority: 0.8, Change: weekly)
+- /sustainability (Priority: 0.8, Change: weekly)
+- /size-guide (Priority: 0.8, Change: weekly)
+- /returns (Priority: 0.8, Change: weekly)
+- /faq (Priority: 0.8, Change: weekly)
+- /privacy (Priority: 0.8, Change: weekly)
+- /tos (Priority: 0.8, Change: weekly)
+- /accessibility (Priority: 0.8, Change: weekly)
+- /collection-journal (Priority: 0.8, Change: weekly)
+- /search (Priority: 0.8, Change: weekly)
+
+PRODUCT ROUTES (First 10):
+
+
+COLLECTION ROUTES:
+
+
+EXCLUDED ROUTES:
+- /dashboard/*
+- /account/*
+- /admin/*
+- /api/*
+- /_next/*
+- /404
+- /500
+
+NOTES:
+- All product routes include structured data for rich snippets
+- Open Graph and Twitter Card metadata included for social sharing
+- Canonical URLs set for all routes to prevent duplicate content
+- Robots meta tags configured for proper indexing
+- Keywords generated from product data and tags

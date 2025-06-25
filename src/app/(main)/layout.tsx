@@ -3,75 +3,98 @@ import Navbar from "@/app/components/client/navbar/Navbar";
 import { Footer } from "@/app/components/client/Footer";
 import { CartProvider } from "@/app/components/client/cart/cart-context";
 import { cookies } from "next/headers";
-import { getCart } from "@/app/lib/shopify";
+import { getCart, getCustomer, getCustomerOrders } from "@/app/lib/shopify";
 import SizeGuide from "@/app/components/client/SizeGuide";
 import CartModal from "../components/client/cart/modal";
+import { UserProvider } from "../components/client/account/AccountContext";
+import { Metadata } from 'next';
+import Script from 'next/script';
 
-type FooterSection = {
-  title: string;
-  links: Array<{
-    label: string;
-    href: string;
-  }>;
-};
-
-// Updated footer sections with proper links
-const footerSections: FooterSection[] = [
-  {
-    title: "concierge",
-    links: [
-      { label: "Contact", href: "/contact" },
-      { label: "Size & fit", href: "/size-guide" },
-      { label: "Track an order", href: "/order-tracking" },
-      { label: "Shipping & delivery", href: "/shipping" },
-      { label: "Account", href: "/account" },
-      { label: "FAQ", href: "/faq" },
-    ],
+export const metadata: Metadata = {
+  metadataBase: new URL('https://kilaeko.com'),
+  title: {
+    default: 'Kilaeko | Luxury Swimwear & Sustainable Fashion',
+    template: '%s | Kilaeko'
   },
-  {
-    title: "company",
-    links: [
-      { label: "Who we are", href: "/about" },
-      { label: "Sustainability", href: "/sustainability" },
-    ],
+  description: 'Discover Kilaeko\'s luxury swimwear collection. Sustainable, ethical, and timeless pieces crafted with intention. Shop limited edition swimwear made in Bali.',
+  keywords: [
+    'Kilaeko',
+    'luxury swimwear',
+    'sustainable swimwear',
+    'ethical fashion',
+    'Bali swimwear',
+    'limited edition swimwear',
+    'artisan swimwear',
+    'slow fashion',
+    'conscious production',
+    'swimwear brand',
+    'bikini',
+    'one-piece swimsuit',
+    'swim top',
+    'swim bottom'
+  ],
+  authors: [{ name: 'Kilaeko' }],
+  creator: 'Kilaeko',
+  publisher: 'Kilaeko',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
   },
-  {
-    title: "legal",
-    links: [
-      { label: "Return & cancellation policy", href: "/returns" },
-      { label: "Accessibility policy", href: "/accessibility" },
-      { label: "Privacy policy", href: "/privacy" },
-      { label: "Terms of service", href: "/tos" },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://kilaeko.com',
+    siteName: 'Kilaeko',
+    title: 'Kilaeko | Luxury Swimwear & Sustainable Fashion',
+    description: 'Discover Kilaeko\'s luxury swimwear collection. Sustainable, ethical, and timeless pieces crafted with intention. Shop limited edition swimwear made in Bali.',
+    images: [
       {
-        label: "do not sell or share my personal data​",
-        href: "/privacy/do-not-sell",
-      },
+        url: '/images/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Kilaeko Luxury Swimwear - Sustainable and ethical swimwear collection',
+      }
     ],
   },
-  {
-    title: "socials",
-    links: [
-      { label: "Instagram", href: "https://www.instagram.com/kilaekoswim/" },
-      { label: "Spotify", href: "https://open.spotify.com/user/31htb6nn2p2wywhn4gofxjrlt6we?si=8f1b1c1d215147de" },
-      { label: "Pinterest", href: "https://www.pinterest.com/015bqs6mcp6ta4frqsyu71hx8g9xpv/" },
-      { label: "TikTok", href: "https://www.instagram.com/kilaekoswim/" },
-      { label: "Substack", href: "https://substack.com/@kilaeko" },
-      { label: "LinkedIn", href: "https://www.linkedin.com/company/kilaeko/" },
-    ],
+  twitter: {
+    card: 'summary_large_image',
+    site: '@kilaeko',
+    creator: '@kilaeko',
+    title: 'Kilaeko | Luxury Swimwear & Sustainable Fashion',
+    description: 'Discover Kilaeko\'s luxury swimwear collection. Sustainable, ethical, and timeless pieces crafted with intention.',
+    images: ['/images/og-image.jpg'],
   },
-];
-
-const paymentMethods = [
-  "/payment/visa.svg",
-  "/payment/mastercard.svg",
-  "/payment/paypal.svg",
-  "/payment/klarna.svg",
-  "/payment/applepay.svg",
-  "/payment/afterpay.svg",
-  "/payment/shoppay.svg",
-  "/payment/googlepay.svg",
-  "/payment/amex.svg",
-];
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: 'your-google-verification-code',
+    yandex: 'your-yandex-verification-code',
+    yahoo: 'your-yahoo-verification-code',
+  },
+  alternates: {
+    canonical: 'https://kilaeko.com',
+  },
+  other: {
+    'theme-color': '#F5F5F5',
+    'color-scheme': 'light',
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'default',
+    'apple-mobile-web-app-title': 'Kilaeko',
+    'application-name': 'Kilaeko',
+    'msapplication-TileColor': '#F5F5F5',
+    'msapplication-config': '/browserconfig.xml',
+  },
+};
 
 export default async function MainLayout({
   children,
@@ -80,18 +103,126 @@ export default async function MainLayout({
 }>) {
   const cartId = (await cookies()).get("cartId")?.value;
   const cart = getCart(cartId);
+  const customerPromise = getCustomer();
+  const ordersPromise = getCustomerOrders();
 
+  // Generate structured data for the main layout
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Kilaeko',
+    url: 'https://kilaeko.com',
+    description: 'Luxury swimwear brand focused on sustainability and ethical production',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: 'https://kilaeko.com/search?q={search_term_string}'
+      },
+      'query-input': 'required name=search_term_string'
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Kilaeko',
+      url: 'https://kilaeko.com',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://kilaeko.com/logo.png',
+        width: 200,
+        height: 60
+      },
+      sameAs: [
+        'https://www.instagram.com/kilaeko',
+        'https://www.facebook.com/kilaeko',
+        'https://www.pinterest.com/kilaeko'
+      ],
+      contactPoint: {
+        '@type': 'ContactPoint',
+        telephone: '+1-XXX-XXX-XXXX',
+        contactType: 'customer service',
+        email: 'hello@kilaeko.com',
+        availableLanguage: 'English'
+      },
+      address: {
+        '@type': 'PostalAddress',
+        addressCountry: 'US',
+        addressLocality: 'United States'
+      }
+    },
+    mainEntity: {
+      '@type': 'Organization',
+      name: 'Kilaeko',
+      description: 'Luxury swimwear brand committed to sustainability and ethical production',
+      url: 'https://kilaeko.com',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://kilaeko.com/logo.png'
+      },
+      foundingDate: '2020',
+      knowsAbout: [
+        'Sustainable Fashion',
+        'Ethical Production',
+        'Luxury Swimwear',
+        'Slow Fashion',
+        'Artisan Manufacturing'
+      ],
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: 'Kilaeko Swimwear Collection',
+        itemListElement: [
+          {
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'Product',
+              name: 'Swim Tops',
+              description: 'Luxury swim tops crafted with sustainable materials'
+            }
+          },
+          {
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'Product',
+              name: 'Swim Bottoms',
+              description: 'Ethical swim bottoms made in Bali'
+            }
+          },
+          {
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'Product',
+              name: 'One-Piece Swimsuits',
+              description: 'Timeless one-piece swimsuits designed for longevity'
+            }
+          }
+        ]
+      }
+    }
+  };
+  
   return (
-    <div className="bg-[#F5F5F5]">
-    <CartProvider cartPromise={cart}>
-      <Header />
-      <Navbar />
-      <CartModal />
-      {children}
-      <Footer sections={footerSections} paymentMethods={paymentMethods} />
-      <SizeGuide />
-    </CartProvider>
-    </div>
+    <>
+      <Script
+        id="main-layout-structured-data"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData)
+        }}
+      />
+      <div className="bg-[#F5F5F5]">
+        <CartProvider cartPromise={cart}>
+          <UserProvider customer={customerPromise} orders={ordersPromise}>
+            <Header />
+            <Navbar />
+            <CartModal />
+            <main>
+              {children}
+            </main>
+            <Footer />
+            <SizeGuide />
+          </UserProvider>
+        </CartProvider>
+      </div>
+    </>
   );
 }
 
