@@ -81,7 +81,7 @@ export const SECURITY_CONFIG = {
   // CORS settings
   cors: {
     origin: process.env.NODE_ENV === 'production' 
-      ? ['https://yourdomain.com'] 
+      ? ['https://testing.kilaeko.com'] 
       : ['http://localhost:3000'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

@@ -1,8 +1,12 @@
 'use server';
 
 import { prisma } from '@/app/lib/prisma/client';
+import { protectServerAction } from '@/app/lib/auth-utils';
 
 export async function ensureWelcomeTemplate() {
+  // Protect admin function
+  await protectServerAction();
+  
   try {
     const existingTemplate = await prisma.emailTemplate.findFirst({
       where: {
@@ -43,6 +47,9 @@ export async function ensureWelcomeTemplate() {
 }
 
 export async function createTemplate(name: string, subject: string, content: string) {
+  // Protect admin function
+  await protectServerAction();
+  
   try {
     const template = await prisma.emailTemplate.create({
       data: {
@@ -59,6 +66,9 @@ export async function createTemplate(name: string, subject: string, content: str
 }
 
 export async function getTemplates() {
+  // Protect admin function
+  await protectServerAction();
+  
   try {
     const templates = await prisma.emailTemplate.findMany({
       orderBy: {
@@ -73,6 +83,9 @@ export async function getTemplates() {
 }
 
 export async function deleteTemplate(id: string) {
+  // Protect admin function
+  await protectServerAction();
+  
   try {
     await prisma.emailTemplate.delete({
       where: { id },
@@ -85,6 +98,9 @@ export async function deleteTemplate(id: string) {
 }
 
 export async function updateTemplate(id: string, name: string, subject: string, content: string) {
+  // Protect admin function
+  await protectServerAction();
+  
   try {
     const template = await prisma.emailTemplate.update({
       where: { id },

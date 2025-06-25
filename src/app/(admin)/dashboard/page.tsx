@@ -4,11 +4,28 @@ import { useDashboard } from '@/app/components/admin/DashboardContext';
 import PieChart from '@/app/components/admin/PieChart';
 import WorldMap from '@/app/components/admin/WorldMap';
 import { useState } from 'react';
+import { revalidateProducts } from '@/app/lib/actions/cache';
 
 
 export default function DashboardPage() {
   const { data, loading, error, refreshData } = useDashboard();
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const [isRevalidating, setIsRevalidating] = useState(false);
+
+  const handleRevalidateProducts = async () => {
+    try {
+      setIsRevalidating(true);
+      await revalidateProducts();
+      // Refresh dashboard data after revalidation
+      await refreshData();
+      setShowQuickActions(false);
+    } catch (error) {
+      console.error('Failed to revalidate products:', error);
+    } finally {
+      setIsRevalidating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -48,8 +65,8 @@ export default function DashboardPage() {
               <p className="text-[20px] font-regular text-[#212121] font-darker-grotesque tracking-wider">Total Product Count</p>
             </div>
             <div className="flex flex-col items-start -space-y-2">
-              <p className="text-[26px] font-semibold font-darker-grotesque tracking-wider">{data.helpTickets}</p>
-              <p className="text-[20px] font-regular text-[#212121] font-darker-grotesque tracking-wider">Help Tickets</p>
+              <p className="text-[26px] font-semibold font-darker-grotesque tracking-wider">{data.todaysOrders}</p>
+              <p className="text-[20px] font-regular text-[#212121] font-darker-grotesque tracking-wider">Today&apos;s Orders</p>
             </div>
             <div className="flex flex-col items-start -space-y-2">
               <p className="text-[26px] font-semibold font-darker-grotesque tracking-wider">{data.returns.pendingReturns}</p> 
@@ -82,7 +99,12 @@ export default function DashboardPage() {
               </div>
               <div className="flex flex-col items-start">
                 <p className="text-[20px] font-regular text-[#212121] font-darker-grotesque tracking-wider">Average Cart Value</p>
-                <p className="text-[26px] font-semibold font-darker-grotesque tracking-wider">${data.averageCartValue.amount}</p>
+                <p className="text-[26px] font-semibold font-darker-grotesque tracking-wider">
+                  {new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: data.averageCartValue.currency,
+                  }).format(data.averageCartValue.amount)}
+                </p>
               </div>
             </div>
           </div>
@@ -108,6 +130,13 @@ export default function DashboardPage() {
             </button>
             <button className="w-full text-center px-4 py-2 hover:opacity-80 cursor-pointer rounded-md text-white font-darker-grotesque whitespace-nowrap font-medium">
               Fulfill Order
+            </button>
+            <button 
+              onClick={handleRevalidateProducts}
+              disabled={isRevalidating}
+              className="w-full text-center px-4 py-2 hover:opacity-80 cursor-pointer rounded-md text-white font-darker-grotesque whitespace-nowrap font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isRevalidating ? 'Revalidating...' : 'Revalidate Products'}
             </button>
           </div>
         )}

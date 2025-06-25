@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Cart, CartItem, Product, ProductVariant } from "@/app/lib/shopify/types";
-import { createContext, use, useContext, useMemo, useOptimistic } from "react";
+import { createContext, use, useContext, useMemo, useOptimistic, useState } from "react";
 
 type UpdateType = "plus" | "minus" | "delete";
 
@@ -9,6 +9,9 @@ type CartContextType = {
   cart: Cart | undefined;
   updateCartItem: (merchandiseId: string, updateType: UpdateType) => void;
   addCartItem: (variant: ProductVariant, product: Product) => void;
+  isCartOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
 };
 type CartAction =
   | {
@@ -194,6 +197,7 @@ export function CartProvider({
     initialCart,
     cartReducer
   );
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const updateCartItem = (merchandiseId: string, updateType: UpdateType) => {
     updateOptimisticCart({
@@ -206,13 +210,19 @@ export function CartProvider({
     updateOptimisticCart({ type: "ADD_ITEM", payload: { variant, product } });
   };
 
+  const openCart = () => setIsCartOpen(true);
+  const closeCart = () => setIsCartOpen(false);
+
   const value = useMemo(
     () => ({
       cart: optimisticCart,
       updateCartItem,
       addCartItem,
+      isCartOpen,
+      openCart,
+      closeCart,
     }),
-    [optimisticCart]
+    [optimisticCart, isCartOpen]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

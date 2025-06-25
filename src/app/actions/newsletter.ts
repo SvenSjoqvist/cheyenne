@@ -2,6 +2,7 @@
 
 import nodemailer from 'nodemailer';
 import { prisma } from '@/app/lib/prisma/client';
+import { protectServerAction } from '@/app/lib/auth-utils';
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -15,7 +16,7 @@ const transporter = nodemailer.createTransport({
 
 function addUnsubscribeLink(content: string, unsubscribeToken: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://testing.kilaeko.com';
     const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${unsubscribeToken}`;
     return content.replace('{{unsubscribe_link}}', unsubscribeUrl);
   } catch (error) {
@@ -24,6 +25,9 @@ function addUnsubscribeLink(content: string, unsubscribeToken: string) {
 }
 
 export async function sendWelcomeEmail(email: string) {
+  // Protect admin function
+  await protectServerAction();
+  
   try {
     const subscriber = await prisma.subscriber.findUnique({
       where: { email }
@@ -61,6 +65,9 @@ export async function sendWelcomeEmail(email: string) {
 }
 
 export async function sendNewsletter(subject: string, content: string, recipients: string[]) {
+  // Protect admin function
+  await protectServerAction();
+  
   try {
     if (!content) {
       throw new Error('Content is empty');
@@ -113,6 +120,9 @@ export async function sendNewsletter(subject: string, content: string, recipient
 }
 
 export async function sendTestEmail(email: string, subject: string, content: string) {
+  // Protect admin function
+  await protectServerAction();
+  
   try {
     const requiredEnvVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'SMTP_FROM'];
     const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);

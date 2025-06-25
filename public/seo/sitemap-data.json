@@ -1,0 +1,80 @@
+[
+  {
+    "loc": "/",
+    "lastmod": "2025-06-24T22:13:06.030Z",
+    "changefreq": "daily",
+    "priority": 1
+  },
+  {
+    "loc": "/catalog",
+    "lastmod": "2025-06-24T22:13:06.030Z",
+    "changefreq": "weekly",
+    "priority": 0.8
+  },
+  {
+    "loc": "/about",
+    "lastmod": "2025-06-24T22:13:06.030Z",
+    "changefreq": "weekly",
+    "priority": 0.8
+  },
+  {
+    "loc": "/contact",
+    "lastmod": "2025-06-24T22:13:06.030Z",
+    "changefreq": "weekly",
+    "priority": 0.8
+  },
+  {
+    "loc": "/sustainability",
+    "lastmod": "2025-06-24T22:13:06.030Z",
+    "changefreq": "weekly",
+    "priority": 0.8
+  },
+  {
+    "loc": "/size-guide",
+    "lastmod": "2025-06-24T22:13:06.030Z",
+    "changefreq": "weekly",
+    "priority": 0.8
+  },
+  {
+    "loc": "/returns",
+    "lastmod": "2025-06-24T22:13:06.030Z",
+    "changefreq": "weekly",
+    "priority": 0.8
+  },
+  {
+    "loc": "/faq",
+    "lastmod": "2025-06-24T22:13:06.030Z",
+    "changefreq": "weekly",
+    "priority": 0.8
+  },
+  {
+    "loc": "/privacy",
+    "lastmod": "2025-06-24T22:13:06.030Z",
+    "changefreq": "weekly",
+    "priority": 0.8
+  },
+  {
+    "loc": "/tos",
+    "lastmod": "2025-06-24T22:13:06.030Z",
+    "changefreq": "weekly",
+    "priority": 0.8
+  },
+  {
+    "loc": "/accessibility",
+    "lastmod": "2025-06-24T22:13:06.030Z",
+    "changefreq": "weekly",
+    "priority": 0.8
+  },
+  {
+    "loc": "/collection-journal",
+    "lastmod": "2025-06-24T22:13:06.030Z",
+    "changefreq": "weekly",
+    "priority": 0.8
+  },
+  {
+    "loc": "/search",
+    "lastmod": "2025-06-24T22:13:06.030Z",
+    "changefreq": "weekly",
+    "priority": 0.8
+  }
+]

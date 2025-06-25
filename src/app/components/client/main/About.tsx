@@ -89,8 +89,8 @@ const RunawaySection = () => {
             <Image
               src="https://cdn.builder.io/api/v1/image/assets/df24f938eeb948889fe9ad55656873a2/8ea0f181d622321167dcc13dadf075228ff5f14837c9d018d117a9be1c02d5ac?apiKey=df24f938eeb948889fe9ad55656873a2&"
               alt="Runaway Collection background"
-              layout="fill"
-              objectFit="cover"
+              fill
+              className="object-cover"
               priority
             />
           </div>

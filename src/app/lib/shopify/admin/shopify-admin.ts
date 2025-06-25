@@ -1,4 +1,5 @@
 import { ShopifyCustomer, ShopifyOrder } from '../types';
+import { protectServerAction } from '@/app/lib/auth-utils';
 
 const SHOPIFY_ADMIN_API_URL = `https://kilaeko-application.myshopify.com/admin/api/2024-01/graphql.json`;
 
@@ -68,6 +69,9 @@ interface OrdersResponse {
 }
 
 export async function getCustomers(first: number = 10, after?: string, customerIds?: string[]): Promise<CustomersResponse> {
+  // Protect admin function
+  await protectServerAction();
+  
   const query = `
     query GetCustomers($first: Int!, $after: String, $query: String) {
       customers(first: $first, after: $after, query: $query) {
@@ -115,6 +119,9 @@ export async function getCustomers(first: number = 10, after?: string, customerI
 }
 
 export async function getOrders(first: number, after?: string, customerId?: string): Promise<{ edges: Array<{ node: ShopifyOrder }>; pageInfo: { hasNextPage: boolean; endCursor: string } }> {
+  // Protect admin function
+  await protectServerAction();
+  
   const query = `
     query GetOrders($first: Int!, $after: String, $query: String) {
       orders(first: $first, after: $after, query: $query) {
@@ -226,6 +233,9 @@ interface RecentItemsResponse {
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
+  // Protect admin function
+  await protectServerAction();
+  
   const countsQuery = `
     query {
       shop {
@@ -365,361 +375,345 @@ interface ProductsResponse {
 }
 
 export async function getProducts(cursor: string | null = null, limit = 10): Promise<ProductsResponse> {
-  try {
-    const query = `
-      query getProducts($first: Int!, $after: String) {
-        products(first: $first, after: $after, sortKey: CREATED_AT, reverse: true) {
-          pageInfo {
-            hasNextPage
-            endCursor
-          }
-          edges {
-            node {
-              id
-              title
-              handle
-              description
-              totalInventory
-              priceRangeV2 {
-                minVariantPrice {
-                  amount
-                  currencyCode
-                }
+  // Protect admin function
+  await protectServerAction();
+  
+  const query = `
+    query getProducts($first: Int!, $after: String) {
+      products(first: $first, after: $after, sortKey: CREATED_AT, reverse: true) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        edges {
+          node {
+            id
+            title
+            handle
+            description
+            totalInventory
+            priceRangeV2 {
+              minVariantPrice {
+                amount
+                currencyCode
               }
-              featuredImage {
-                url
-                altText
-              }
+            }
+            featuredImage {
+              url
+              altText
             }
           }
         }
       }
-    `;
+    }
+  `;
 
-    const variables = {
-      first: limit,
-      after: cursor,
-    };
+  const variables = {
+    first: limit,
+    after: cursor,
+  };
 
-    return await shopifyRequest<ProductsResponse>(query, variables);
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    return {
-      products: {
-        pageInfo: {
-          hasNextPage: false,
-          endCursor: '',
-        },
-        edges: []
-      }
-    };
-  }
+  return await shopifyRequest<ProductsResponse>(query, variables);
 }
 
 export async function fetchAbandonedCarts() {
-  try {
-    const query = `
-      query {
-        orders(first: 100, query: "status:any financial_status:abandoned OR financial_status:voided") {
-          edges {
-            node {
-              id
-              name
-              displayFinancialStatus
-              displayFulfillmentStatus
-              createdAt
-              totalPriceSet {
-                shopMoney {
-                  amount
-                  currencyCode
-                }
+  // Protect admin function
+  await protectServerAction();
+  
+  const query = `
+    query {
+      orders(first: 100, query: "status:any financial_status:abandoned OR financial_status:voided") {
+        edges {
+          node {
+            id
+            name
+            displayFinancialStatus
+            displayFulfillmentStatus
+            createdAt
+            totalPriceSet {
+              shopMoney {
+                amount
+                currencyCode
               }
             }
           }
         }
       }
-    `;
+    }
+  `;
 
-    const data = await shopifyRequest<{
-      orders: {
-        edges: Array<{
-          node: {
-            id: string;
-            name: string;
-            displayFinancialStatus: string;
-            displayFulfillmentStatus: string;
-            createdAt: string;
-            totalPriceSet: {
-              shopMoney: {
-                amount: string;
-                currencyCode: string;
-              };
+  const data = await shopifyRequest<{
+    orders: {
+      edges: Array<{
+        node: {
+          id: string;
+          name: string;
+          displayFinancialStatus: string;
+          displayFulfillmentStatus: string;
+          createdAt: string;
+          totalPriceSet: {
+            shopMoney: {
+              amount: string;
+              currencyCode: string;
             };
           };
-        }>;
-      };
-    }>(query);
+        };
+      }>;
+    };
+  }>(query);
 
-    // Return the count of abandoned orders
-    const count = data.orders.edges.length;
-    console.log('Abandoned orders:', data.orders.edges.map(edge => ({
-      id: edge.node.id,
-      name: edge.node.name,
-      status: edge.node.displayFinancialStatus,
-      amount: edge.node.totalPriceSet.shopMoney.amount,
-      currency: edge.node.totalPriceSet.shopMoney.currencyCode,
-      createdAt: edge.node.createdAt
-    })));
-    return count;
-  } catch (error) {
-    console.error('Error fetching abandoned carts:', error);
-    return 0;
-  }
+  // Return the count of abandoned orders
+  const count = data.orders.edges.length;
+  console.log('Abandoned orders:', data.orders.edges.map(edge => ({
+    id: edge.node.id,
+    name: edge.node.name,
+    status: edge.node.displayFinancialStatus,
+    amount: edge.node.totalPriceSet.shopMoney.amount,
+    currency: edge.node.totalPriceSet.shopMoney.currencyCode,
+    createdAt: edge.node.createdAt
+  })));
+  return count;
 }
 
 export async function getAverageCartValue() {
-  try {
-    const query = `
-      query {
-        orders(first: 100, sortKey: CREATED_AT, reverse: true) {
-          edges {
-            node {
-              totalPriceSet {
-                shopMoney {
-                  amount
-                  currencyCode
-                }
+  // Protect admin function
+  await protectServerAction();
+  
+  const query = `
+    query {
+      orders(first: 100, sortKey: CREATED_AT, reverse: true) {
+        edges {
+          node {
+            totalPriceSet {
+              shopMoney {
+                amount
+                currencyCode
               }
             }
           }
         }
       }
-    `;
+    }
+  `;
 
-    const data = await shopifyRequest<{
-      orders: {
-        edges: Array<{
-          node: {
-            totalPriceSet: {
-              shopMoney: {
-                amount: string;
-                currencyCode: string;
-              };
+  const data = await shopifyRequest<{
+    orders: {
+      edges: Array<{
+        node: {
+          totalPriceSet: {
+            shopMoney: {
+              amount: string;
+              currencyCode: string;
             };
           };
-        }>;
-      };
-    }>(query);
+        };
+      }>;
+    };
+  }>(query);
 
-    if (data.orders.edges.length === 0) {
-      return { amount: 0, currency: 'USD' };
-    }
-
-    // Calculate average
-    const total = data.orders.edges.reduce((sum, order) => {
-      return sum + parseFloat(order.node.totalPriceSet.shopMoney.amount);
-    }, 0);
-
-    const average = total / data.orders.edges.length;
-    const currency = data.orders.edges[0]?.node.totalPriceSet.shopMoney.currencyCode || 'USD';
-
-    console.log('Average cart value:', average, currency);
-    return { amount: Math.round(average), currency };
-  } catch (error) {
-    console.error('Error fetching average cart value:', error);
+  if (data.orders.edges.length === 0) {
     return { amount: 0, currency: 'USD' };
   }
+
+  // Calculate average
+  const total = data.orders.edges.reduce((sum, order) => {
+    return sum + parseFloat(order.node.totalPriceSet.shopMoney.amount);
+  }, 0);
+
+  const average = total / data.orders.edges.length;
+  const currency = data.orders.edges[0]?.node.totalPriceSet.shopMoney.currencyCode || 'USD';
+
+  console.log('Average cart value:', average, currency);
+  return { amount: Math.round(average), currency };
 }
 
 export async function getOrderStatusBreakdown() {
-  try {
-    const response = await shopifyRequest<{
-      orders: {
-        edges: Array<{
-          node: {
-            id: string;
-            name: string;
-            displayFulfillmentStatus: string;
-            displayFinancialStatus: string;
-          }
-        }>;
-        pageInfo: {
-          hasNextPage: boolean;
-          endCursor: string | null;
-        }
-      }
-    }>(`
-      query ($first: Int) {
-        orders(first: $first) {
-          edges {
-            node {
-              id
-              name
-              displayFulfillmentStatus
-              displayFinancialStatus
-            }
-          }
-          pageInfo {
-            hasNextPage
-            endCursor
+  // Protect admin function
+  await protectServerAction();
+  
+  const query = `
+    query ($first: Int) {
+      orders(first: $first) {
+        edges {
+          node {
+            id
+            name
+            displayFulfillmentStatus
+            displayFinancialStatus
           }
         }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
       }
-    `, { first: 100 });
-    
-    // Process the results
-    const orders = response.orders.edges.map(edge => edge.node);
-    
-    // Count by fulfillment status
-    const fulfillmentStatusCounts: Record<string, number> = {};
-    
-    orders.forEach(order => {
-      const fulfillmentStatus = order.displayFulfillmentStatus;
-      fulfillmentStatusCounts[fulfillmentStatus] = (fulfillmentStatusCounts[fulfillmentStatus] || 0) + 1;
-    });
+    }
+  `;
 
-    // Map Shopify fulfillment statuses to user-requested labels for the pie chart
-    let chartData = [
+  const response = await shopifyRequest<{
+    orders: {
+      edges: Array<{
+        node: {
+          id: string;
+          name: string;
+          displayFulfillmentStatus: string;
+          displayFinancialStatus: string;
+        }
+      }>;
+      pageInfo: {
+        hasNextPage: boolean;
+        endCursor: string | null;
+      }
+    }
+  }>(query, { first: 100 });
+  
+  // Process the results
+  const orders = response.orders.edges.map(edge => edge.node);
+  
+  // Count by fulfillment status
+  const fulfillmentStatusCounts: Record<string, number> = {};
+  
+  orders.forEach(order => {
+    const fulfillmentStatus = order.displayFulfillmentStatus;
+    fulfillmentStatusCounts[fulfillmentStatus] = (fulfillmentStatusCounts[fulfillmentStatus] || 0) + 1;
+  });
+
+  // Map Shopify fulfillment statuses to user-requested labels for the pie chart
+  let chartData = [
+    {
+      label: "Orders to Ship", // Unfulfilled, Scheduled, On hold, Awaiting shipment
+      value: (fulfillmentStatusCounts["Unfulfilled"] || 0)
+        + (fulfillmentStatusCounts["Scheduled"] || 0)
+        + (fulfillmentStatusCounts["On hold"] || 0)
+        + (fulfillmentStatusCounts["Awaiting shipment"] || 0),
+      color: "#666DAF"
+    },
+    {
+      label: "Partially Delivered", // Partially fulfilled
+      value: fulfillmentStatusCounts["Partially fulfilled"] || 0,
+      color: "#F7B801"
+    },
+    {
+      label: "Delivered", // Fulfilled, Complete
+      value: (fulfillmentStatusCounts["Fulfilled"] || 0)
+        + (fulfillmentStatusCounts["Complete"] || 0),
+      color: "#43AA8B"
+    },
+  ].filter(item => item.value > 0); // Only include statuses that have orders
+
+  // Special case: Only FULFILLED and UNFULFILLED present
+  const keys = Object.keys(fulfillmentStatusCounts);
+  if (
+    keys.length === 2 &&
+    ((keys.includes("Fulfilled") && keys.includes("Unfulfilled")) || (keys.includes("FULFILLED") && keys.includes("UNFULFILLED")))
+  ) {
+    chartData = [
       {
-        label: "Orders to Ship", // Unfulfilled, Scheduled, On hold, Awaiting shipment
-        value: (fulfillmentStatusCounts["Unfulfilled"] || 0)
-          + (fulfillmentStatusCounts["Scheduled"] || 0)
-          + (fulfillmentStatusCounts["On hold"] || 0)
-          + (fulfillmentStatusCounts["Awaiting shipment"] || 0),
+        label: "Orders to Ship",
+        value: fulfillmentStatusCounts["Unfulfilled"] || fulfillmentStatusCounts["UNFULFILLED"] || 0,
         color: "#666DAF"
       },
       {
-        label: "Partially Delivered", // Partially fulfilled
-        value: fulfillmentStatusCounts["Partially fulfilled"] || 0,
-        color: "#F7B801"
-      },
-      {
-        label: "Delivered", // Fulfilled, Complete
-        value: (fulfillmentStatusCounts["Fulfilled"] || 0)
-          + (fulfillmentStatusCounts["Complete"] || 0),
+        label: "Delivered",
+        value: fulfillmentStatusCounts["Fulfilled"] || fulfillmentStatusCounts["FULFILLED"] || 0,
         color: "#43AA8B"
-      },
-    ].filter(item => item.value > 0); // Only include statuses that have orders
-
-    // Special case: Only FULFILLED and UNFULFILLED present
-    const keys = Object.keys(fulfillmentStatusCounts);
-    if (
-      keys.length === 2 &&
-      ((keys.includes("Fulfilled") && keys.includes("Unfulfilled")) || (keys.includes("FULFILLED") && keys.includes("UNFULFILLED")))
-    ) {
-      chartData = [
-        {
-          label: "Orders to Ship",
-          value: fulfillmentStatusCounts["Unfulfilled"] || fulfillmentStatusCounts["UNFULFILLED"] || 0,
-          color: "#666DAF"
-        },
-        {
-          label: "Delivered",
-          value: fulfillmentStatusCounts["Fulfilled"] || fulfillmentStatusCounts["FULFILLED"] || 0,
-          color: "#43AA8B"
-        }
-      ];
-    }
-
-    return { 
-      chartData,
-      fulfillmentStatusCounts,
-      totalOrders: orders.length
-    };
-  } catch (error) {
-    console.error('Error fetching order status breakdown:', error);
-    throw new Error('Failed to fetch order status breakdown');
+      }
+    ];
   }
+
+  return { 
+    chartData,
+    fulfillmentStatusCounts,
+    totalOrders: orders.length
+  };
 }
 
 export async function getOrdersByCountry() {
-  try {
-    const query = `
-      query getOrdersByCountry {
-        orders(first: 250) {
-          edges {
-            node {
-              id
-              name
-              totalPriceSet {
-                shopMoney {
-                  amount
-                  currencyCode
-                }
+  // Protect admin function
+  await protectServerAction();
+  
+  const query = `
+    query getOrdersByCountry {
+      orders(first: 250) {
+        edges {
+          node {
+            id
+            name
+            totalPriceSet {
+              shopMoney {
+                amount
+                currencyCode
               }
-              shippingAddress {
-                country
-                countryCodeV2
-              }
-              billingAddress {
-                country
-                countryCodeV2
-              }
+            }
+            shippingAddress {
+              country
+              countryCodeV2
+            }
+            billingAddress {
+              country
+              countryCodeV2
             }
           }
         }
       }
-    `;
+    }
+  `;
 
-    const data = await shopifyRequest<{
-      orders: {
-        edges: Array<{
-          node: {
-            id: string;
-            name: string;
-            totalPriceSet: {
-              shopMoney: {
-                amount: string;
-                currencyCode: string;
-              };
+  const data = await shopifyRequest<{
+    orders: {
+      edges: Array<{
+        node: {
+          id: string;
+          name: string;
+          totalPriceSet: {
+            shopMoney: {
+              amount: string;
+              currencyCode: string;
             };
-            shippingAddress: {
-              country: string;
-              countryCodeV2: string;
-            } | null;
-            billingAddress: {
-              country: string;
-              countryCodeV2: string;
-            } | null;
           };
-        }>;
-      };
-    }>(query);
-
-    const orders = data.orders.edges.map(edge => edge.node);
-    
-    // Count orders by country
-    const countryCount: { [key: string]: number } = {};
-    
-    orders.forEach((order) => {
-      // Use shipping address first, fallback to billing address
-      const country = order.shippingAddress?.country || order.billingAddress?.country;
-      const countryCode = order.shippingAddress?.countryCodeV2 || order.billingAddress?.countryCodeV2;
-      
-      if (country && countryCode) {
-        if (!countryCount[countryCode]) {
-          countryCount[countryCode] = 0;
-        }
-        countryCount[countryCode]++;
-      }
-    });
-
-    // Convert to array and sort by order count
-    const countryData = Object.entries(countryCount)
-      .map(([countryCode, orderCount]) => ({
-        countryCode,
-        orderCount,
-      }))
-      .sort((a, b) => b.orderCount - a.orderCount);
-
-    return {
-      countries: countryData,
-      totalOrders: orders.length,
+          shippingAddress: {
+            country: string;
+            countryCodeV2: string;
+          } | null;
+          billingAddress: {
+            country: string;
+            countryCodeV2: string;
+          } | null;
+        };
+      }>;
     };
-  } catch (error) {
-    console.error('Error fetching orders by country:', error);
-    throw error;
-  }
+  }>(query);
+
+  const orders = data.orders.edges.map(edge => edge.node);
+  
+  // Count orders by country
+  const countryCount: { [key: string]: number } = {};
+  
+  orders.forEach((order) => {
+    // Use shipping address first, fallback to billing address
+    const country = order.shippingAddress?.country || order.billingAddress?.country;
+    const countryCode = order.shippingAddress?.countryCodeV2 || order.billingAddress?.countryCodeV2;
+    
+    if (country && countryCode) {
+      if (!countryCount[countryCode]) {
+        countryCount[countryCode] = 0;
+      }
+      countryCount[countryCode]++;
+    }
+  });
+
+  // Convert to array and sort by order count
+  const countryData = Object.entries(countryCount)
+    .map(([countryCode, orderCount]) => ({
+      countryCode,
+      orderCount,
+    }))
+    .sort((a, b) => b.orderCount - a.orderCount);
+
+  return {
+    countries: countryData,
+    totalOrders: orders.length,
+  };
 }
 
 
@@ -784,6 +778,9 @@ export async function getCancelledOrders(
   first: number = 10,
   after?: string
 ): Promise<CancelledOrdersResult> {
+  // Protect admin function
+  await protectServerAction();
+  
   const query = `
     query getCancelledOrders($first: Int!, $after: String) {
       orders(first: $first, after: $after, query: "status:cancelled") {
@@ -856,6 +853,9 @@ export async function getCancelledOrders(
 }
 
 export async function updateCancellationStatus(orderId: string, status: string): Promise<{ id: string; displayFulfillmentStatus: string }> {
+  // Protect admin function
+  await protectServerAction();
+  
   const mutation = `
     mutation orderUpdate($input: OrderInput!) {
       orderUpdate(input: $input) {
@@ -897,6 +897,9 @@ interface OrderResponse {
 }
 
 export async function getOrder(id: string): Promise<ShopifyOrder | null> {
+  // Protect admin function
+  await protectServerAction();
+  
   const query = `
     query getOrder($id: ID!) {
       order(id: $id) {
@@ -1004,36 +1007,37 @@ interface DetailedProductResponse {
 }
 
 export async function getDetailedProducts(first: number = 10, after?: string): Promise<DetailedProductResponse> {
-  try {
-    const query = `
-      query getDetailedProducts($first: Int!, $after: String) {
-        products(first: $first, after: $after) {
-          pageInfo {
-            hasNextPage
-            endCursor
-          }
-          edges {
-            node {
+  // Protect admin function
+  await protectServerAction();
+  
+  const query = `
+    query getDetailedProducts($first: Int!, $after: String) {
+      products(first: $first, after: $after) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        edges {
+          node {
+            id
+            title
+            description
+            totalInventory
+            vendor
+            productType
+            category {
               id
-              title
-              description
-              totalInventory
-              vendor
-              productType
-              category {
-                id
-                name
-                fullName
-              }
-              variants(first: 10) {
-                edges {
-                  node {
-                    sku
-                    title
-                    selectedOptions {
-                      name
-                      value
-                    }
+              name
+              fullName
+            }
+            variants(first: 10) {
+              edges {
+                node {
+                  sku
+                  title
+                  selectedOptions {
+                    name
+                    value
                   }
                 }
               }
@@ -1041,30 +1045,22 @@ export async function getDetailedProducts(first: number = 10, after?: string): P
           }
         }
       }
-    `;
+    }
+  `;
 
-    const variables = {
-      first,
-      after
-    };
+  const variables = {
+    first,
+    after
+  };
 
-    return await shopifyRequest<DetailedProductResponse>(query, variables);
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    return {
-      products: {
-        pageInfo: {
-          hasNextPage: false,
-          endCursor: '',
-        },
-        edges: []
-      }
-    };
-  }
+  return await shopifyRequest<DetailedProductResponse>(query, variables);
 }
 
 export async function getProductsServerAction(first: number = 10, after?: string) {
   'use server';
+  
+  // Protect admin function
+  await protectServerAction();
   
   try {
     const response = await getDetailedProducts(first, after);
@@ -1139,54 +1135,52 @@ interface SingleProductResponse {
 }
 
 export async function getProductById(productId: string): Promise<SingleProductResponse> {
-  try {
-    const query = `
-      query getProductById($id: ID!) {
-        product(id: $id) {
+  // Protect admin function
+  await protectServerAction();
+  
+  const query = `
+    query getProductById($id: ID!) {
+      product(id: $id) {
+        id
+        title
+        description
+        totalInventory
+        vendor
+        productType
+        category {
           id
-          title
-          description
-          totalInventory
-          vendor
-          productType
-          category {
-            id
-            name
-            fullName
-          }
-          images(first: 10) {
-            edges {
-              node {
-                url
-                altText
-              }
+          name
+          fullName
+        }
+        images(first: 10) {
+          edges {
+            node {
+              url
+              altText
             }
           }
-          variants(first: 50) {
-            edges {
-              node {
-                id
-                sku
-                title
-                inventoryQuantity
-                selectedOptions {
-                  name
-                  value
-                }
+        }
+        variants(first: 50) {
+          edges {
+            node {
+              id
+              sku
+              title
+              inventoryQuantity
+              selectedOptions {
+                name
+                value
               }
             }
           }
         }
       }
-    `;
+    }
+  `;
 
-    const variables = {
-      id: productId
-    };
+  const variables = {
+    id: productId
+  };
 
-    return await shopifyRequest<SingleProductResponse>(query, variables);
-  } catch (error) {
-    console.error('Error fetching product by ID:', error);
-    throw new Error('Failed to fetch product');
-  }
-} 
+  return await shopifyRequest<SingleProductResponse>(query, variables);
+}

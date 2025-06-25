@@ -143,7 +143,7 @@ export default function Sidebar() {
           transition-transform duration-300 ease-in-out
           z-40
           ${isMobile ? (isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'}
-          ${isMobile ? 'w-[280px]' : 'w-[200px]'}
+          ${isMobile ? 'w-full' : 'w-[200px]'}
           shadow-lg md:shadow-none
         `}
       >

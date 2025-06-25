@@ -50,9 +50,11 @@ export const authOptions = {
   ],
   session: {
     strategy: "jwt" as const,
+    maxAge: 24 * 60 * 60, // 24 hours
   },
   pages: {
     signIn: "/admin/login",
+    error: "/admin/login",
   },
   callbacks: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -72,4 +74,5 @@ export const authOptions = {
       return session;
     },
   },
+  debug: process.env.NODE_ENV === 'development',
 };

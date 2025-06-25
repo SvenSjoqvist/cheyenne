@@ -18,6 +18,7 @@ interface DashboardData {
   abandonedCarts: number;
   averageCartValue: { amount: number; currency: string };
   totalOrders: number;
+  todaysOrders: number;
   totalProducts: number;
   helpTickets: number;
   refundRequests: number;
@@ -26,6 +27,7 @@ interface DashboardData {
     totalRevenue: { amount: number; formatted: string };
     todaysRevenue: { amount: number; formatted: string };
     totalOrders: number;
+    todaysOrders: number;
     currency: string;
   };
   monthlyRevenue: Array<{
@@ -76,6 +78,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     abandonedCarts: 0,
     averageCartValue: { amount: 0, currency: 'USD' },
     totalOrders: 0,
+    todaysOrders: 0,
     totalProducts: 0,
     helpTickets: 0,
     refundRequests: 0, 
@@ -84,6 +87,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       totalRevenue: { amount: 0, formatted: '$0.00' },
       todaysRevenue: { amount: 0, formatted: '$0.00' },
       totalOrders: 0,
+      todaysOrders: 0,
       currency: 'USD'
     },
     monthlyRevenue: [],
@@ -132,6 +136,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
           monthlyRevenue: monthlyRevenueResult.data,
           // Update static values with real data
           totalOrders: result.data.countryOrders.totalOrders,
+          todaysOrders: salesResult.data.todaysOrders,
           totalProducts: parseInt(result.data.shop?.totalProducts || '0'),
           helpTickets: result.data.helpTickets || 0,
           awaitingShipment: orderStatusResult.fulfillmentStatusCounts["Awaiting shipment"] || 0

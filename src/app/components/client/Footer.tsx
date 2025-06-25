@@ -1,10 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { NewsLetter } from "./footer/newsLetter";
-type FooterProps = {
-  sections?: FooterSection[]; // Made optional since we have default sections
-  paymentMethods: string[];
-};
 
 type FooterSection = {
   title: string;
@@ -14,11 +10,57 @@ type FooterSection = {
   }>;
 };
 
-export const Footer = ({ sections }: FooterProps) => {
+// Footer sections with proper links
+const footerSections: FooterSection[] = [
+  {
+    title: "concierge",
+    links: [
+      { label: "Contact", href: "/contact" },
+      { label: "Size & fit", href: "/size-guide" },
+      { label: "Track an order", href: "/order-tracking" },
+      { label: "Shipping & delivery", href: "/shipping" },
+      { label: "Account", href: "/account" },
+      { label: "FAQ", href: "/faq" },
+    ],
+  },
+  {
+    title: "company",
+    links: [
+      { label: "Who we are", href: "/about" },
+      { label: "Sustainability", href: "/sustainability" },
+    ],
+  },
+  {
+    title: "legal",
+    links: [
+      { label: "Return & cancellation policy", href: "/returns" },
+      { label: "Accessibility policy", href: "/accessibility" },
+      { label: "Privacy policy", href: "/privacy" },
+      { label: "Terms of service", href: "/tos" },
+      {
+        label: "do not sell or share my personal data​",
+        href: "/privacy/do-not-sell",
+      },
+    ],
+  },
+  {
+    title: "socials",
+    links: [
+      { label: "Instagram", href: "https://www.instagram.com/kilaekoswim/" },
+      { label: "Spotify", href: "https://open.spotify.com/user/31htb6nn2p2wywhn4gofxjrlt6we?si=8f1b1c1d215147de" },
+      { label: "Pinterest", href: "https://www.pinterest.com/015bqs6mcp6ta4frqsyu71hx8g9xpv/" },
+      { label: "TikTok", href: "https://www.instagram.com/kilaekoswim/" },
+      { label: "Substack", href: "https://substack.com/@kilaeko" },
+      { label: "LinkedIn", href: "https://www.linkedin.com/company/kilaeko/" },
+    ],
+  },
+];
+
+export const Footer = () => {
   return (
     <footer className="flex flex-col items-center pt-8 w-full border-t bg-neutral-100 border-zinc-200">
       <div className="flex flex-wrap gap-1.5 items-start w-full px-8">
-        {sections!.map((section, index) => (
+        {footerSections.map((section, index) => (
           <section
             key={index}
             className="flex flex-col items-start leading-0.5 text-neutral-800 flex-1 min-w-[200px]"
@@ -59,12 +101,6 @@ export const Footer = ({ sections }: FooterProps) => {
       </div>
 
       <div className="flex flex-wrap gap-5 justify-between items-center self-stretch px-8 py-6 w-full font-medium leading-none bg-neutral-100 max-md:px-5">
-        <Link
-          href="/currency-selection"
-          className="self-stretch my-auto text-base tracking-wider text-stone-500 hover:text-stone-700 transition-colors"
-        >
-          currency - select
-        </Link>
         <Link href="/" className="hover:opacity-80 transition-opacity">
           <Image src="/logoFooter.svg" width={35} height={35} alt="Logo" />
         </Link>

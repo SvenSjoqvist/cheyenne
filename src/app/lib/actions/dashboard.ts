@@ -4,8 +4,12 @@ import { fetchAbandonedCarts, getAverageCartValue, getOrderStatusBreakdown, getO
 import { getSubscribers } from '@/app/lib/prisma';
 import { getReturns } from '@/app/lib/actions/returns';
 import { formatCurrency } from '@/app/lib/utils';
+import { protectServerAction } from '@/app/lib/auth-utils';
 
 export async function getAbandonedCartsCount() {
+  // Protect admin function
+  await protectServerAction();
+  
   try {
     const count = await fetchAbandonedCarts();
     return { success: true, count };
@@ -16,6 +20,9 @@ export async function getAbandonedCartsCount() {
 }
 
 export async function getAverageCartValueData() {
+  // Protect admin function
+  await protectServerAction();
+  
   try {
     const averageCartValue = await getAverageCartValue();
     return { success: true, ...averageCartValue };
@@ -26,6 +33,9 @@ export async function getAverageCartValueData() {
 }
 
 export async function getMarketingData() {
+  // Protect admin function
+  await protectServerAction();
+  
   try {
     const subscribers = await getSubscribers();
     return { 
@@ -45,6 +55,9 @@ export async function getMarketingData() {
 }
 
 export async function getReturnsData() {
+  // Protect admin function
+  await protectServerAction();
+  
   try {
     const returns = await getReturns();
     const pendingReturns = returns.filter(r => r.status === 'PENDING').length;
@@ -67,6 +80,9 @@ export async function getReturnsData() {
 }
 
 export async function getOrderStatusData() {
+  // Protect admin function
+  await protectServerAction();
+  
   try {
     const orderStatusBreakdown = await getOrderStatusBreakdown();
     return { 
@@ -84,6 +100,9 @@ export async function getOrderStatusData() {
 }
 
 export async function getSalesData() {
+  // Protect admin function
+  await protectServerAction();
+  
   try {
     // Get all orders to calculate revenue
     const orders = await getOrders(250); // Get up to 250 orders
@@ -94,20 +113,23 @@ export async function getSalesData() {
       return sum + (isNaN(amount) ? 0 : amount);
     }, 0);
 
-    // Calculate today's revenue
+    // Calculate today's revenue and count today's orders
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const todaysRevenue = orders.edges.reduce((sum, edge) => {
+    let todaysRevenue = 0;
+    let todaysOrders = 0;
+    
+    orders.edges.forEach(edge => {
       const orderDate = new Date(edge.node.createdAt);
       orderDate.setHours(0, 0, 0, 0);
       
       if (orderDate.getTime() === today.getTime()) {
         const amount = parseFloat(edge.node.totalPriceSet.shopMoney.amount);
-        return sum + (isNaN(amount) ? 0 : amount);
+        todaysRevenue += isNaN(amount) ? 0 : amount;
+        todaysOrders++;
       }
-      return sum;
-    }, 0);
+    });
 
     // Get total orders count
     const totalOrders = orders.edges.length;
@@ -127,6 +149,7 @@ export async function getSalesData() {
           formatted: formatCurrency(todaysRevenue, currency)
         },
         totalOrders: totalOrders,
+        todaysOrders: todaysOrders,
         currency: currency
       }
     };
@@ -139,6 +162,7 @@ export async function getSalesData() {
         totalRevenue: { amount: 0, formatted: '$0.00' },
         todaysRevenue: { amount: 0, formatted: '$0.00' },
         totalOrders: 0,
+        todaysOrders: 0,
         currency: 'USD'
       }
     };
@@ -146,6 +170,9 @@ export async function getSalesData() {
 }
 
 export async function getMonthlyRevenueData() {
+  // Protect admin function
+  await protectServerAction();
+  
   try {
     // Get all orders to calculate monthly revenue
     const orders = await getOrders(250); // Get up to 250 orders
@@ -205,6 +232,9 @@ export async function getMonthlyRevenueData() {
 }
 
 export async function getDashboardData() {
+  // Protect admin function
+  await protectServerAction();
+  
   try {
     const [
       abandonedCartsResult, 

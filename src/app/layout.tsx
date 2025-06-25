@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Darker_Grotesque } from "next/font/google";
 import "@/app/globals.css";
+import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 
 const darkerGrotesque = Darker_Grotesque({
   subsets: ["latin"],
@@ -25,6 +27,8 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {children}
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
