@@ -16,9 +16,9 @@ const footerSections: FooterSection[] = [
     title: "Concierge",
     links: [
       { label: "Contact", href: "/contact" },
-      { label: "Size & fit", href: "/size-guide" },
-      { label: "Track an Order", href: "/order-tracking" },
-      { label: "Shipping & Delivery", href: "/shipping" },
+      { label: "Size & Fit", href: "/size-guide" },
+      /*{ label: "Track an Order", href: "/order-tracking" },*/
+      /*{ label: "Shipping & Delivery", href: "/shipping" },*/
       { label: "Account", href: "/account" },
       { label: "FAQ", href: "/faq" },
     ],
@@ -43,8 +43,14 @@ const footerSections: FooterSection[] = [
     title: "Socials",
     links: [
       { label: "Instagram", href: "https://www.instagram.com/kilaekoswim/" },
-      { label: "Spotify", href: "https://open.spotify.com/user/31htb6nn2p2wywhn4gofxjrlt6we?si=8f1b1c1d215147de" },
-      { label: "Pinterest", href: "https://www.pinterest.com/015bqs6mcp6ta4frqsyu71hx8g9xpv/" },
+      {
+        label: "Spotify",
+        href: "https://open.spotify.com/user/31htb6nn2p2wywhn4gofxjrlt6we?si=8f1b1c1d215147de",
+      },
+      {
+        label: "Pinterest",
+        href: "https://www.pinterest.com/015bqs6mcp6ta4frqsyu71hx8g9xpv/",
+      },
       { label: "TikTok", href: "https://www.instagram.com/kilaekoswim/" },
       { label: "Substack", href: "https://substack.com/@kilaeko" },
       { label: "LinkedIn", href: "https://www.linkedin.com/company/kilaeko/" },
@@ -87,9 +93,9 @@ export const Footer = () => {
 
         <section className="flex flex-col flex-1 min-w-[200px]">
           <h3 className="text-xl font-bold tracking-wider font-[bero]">
-          newsletter sign up
+            newsletter sign up
           </h3>
-         <NewsLetter /> 
+          <NewsLetter />
         </section>
       </div>
       <div className="w-full px-10 mt-12">

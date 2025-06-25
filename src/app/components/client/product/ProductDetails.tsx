@@ -20,8 +20,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ descriptionHtml }) => {
     {
       id: "material",
       title: "Material, Composition, Care",
-      content:
-        "A brand is your identity, an extension of who you are and what you provide. This package includes a branding guide, a primary logo, alternative logos, color schemes, mockup designs and integration, and a social media kit. Creating a connection to your ideas and executing such to the fullest extent is complex. With Web Jelly, we can make that translation happen.",
+      content: "78% RECYCLED POLYAMIDE 22% LYCRA® XTRA LIFE™",
     },
     {
       id: "sustainability",
