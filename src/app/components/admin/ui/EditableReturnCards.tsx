@@ -1,9 +1,6 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import EditableDetailsCard from './EditableDetailsCard';
-import { updateReturnCustomerInfo, updateReturnProductInfo } from '@/app/lib/actions/returns';
+import React from 'react';
 
 type ReturnItem = {
   id: string;
@@ -29,121 +26,111 @@ type Return = {
   items: ReturnItem[];
 };
 
-interface EditableField {
-  key: string;
-  label: string;
-  value: string;
-}
-
-interface CustomerData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-}
-
-interface ProductDataItem {
-  id: string;
-  productName: string;
-  quantity: number;
-  reason: string;
-  variant: string;
-}
-
-interface EditableReturnCardsProps {
+interface ReturnCardsProps {
   returnRequest: Return;
 }
 
-export default function EditableReturnCards({ returnRequest }: EditableReturnCardsProps) {
-  const router = useRouter();
-  const [returnData, setReturnData] = useState<Return>(returnRequest);
-
-  const handleCustomerSave = async (updatedData: EditableField[]) => {
-    try {
-      const customerData: CustomerData = {
-        firstName: updatedData.find(d => d.key === 'firstName')?.value || '',
-        lastName: updatedData.find(d => d.key === 'lastName')?.value || '',
-        email: updatedData.find(d => d.key === 'email')?.value || '',
-        phone: updatedData.find(d => d.key === 'phone')?.value || ''
-      };
-
-      // The server action now throws errors instead of returning success/error objects
-      await updateReturnCustomerInfo(returnData.id, customerData);
-      
-      // If we get here, the action was successful
-      setReturnData(prev => ({
-        ...prev,
-        customerEmail: customerData.email
-      }));
-      router.refresh();
-    } catch (error) {
-      console.error('Error updating customer info:', error);
-      throw error; // Re-throw to let EditableDetailsCard handle the error
-    }
-  };
-
-  const handleProductSave = async (updatedData: EditableField[]) => {
-    try {
-      const productData: ProductDataItem[] = returnData.items.map(item => {
-        const itemData = updatedData.filter(d => d.key.startsWith(`item_${item.id}_`));
-        return {
-          id: item.id,
-          productName: itemData.find(d => d.key === `item_${item.id}_productName`)?.value || item.productName,
-          quantity: parseInt(itemData.find(d => d.key === `item_${item.id}_quantity`)?.value || item.quantity.toString()),
-          reason: itemData.find(d => d.key === `item_${item.id}_reason`)?.value || item.reason,
-          variant: itemData.find(d => d.key === `item_${item.id}_variant`)?.value || item.variant
-        };
-      });
-
-      // The server action now throws errors instead of returning success/error objects
-      await updateReturnProductInfo(returnData.id, productData);
-      
-      // If we get here, the action was successful
-      setReturnData(prev => ({
-        ...prev,
-        items: productData.map(pd => ({
-          ...prev.items.find(item => item.id === pd.id)!,
-          ...pd
-        }))
-      }));
-      router.refresh();
-    } catch (error) {
-      console.error('Error updating product info:', error);
-      throw error; // Re-throw to let EditableDetailsCard handle the error
-    }
-  };
-
-  // Prepare customer data for editable card
-  const customerData: EditableField[] = [
-    { key: 'firstName', label: 'First Name', value: returnData.customerEmail.split('@')[0] },
-    { key: 'lastName', label: 'Last Name', value: 'N/A' },
-    { key: 'email', label: 'Email', value: returnData.customerEmail },
-    { key: 'phone', label: 'Phone', value: 'N/A' }
-  ];
-
-  // Prepare product data for editable card
-  const productData: EditableField[] = returnData.items.flatMap(item => [
-    { key: `item_${item.id}_productName`, label: 'Product Name', value: item.productName },
-    { key: `item_${item.id}_quantity`, label: 'Quantity', value: item.quantity.toString() },
-    { key: `item_${item.id}_reason`, label: 'Reason', value: item.reason },
-    { key: `item_${item.id}_variant`, label: 'More Info', value: item.variant }
-  ]);
-
+export default function ReturnCards({ returnRequest }: ReturnCardsProps) {
   return (
     <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 w-full mb-8">
       <div className="flex-1 min-w-0">
-        <EditableDetailsCard 
-          title="Customer Information" 
-          data={customerData}
-          onSave={handleCustomerSave}
-        />
+        <div className="h-auto w-full rounded-2xl overflow-hidden border-2 border-[#E0E0E0]">
+          <div className="p-4 border-b-2 border-[#E0E0E0]">
+            <h3 className="text-black font-semibold font-darker-grotesque text-lg sm:text-xl lg:text-2xl tracking-wider">
+              Customer Information
+            </h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <tbody>
+                <tr className="border-b border-[#E0E0E0]">
+                  <td className="text-black font-semibold font-darker-grotesque text-xs sm:text-sm lg:text-base py-2 sm:py-3 px-3 sm:px-4 md:px-6 border-r-2 border-[#E0E0E0] w-1/3 min-w-[120px] align-top">
+                    <div className="break-words">First Name</div>
+                  </td>
+                  <td className="text-black text-xs sm:text-sm lg:text-base font-regular font-darker-grotesque py-2 sm:py-3 px-3 sm:px-4 md:px-6 w-2/3 align-top">
+                    <div className="break-words">{returnRequest.customerEmail.split('@')[0]}</div>
+                  </td>
+                </tr>
+                <tr className="border-b border-[#E0E0E0]">
+                  <td className="text-black font-semibold font-darker-grotesque text-xs sm:text-sm lg:text-base py-2 sm:py-3 px-3 sm:px-4 md:px-6 border-r-2 border-[#E0E0E0] w-1/3 min-w-[120px] align-top">
+                    <div className="break-words">Last Name</div>
+                  </td>
+                  <td className="text-black text-xs sm:text-sm lg:text-base font-regular font-darker-grotesque py-2 sm:py-3 px-3 sm:px-4 md:px-6 w-2/3 align-top">
+                    <div className="break-words">N/A</div>
+                  </td>
+                </tr>
+                <tr className="border-b border-[#E0E0E0]">
+                  <td className="text-black font-semibold font-darker-grotesque text-xs sm:text-sm lg:text-base py-2 sm:py-3 px-3 sm:px-4 md:px-6 border-r-2 border-[#E0E0E0] w-1/3 min-w-[120px] align-top">
+                    <div className="break-words">Email</div>
+                  </td>
+                  <td className="text-black text-xs sm:text-sm lg:text-base font-regular font-darker-grotesque py-2 sm:py-3 px-3 sm:px-4 md:px-6 w-2/3 align-top">
+                    <div className="break-words">{returnRequest.customerEmail}</div>
+                  </td>
+                </tr>
+                <tr className="border-b border-[#E0E0E0] last:border-b-0">
+                  <td className="text-black font-semibold font-darker-grotesque text-xs sm:text-sm lg:text-base py-2 sm:py-3 px-3 sm:px-4 md:px-6 border-r-2 border-[#E0E0E0] w-1/3 min-w-[120px] align-top">
+                    <div className="break-words">Phone</div>
+                  </td>
+                  <td className="text-black text-xs sm:text-sm lg:text-base font-regular font-darker-grotesque py-2 sm:py-3 px-3 sm:px-4 md:px-6 w-2/3 align-top">
+                    <div className="break-words">N/A</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
+      
       <div className="flex-1 min-w-0">
-        <EditableDetailsCard 
-          title="Product Information" 
-          data={productData}
-          onSave={handleProductSave}
-        />
+        <div className="h-auto w-full rounded-2xl overflow-hidden border-2 border-[#E0E0E0]">
+          <div className="p-4 border-b-2 border-[#E0E0E0]">
+            <h3 className="text-black font-semibold font-darker-grotesque text-lg sm:text-xl lg:text-2xl tracking-wider">
+              Product Information
+            </h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <tbody>
+                {returnRequest.items.map((item, index) => (
+                  <React.Fragment key={item.id}>
+                    <tr className="border-b border-[#E0E0E0]">
+                      <td className="text-black font-semibold font-darker-grotesque text-xs sm:text-sm lg:text-base py-2 sm:py-3 px-3 sm:px-4 md:px-6 border-r-2 border-[#E0E0E0] w-1/3 min-w-[120px] align-top">
+                        <div className="break-words">Product Name</div>
+                      </td>
+                      <td className="text-black text-xs sm:text-sm lg:text-base font-regular font-darker-grotesque py-2 sm:py-3 px-3 sm:px-4 md:px-6 w-2/3 align-top">
+                        <div className="break-words">{item.productName}</div>
+                      </td>
+                    </tr>
+                    <tr className="border-b border-[#E0E0E0]">
+                      <td className="text-black font-semibold font-darker-grotesque text-xs sm:text-sm lg:text-base py-2 sm:py-3 px-3 sm:px-4 md:px-6 border-r-2 border-[#E0E0E0] w-1/3 min-w-[120px] align-top">
+                        <div className="break-words">Quantity</div>
+                      </td>
+                      <td className="text-black text-xs sm:text-sm lg:text-base font-regular font-darker-grotesque py-2 sm:py-3 px-3 sm:px-4 md:px-6 w-2/3 align-top">
+                        <div className="break-words">{item.quantity}</div>
+                      </td>
+                    </tr>
+                    <tr className="border-b border-[#E0E0E0]">
+                      <td className="text-black font-semibold font-darker-grotesque text-xs sm:text-sm lg:text-base py-2 sm:py-3 px-3 sm:px-4 md:px-6 border-r-2 border-[#E0E0E0] w-1/3 min-w-[120px] align-top">
+                        <div className="break-words">Reason</div>
+                      </td>
+                      <td className="text-black text-xs sm:text-sm lg:text-base font-regular font-darker-grotesque py-2 sm:py-3 px-3 sm:px-4 md:px-6 w-2/3 align-top">
+                        <div className="break-words">{item.reason}</div>
+                      </td>
+                    </tr>
+                    <tr className={`border-b border-[#E0E0E0] ${index === returnRequest.items.length - 1 ? 'last:border-b-0' : ''}`}>
+                      <td className="text-black font-semibold font-darker-grotesque text-xs sm:text-sm lg:text-base py-2 sm:py-3 px-3 sm:px-4 md:px-6 border-r-2 border-[#E0E0E0] w-1/3 min-w-[120px] align-top">
+                        <div className="break-words">More Info</div>
+                      </td>
+                      <td className="text-black text-xs sm:text-sm lg:text-base font-regular font-darker-grotesque py-2 sm:py-3 px-3 sm:px-4 md:px-6 w-2/3 align-top">
+                        <div className="break-words">{item.variant}</div>
+                      </td>
+                    </tr>
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );

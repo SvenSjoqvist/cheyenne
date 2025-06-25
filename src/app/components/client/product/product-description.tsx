@@ -16,6 +16,7 @@ export function ProductDescription({ product }: { product: Product }) {
           />
         </div>
       </div>
+      {console.log(product.variants)}
       <VariantSelector options={product.options} variants={product.variants} />
       <AddToCart product={product} />
       <p className="text-xs text-red-600 pt-4 w-2/3">

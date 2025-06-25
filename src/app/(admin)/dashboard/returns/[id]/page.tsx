@@ -1,7 +1,7 @@
 import { getReturns } from "@/app/lib/actions/returns";
 import Link from "next/link";
 import DataTable from "@/app/components/admin/DataTable";
-import EditableReturnCards from "@/app/components/admin/ui/EditableReturnCards";
+import ReturnCards from "@/app/components/admin/ui/EditableReturnCards";
 import ReturnActionForm from "@/app/components/admin/ui/ReturnActionForm";
 import { ReturnData } from "@/app/components/admin/types";
 
@@ -77,7 +77,7 @@ export default async function ReturnViewPage({
         </div>
 
         {/* Editable Cards */}
-        <EditableReturnCards returnRequest={returnRequest} />
+        <ReturnCards returnRequest={returnRequest} />
 
         {/* Return Action Form - Only show for pending returns */}
         {returnRequest.status === 'PENDING' && (
