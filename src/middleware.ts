@@ -2,7 +2,7 @@ import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
 export default withAuth(
-  function middleware() {
+  function middleware(req) {
     // Add security headers to all responses
     const response = NextResponse.next();
     
@@ -22,18 +22,24 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        // Allow access to login page and public routes
-        if (req.nextUrl.pathname.startsWith('/admin/login') || 
-            req.nextUrl.pathname === '/') {
+        const { pathname } = req.nextUrl;
+        
+        // Always allow access to login page and public routes
+        if (pathname.startsWith('/admin/login') || 
+            pathname === '/' ||
+            pathname.startsWith('/api/auth') ||
+            pathname.startsWith('/_next') ||
+            pathname.startsWith('/favicon.ico')) {
           return true;
         }
         
-        // Require authentication for dashboard and API routes
-        if (req.nextUrl.pathname.startsWith('/dashboard') || 
-            req.nextUrl.pathname.startsWith('/api/admin')) {
+        // Require authentication for dashboard and admin API routes
+        if (pathname.startsWith('/dashboard') || 
+            pathname.startsWith('/api/admin')) {
           return !!token;
         }
         
+        // Allow all other routes
         return true;
       },
     },
@@ -49,7 +55,7 @@ export const config = {
     "/dashboard/:path*",
     // Protect admin API routes
     "/api/admin/:path*",
-    // Apply security headers to all routes
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    // Apply security headers to all routes (but exclude static files)
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.).*)",
   ],
 }; 

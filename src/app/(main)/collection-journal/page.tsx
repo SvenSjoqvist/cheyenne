@@ -236,21 +236,21 @@ export default async function CollectionJournalPage() {
         </div>
         <div className="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-10 mt-8 md:mt-10">
           <Image
-            src="/images/behind-the-scenes-camera.JPG"
+            src="/images/behind-the-scenes-camera.jpg"
             alt="Behind the scenes photography session for The Runaway Collection - camera setup and creative process"
             width={361}
             height={542}
             className="w-full max-w-[361px]"
           />
           <Image
-            src="/images/behind-the-scenes-bikini-picture.JPG"
+            src="/images/behind-the-scenes-bikini-picture.jpg"
             alt="Behind the scenes bikini photography for The Runaway Collection - capturing authentic moments"
             width={361}
             height={542}
             className="w-full max-w-[361px]"
           />
           <Image
-            src="/images/behind-the-scenes-polaroid-camera.JPG"
+            src="/images/behind-the-scenes-polaroid-camera.jpg"
             alt="Behind the scenes polaroid photography for The Runaway Collection - vintage camera and creative process"
             width={361}
             height={542}
