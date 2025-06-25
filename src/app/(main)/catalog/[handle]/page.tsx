@@ -174,9 +174,10 @@ async function RelatedProducts({ id, tags }: { id: string; tags?: string[] }) {
                         {product.title}
                       </h3>
                     </div>
-                    </Link>
+                  </Link>
                   <div className="mt-auto">
                     <AddToCart product={relatedProducts[0]} />
+                  </div>
                 </div>
               </article>
             ))}

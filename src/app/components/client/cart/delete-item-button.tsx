@@ -2,7 +2,6 @@
 import { CartItem } from "@/app/lib/shopify/types";
 import { useActionState } from "react";
 import { removeItem } from "./actions";
-import Image from "next/image";
 
 type OptimisticUpdate = (merchandiseId: string, action: "delete") => void;
 

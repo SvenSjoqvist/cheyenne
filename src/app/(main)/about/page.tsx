@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import { Metadata } from 'next';
 import Script from 'next/script';
 import { generateMetadata as generatePageMetadata, generateStructuredData } from '@/app/lib/metadata-generator';
@@ -144,7 +143,7 @@ export default async function About() {
                 waters and endless summer days instilled an appreciation for
                 beauty in its most authentic form. Our environment shaped how we
                 view elegance and memorable experiences. We discovered that true
-                luxury isn't just about the product—it’s about the story behind
+                luxury isn&apos;t just about the product—it&apos;s about the story behind
                 it and the attention to small details that make it special.
               </p>
               <br />
@@ -154,7 +153,7 @@ export default async function About() {
                 personality, designed to complement your unique story while
                 embodying our core values of authenticity, timelessness, and
                 freedom. We see each design as having its own soul. When a woman
-                chooses Kilaeko, she's not just selecting a swimsuit—she's
+                chooses Kilaeko, she&apos;s not just selecting a swimsuit—she&apos;s
                 adopting a character that resonates with her own narrative and
                 becomes part of her most cherished memories.
               </p>
@@ -166,7 +165,7 @@ export default async function About() {
                 Our curated collections invite you into a space where each piece
                 becomes a representation of your most meaningful moments. Being
                 young founders gives us the freedom to challenge conventions.
-                We're not bound by traditional approaches to luxury—we're
+                We&apos;re not bound by traditional approaches to luxury—we&apos;re
                 redefining it through our lens of authenticity, limited
                 availability, and emotional connection, creating a sanctuary
                 where individual beauty flourishes beyond societal expectations.

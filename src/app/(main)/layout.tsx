@@ -4,7 +4,6 @@ import { Footer } from "@/app/components/client/Footer";
 import { CartProvider } from "@/app/components/client/cart/cart-context";
 import { cookies } from "next/headers";
 import { getCart, getCustomer, getCustomerOrders } from "@/app/lib/shopify";
-import SizeGuide from "@/app/components/client/SizeGuide";
 import CartModal from "../components/client/cart/modal";
 import { UserProvider } from "../components/client/account/AccountContext";
 import { Metadata } from 'next';
