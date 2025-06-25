@@ -1,5 +1,5 @@
 "use client";
-  import { CartItem } from "@/app/lib/shopify/types";
+import { CartItem } from "@/app/lib/shopify/types";
 import { useActionState } from "react";
 import { removeItem } from "./actions";
 
@@ -27,7 +27,9 @@ export function DeleteItemButton({
         type="submit"
         aria-label="Remove cart item"
         className="flex h-[24px] w-[24px] items-center justify-center rounded-full bg-neutral-500"
-      >XX      </button>
+      >
+        X{" "}
+      </button>
       <p aria-live="polite" className="sr-only" role="status">
         {message}
       </p>

@@ -59,11 +59,11 @@ export default async function ProductPage({ params }: PageProps) {
   // Await the params to get the handle value
   const resolvedParams = await params;
   const handle = resolvedParams.handle;
-  
+
   const product = await getProduct(handle);
 
   if (!product) return notFound();
-  
+
   return (
     <ProductProvider>
       <div className="mx-auto max-w-screen-2xl pt-10">
@@ -89,18 +89,18 @@ export default async function ProductPage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row">
-          <div className="w-full lg:w-4/6 flex justify-center items-center">
-            <video 
-              src="/videos/video-under-product.mov" 
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
-              className="w-[700px] h-[428px] object-cover ml-44" 
+        <div className="flex flex-col lg:flex-row pt-12">
+          <div className="w-full lg:w-4/6 flex justify-center items-top">
+            <video
+              src="/videos/video-under-product.mov"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-[700px] h-[428px] object-cover ml-44"
             />
           </div>
-          <div className="w-full lg:w-2/6 md:p-12">
+          <div className="w-full lg:w-2/6 ">
             <RelatedProducts id={product.id} tags={product.tags} />
           </div>
         </div>
@@ -122,7 +122,7 @@ async function RelatedProducts({ id, tags }: { id: string; tags?: string[] }) {
   if (tags && tags.length > 0) {
     const primaryTag = tags[0];
     const taggedProducts = await getProductsByTag(primaryTag, id);
-    
+
     if (taggedProducts && taggedProducts.length > 0) {
       relatedProducts = taggedProducts;
     }
@@ -132,24 +132,17 @@ async function RelatedProducts({ id, tags }: { id: string; tags?: string[] }) {
 
   return (
     <section className="w-full max-w-7xl mx-auto">
-      <header className="text-center mb-5">
-        <h2 className="text-2xl font-bold font-[bero]">Complete the set</h2>
-      </header>
-
       <div className="flex flex-col items-center">
         <div className="w-full overflow-x-auto">
           <div className="flex gap-8 pb-4 min-w-max">
             {relatedProducts.map((product) => (
-              <article 
-                key={product.handle}
-                className="flex-none w-[342px]"
-              >
-                <Link
-                  href={`/catalog/${product.handle}`}
-                  className="group block"
-                  prefetch={true}
-                >
-                  <div className="space-y-4">
+              <article key={product.handle} className="flex-none w-[342px]">
+                <div className="flex flex-col h-full space-y-4">
+                  <Link
+                    href={`/catalog/${product.handle}`}
+                    className="group block flex-grow"
+                    prefetch={true}
+                  >
                     <figure className="relative w-[342px] h-[428px] overflow-hidden">
                       <Image
                         src={product.featuredImage?.url}
@@ -159,18 +152,22 @@ async function RelatedProducts({ id, tags }: { id: string; tags?: string[] }) {
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     </figure>
-                    <div className="text-center">
-                      <h3 className="font-darker-grotesque text-lg">{product.title}</h3>
+                    <div className="text-center mt-2">
+                      <h2 className="text-2xl font-bold font-[bero]">
+                        Complete the set
+                      </h2>
+                      <h3 className="font-darker-grotesque text-lg">
+                        {product.title}
+                      </h3>
                     </div>
+                  </Link>
+                  <div className="mt-auto">
+                    <AddToCart product={relatedProducts[0]} />
                   </div>
-                </Link>
+                </div>
               </article>
             ))}
           </div>
-        </div>
-        
-        <div className="w-full max-w-[450px] ml-32">
-          <AddToCart product={relatedProducts[0]} />
         </div>
       </div>
     </section>

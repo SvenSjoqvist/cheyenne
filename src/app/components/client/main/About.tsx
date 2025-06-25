@@ -42,11 +42,11 @@ const RunawaySection = () => {
           <div className="flex flex-col items-start h-full py-56 pr-20 pl-9 bg-[#212121] text-neutral-100 max-md:px-5 max-md:py-24 max-md:max-w-full">
             <h2 className="text-4xl leading-8 tracking-[2px] max-md:max-w-full max-md:text-3xl">
               <span className="font-bold font-[bero] text-[40px] max-md:text-[32px]">
-                an insider look behind{" "}
+                An insider look behind{" "}
               </span>
               <br />
               <span className="font-bold text-neutral-300 font-[bero] text-[40px] max-md:text-[32px]">
-                the runaway collection
+                the runaway collection.
               </span>
             </h2>
 
@@ -56,14 +56,18 @@ const RunawaySection = () => {
               from the breath-taking views of coastal California.
               <br />
               <br />
-              turpis magna ac cum mattis tellus suscipit sodales mollis
-              molestie. sodales gravida in pharetra nisl lacus convallis risus
-              molestie. cursus sapien scelerisque elementum eget pharetra ipsum
-              scelerisque ante odio. est erat mi aenean imperdiet volutpat.
+              Behind the scenes, every collection is thoughtfully crafted with
+              intention. Our goal is to make each piece feel personal, diving
+              deep into the why. Step behind the scenes and discover the
+              intention and artistry that shape each collection, where every
+              detail tells a story.
             </p>
 
-            <button onClick={() => router.push("/about")} className="flex items-center gap-6 mt-24 text-xl text-neutral-100 max-md:mt-10 max-md:text-lg cursor-pointer">
-              <span>read more</span>
+            <button
+              onClick={() => router.push("/collection-journal")}
+              className="flex items-center gap-6 mt-24 text-xl text-neutral-100 max-md:mt-10 max-md:text-lg cursor-pointer"
+            >
+              <span>Read More</span>
               <Image
                 src="/icons/readmore.svg"
                 alt="Read more arrow"
