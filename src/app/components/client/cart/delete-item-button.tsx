@@ -21,14 +21,14 @@ export function DeleteItemButton({
     <form
       action={async () => {
         optimisticUpdate(merchandiseId, "delete");
-        await actionWithVariant();
+         actionWithVariant();
       }}
     >
       <button
         type="submit"
         aria-label="Remove cart item"
         className="flex h-[24px] w-[24px] items-center justify-center rounded-full bg-neutral-500 cursor-pointer"
-      ><Image src="/icons/delete.svg" alt="Delete" width={16} height={16} className="w-4 h-4" /></button>
+      >X {" "}</button>
       <p aria-live="polite" className="sr-only" role="status">
         {message}
       </p>

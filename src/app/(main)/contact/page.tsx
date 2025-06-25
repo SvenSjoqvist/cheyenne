@@ -167,63 +167,53 @@ export default async function ContactPage() {
           __html: JSON.stringify(structuredData)
         }}
       />
-      <div className="bg-[#F7F7F7] pt-17 pb-32">
-        <h1 className="text-[40px] font-bold font-[bero] text-center px-4">contact</h1>
-        
-        <div className="max-w-3xl mx-auto px-6 mt-4">
-          <p className="font-darker-grotesque text-lg mb-8 text-center">
-            For inquiries or support, please contact us using the emails below. We&apos;re committed to responding promptly and thoughtfully to every message.
-          </p>
-          
-          <div className="space-y-8 text-center">
-            <section>
-              <h2 className="text-[32px] font-darker-grotesque font-medium">Sizing Concerns</h2>
-              <p className="font-darker-grotesque text-lg mb-1">
-                Need help finding the right fit?
-              </p>
-              <p className="font-darker-grotesque text-lg mb-4">
-                Email: <a href="mailto:sizing@kilaeko.com" className="text-blue-600 hover:underline transition-colors duration-200">sizing@kilaeko.com</a>
-              </p>
-            </section>
-            
-            <section>
-              <h2 className="text-[32px] font-darker-grotesque font-medium">Orders</h2>
-              <p className="font-darker-grotesque text-lg mb-1">
-                Questions about your order, shipping, or returns?
-              </p>
-              <p className="font-darker-grotesque text-lg mb-4">
-                Email: <a href="mailto:orders@kilaeko.com" className="text-blue-600 hover:underline transition-colors duration-200">orders@kilaeko.com</a>
-              </p>
-            </section>
-            
-            <section>
-              <h2 className="text-[32px] font-darker-grotesque font-medium">General Questions</h2>
-              <p className="font-darker-grotesque text-lg mb-1">
-                For general questions and feedback:
-              </p>
-              <p className="font-darker-grotesque text-lg mb-4">
-                Email: <a href="mailto:info@kilaeko.com" className="text-blue-600 hover:underline transition-colors duration-200">info@kilaeko.com</a>
-              </p>
-            </section>
-            
-            <section>
-              <h2 className="text-[32px] font-darker-grotesque font-medium">PR & Media</h2>
-              <p className="font-darker-grotesque text-lg mb-1">
-                For press inquiries and media opportunities:
-              </p>
-              <p className="font-darker-grotesque text-lg mb-4">
-                Email: <a href="mailto:connect@kilaeko.com" className="text-blue-600 hover:underline transition-colors duration-200">connect@kilaeko.com</a>
-              </p>
-            </section>
-          </div>
-          
-          <div className="mt-12 text-center">
-            <h2 className="text-lg font-darker-grotesque font-bold mb-4">We&apos;re Here to Help</h2>
-            <p className="font-darker-grotesque text-lg mb-8">
-              Thank you for choosing Kilaeko. We appreciate your business and look forward to assisting you with any questions or concerns you may have.
-            </p>
-          </div>
-        </div>
+<div>
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center font-[bero] mt-10 md:mt-20">
+          Contact
+        </h1>
+      </div>
+
+      <div>
+        <p className="text-[14px] sm:text-[16px] font-darker-grotesque tracking-wider font-medium mt-4 sm:mt-7 text-center px-4">
+          For detailed sizing information and fit notes, refer to the guide
+          below before placing your order.
+        </p>
+      </div>
+
+      <div>
+        <h1 className="text-[32px] sm:text-[32px] font-darker-grotesque tracking-wider font-medium mt-4 sm:mt-7 text-center px-4">
+          Sizing Concerns
+        </h1>
+        <h1 className="text-[20px] sm:text-[20px] font-darker-grotesque tracking-wider font-medium text-center">
+          sizing@kilaeko.com
+        </h1>
+      </div>
+
+      <div>
+        <h1 className="text-[32px] sm:text-[32px] font-darker-grotesque tracking-wider font-medium mt-4 sm:mt-7 text-center px-4">
+          Orders
+        </h1>
+        <h1 className="text-[20px] sm:text-[20px] font-darker-grotesque tracking-wider font-medium text-center">
+          orders@kilaeko.com
+        </h1>
+      </div>
+
+      <div>
+        <h1 className="text-[32px] sm:text-[32px] font-darker-grotesque tracking-wider font-medium mt-4 sm:mt-7 text-center px-4">
+          General Questions
+        </h1>
+        <h1 className="text-[20px] sm:text-[20px] font-darker-grotesque tracking-wider font-medium text-center">
+          info@kilaeko.com
+        </h1>
+      </div>
+
+      <div>
+        <h1 className="text-[32px] sm:text-[32px] font-darker-grotesque tracking-wider font-medium mt-4 sm:mt-7 text-center px-4">
+          Public Relations
+        </h1>
+        <h1 className="text-[20px] sm:text-[20px] font-darker-grotesque tracking-wider font-medium text-center pb-20">
+          connect@kilaeko.com
+        </h1>
       </div>
     </>
   );

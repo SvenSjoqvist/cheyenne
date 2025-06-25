@@ -151,12 +151,12 @@ async function RelatedProducts({ id, tags }: { id: string; tags?: string[] }) {
           <div className="flex gap-8 pb-4 min-w-max">
             {relatedProducts.map((product) => (
               <article key={product.handle} className="flex-none w-[342px]">
-                <div className="flex flex-col h-full space-y-4">
-                  <Link
-                    href={`/catalog/${product.handle}`}
-                    className="group block flex-grow"
-                    prefetch={true}
-                  >
+              <div className="flex flex-col h-full space-y-4">
+                <Link
+                  href={`/catalog/${product.handle}`}
+                  className="group block flex-grow"
+                  prefetch={true}
+                >
                     <figure className="relative w-[342px] h-[428px] overflow-hidden">
                       <Image
                         src={product.featuredImage?.url}
@@ -174,10 +174,9 @@ async function RelatedProducts({ id, tags }: { id: string; tags?: string[] }) {
                         {product.title}
                       </h3>
                     </div>
-                  </Link>
+                    </Link>
                   <div className="mt-auto">
                     <AddToCart product={relatedProducts[0]} />
-                  </div>
                 </div>
               </article>
             ))}

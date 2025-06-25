@@ -13,38 +13,34 @@ type FooterSection = {
 // Footer sections with proper links
 const footerSections: FooterSection[] = [
   {
-    title: "concierge",
+    title: "Concierge",
     links: [
       { label: "Contact", href: "/contact" },
       { label: "Size & fit", href: "/size-guide" },
-      { label: "Track an order", href: "/order-tracking" },
-      { label: "Shipping & delivery", href: "/shipping" },
+      { label: "Track an Order", href: "/order-tracking" },
+      { label: "Shipping & Delivery", href: "/shipping" },
       { label: "Account", href: "/account" },
       { label: "FAQ", href: "/faq" },
     ],
   },
   {
-    title: "company",
+    title: "Company",
     links: [
-      { label: "Who we are", href: "/about" },
+      { label: "Who We Are", href: "/about" },
       { label: "Sustainability", href: "/sustainability" },
     ],
   },
   {
-    title: "legal",
+    title: "Legal",
     links: [
-      { label: "Return & cancellation policy", href: "/returns" },
-      { label: "Accessibility policy", href: "/accessibility" },
-      { label: "Privacy policy", href: "/privacy" },
-      { label: "Terms of service", href: "/tos" },
-      {
-        label: "do not sell or share my personal data​",
-        href: "/privacy/do-not-sell",
-      },
+      { label: "Return & Cancellation Policy", href: "/returns" },
+      { label: "Accessibility Policy", href: "/accessibility" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/tos" },
     ],
   },
   {
-    title: "socials",
+    title: "Socials",
     links: [
       { label: "Instagram", href: "https://www.instagram.com/kilaekoswim/" },
       { label: "Spotify", href: "https://open.spotify.com/user/31htb6nn2p2wywhn4gofxjrlt6we?si=8f1b1c1d215147de" },

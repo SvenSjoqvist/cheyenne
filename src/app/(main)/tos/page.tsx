@@ -1,7 +1,7 @@
 export default function Tos() {
   return (
-    <div className="bg-[#F7F7F7] pt-20 pb-32">
-      <h1 className="text-[40px] font-[bero] text-center px-4">
+  <div className="bg-[#F7F7F7] pt-20 pb-32">
+        <h1 className="text-[40px] font-[bero] text-center px-4">
         Terms of Service
       </h1>
 

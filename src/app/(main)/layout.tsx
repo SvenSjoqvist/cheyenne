@@ -218,7 +218,6 @@ export default async function MainLayout({
               {children}
             </main>
             <Footer />
-            <SizeGuide />
           </UserProvider>
         </CartProvider>
       </div>
