@@ -98,7 +98,7 @@ const RunawaySection = () => {
           {/* Overlapping Cute Girl Image */}
           <div className="absolute top-9 left-11 z-10 w-[300px] h-[400px]">
             <Image
-              src="/cutegirl.png"
+              src="/cutegirl.webp"
               alt="Cute girl"
               fill
               className="object-cover"

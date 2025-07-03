@@ -9,6 +9,13 @@ import {
   customerRecover,
 } from "@/app/lib/shopify";
 import { redirect } from "next/navigation";
+import { addSubscriber } from "@/app/lib/prisma";
+
+interface ShopifyError {
+  code?: string;
+  message: string;
+  fields?: string[];
+}
 
 export async function getCookies({ cookieName }: { cookieName: string }) {
   const cookieStore = await cookies();
@@ -27,7 +34,7 @@ export async function signup(formData: FormData) {
     return {
       error: "Email and password are required",
     };
-  } 
+  }
 
   try {
     // Create customer
@@ -45,6 +52,16 @@ export async function signup(formData: FormData) {
           .map((e) => e.message)
           .join(", "),
       };
+    }
+
+    // Add to subscribers list if marketing is accepted
+    if (acceptsMarketing) {
+      try {
+        await addSubscriber(email);
+      } catch (error) {
+        // If subscription fails, we still want to continue with account creation
+        console.error("Failed to add to subscriber list:", error);
+      }
     }
 
     // Auto-login after signup
@@ -81,12 +98,24 @@ export async function signup(formData: FormData) {
     }
   } catch (error: unknown) {
     console.error("Signup error:", error);
+    // Check if it's a Shopify error with code and message
+    if (typeof error === "object" && error !== null && "code" in error) {
+      const shopifyError = error as ShopifyError;
+      if (shopifyError.code === "TAKEN") {
+        return {
+          error:
+            "This email address is already registered. Please try logging in instead.",
+        };
+      }
+      return { error: shopifyError.message };
+    }
     return {
       error:
         error instanceof Error ? error.message : "An unexpected error occurred",
     };
   }
 }
+
 export async function login(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
@@ -185,5 +214,3 @@ export async function lostPassword(formData: FormData) {
   const response = await customerRecover(email);
   return response;
 }
-
-

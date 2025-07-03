@@ -1295,3 +1295,60 @@ export async function getProductById(
 
   return await shopifyRequest<SingleProductResponse>(query, variables);
 }
+
+interface DeleteProductResponse {
+  productDelete: {
+    deletedProductId: string;
+    userErrors: Array<{
+      field: string[];
+      message: string;
+    }>;
+  };
+}
+
+export async function deleteProduct(
+  productId: string
+): Promise<{ success: boolean; error?: string }> {
+  // Protect admin function
+  await protectServerAction();
+
+  const mutation = `
+    mutation productDelete($input: ProductDeleteInput!) {
+      productDelete(input: $input) {
+        deletedProductId
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await shopifyRequest<DeleteProductResponse>(mutation, {
+      input: {
+        id: productId,
+      },
+    });
+
+    if (response.productDelete.userErrors.length > 0) {
+      return {
+        success: false,
+        error: response.productDelete.userErrors
+          .map((error) => error.message)
+          .join(", "),
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to delete product",
+    };
+  }
+}

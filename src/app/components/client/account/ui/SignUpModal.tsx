@@ -4,7 +4,15 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signup } from "@/app/components/client/account/actions";
 
-export default function SignUpModal({ onClose, isVisible, setIsVisible }: { onClose?: () => void, isVisible: boolean, setIsVisible: (visible: boolean) => void }) {
+export default function SignUpModal({
+  onClose,
+  isVisible,
+  setIsVisible,
+}: {
+  onClose?: () => void;
+  isVisible: boolean;
+  setIsVisible: (visible: boolean) => void;
+}) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [passwordStrength, setPasswordStrength] = useState<{
@@ -249,7 +257,7 @@ export default function SignUpModal({ onClose, isVisible, setIsVisible }: { onCl
                   className="mr-2"
                 />
                 <span className="text-sm text-white">
-                  email me with news and offers.
+                  Email me with news and offers.
                 </span>
               </label>
             </div>
@@ -269,23 +277,11 @@ export default function SignUpModal({ onClose, isVisible, setIsVisible }: { onCl
               Terms of Service
             </a>{" "}
             and{" "}
-            <a
-              href="/privacy"
-              className="underline text-white cursor-pointer"
-            >
+            <a href="/privacy" className="underline text-white cursor-pointer">
               Privacy Policy
             </a>
             .
           </p>
-
-          <div className="text-center text-white">
-            <button
-              onClick={handleClose}
-              className="text-sm text-white hover:underline block mx-auto transition-colors duration-200 cursor-pointer"
-            >
-              track without an account
-            </button>
-          </div>
         </div>
       </div>
     </div>

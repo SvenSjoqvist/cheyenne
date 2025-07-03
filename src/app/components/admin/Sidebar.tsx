@@ -31,6 +31,10 @@ const sidebarItems: SidebarItems = {
       { label: "Inventory", href: "/dashboard/inventory" },
       { label: "Orders", href: "/dashboard/orders" },
       { label: "Customers", href: "/dashboard/customers" },
+      {
+        label: "Team",
+        href: "/dashboard/team",
+      },
     ],
   },
   performance: {
@@ -47,10 +51,6 @@ const sidebarItems: SidebarItems = {
       {
         label: "Returns",
         href: "/dashboard/returns",
-      },
-      {
-        label: "Team",
-        href: "/dashboard/team",
       },
     ],
   },
@@ -233,7 +233,7 @@ export default function Sidebar() {
                         href={item.href}
                         onClick={() => isMobile && setIsMobileMenuOpen(false)}
                         className={`block px-1 text-[15px] font-darker-grotesque font-regular hover:opacity-80 tracking-wider leading-6.5 ${
-                          pathname === item.href
+                          pathname.startsWith(item.href)
                             ? "underline underline-offset-2 decoration-1"
                             : "text-gray-600 hover:bg-gray-50"
                         }`}
@@ -250,7 +250,7 @@ export default function Sidebar() {
                                 isMobile && setIsMobileMenuOpen(false)
                               }
                               className={`block text-[15px] font-darker-grotesque font-regular hover:opacity-80 tracking-wider leading-6.5 ${
-                                pathname === subItem.href
+                                pathname.startsWith(subItem.href)
                                   ? "underline"
                                   : "text-gray-600 hover:bg-gray-50"
                               }`}
