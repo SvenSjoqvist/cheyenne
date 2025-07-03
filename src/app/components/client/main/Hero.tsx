@@ -13,7 +13,7 @@ const HeroSection: React.FC<HeroSectionProps> = () => {
       <div className="relative w-full aspect-[16/9]">
         <video
           src="/videos/home-opening.mp4"
-          poster="/images/home-opening-poster.png"
+          poster="/images/home-opening-poster.webp"
           autoPlay
           loop
           preload="auto"
