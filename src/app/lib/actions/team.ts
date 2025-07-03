@@ -1,8 +1,13 @@
-'use server';
+"use server";
 
-import { prisma } from '@/app/lib/prisma/client';
-import { protectServerAction, sanitizeInput, validateEmail, validatePassword } from '@/app/lib/auth-utils';
-import bcrypt from 'bcryptjs';
+import { prisma } from "@/app/lib/prisma/client";
+import {
+  protectServerAction,
+  sanitizeInput,
+  validateEmail,
+  validatePassword,
+} from "@/app/lib/auth-utils";
+import bcrypt from "bcryptjs";
 
 interface CreateUserData {
   name: string;
@@ -25,42 +30,42 @@ export async function createUser(userData: CreateUserData) {
   try {
     // Protect admin function
     await protectServerAction();
-    
+
     // Sanitize inputs
     const sanitizedData = {
       name: sanitizeInput(userData.name),
       email: sanitizeInput(userData.email).toLowerCase(),
-      password: userData.password
+      password: userData.password,
     };
-    
+
     // Validate inputs
     if (!validateEmail(sanitizedData.email)) {
-      throw new Error('Invalid email format');
+      throw new Error("Invalid email format");
     }
-    
+
     const passwordValidation = validatePassword(sanitizedData.password);
     if (!passwordValidation.isValid) {
-      throw new Error(passwordValidation.errors.join(', '));
+      throw new Error(passwordValidation.errors.join(", "));
     }
-    
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email: sanitizedData.email }
+      where: { email: sanitizedData.email },
     });
-    
+
     if (existingUser) {
-      throw new Error('User with this email already exists');
+      throw new Error("User with this email already exists");
     }
-    
+
     // Hash password
     const hashedPassword = await bcrypt.hash(sanitizedData.password, 12);
-    
+
     // Create user
     const newUser = await prisma.user.create({
       data: {
         name: sanitizedData.name,
         email: sanitizedData.email,
-        password: hashedPassword
+        password: hashedPassword,
       },
       select: {
         id: true,
@@ -69,14 +74,16 @@ export async function createUser(userData: CreateUserData) {
         createdAt: true,
         updatedAt: true,
         image: true,
-        emailVerified: true
-      }
+        emailVerified: true,
+      },
     });
-    
+
     return newUser;
   } catch (error) {
-    console.error('Failed to create user:', error);
-    throw new Error(error instanceof Error ? error.message : 'Failed to create user');
+    console.error("Failed to create user:", error);
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to create user"
+    );
   }
 }
 
@@ -85,7 +92,7 @@ export async function updateUser(userId: string, updates: UpdateUserData) {
   try {
     // Protect admin function
     await protectServerAction();
-    
+
     // Sanitize inputs
     const sanitizedUpdates: SanitizedUserUpdates = {};
     if (updates.name) {
@@ -94,25 +101,25 @@ export async function updateUser(userId: string, updates: UpdateUserData) {
     if (updates.email) {
       const sanitizedEmail = sanitizeInput(updates.email).toLowerCase();
       if (!validateEmail(sanitizedEmail)) {
-        throw new Error('Invalid email format');
+        throw new Error("Invalid email format");
       }
       sanitizedUpdates.email = sanitizedEmail;
     }
-    
+
     // Check if email is already taken by another user
     if (sanitizedUpdates.email) {
       const existingUser = await prisma.user.findFirst({
         where: {
           email: sanitizedUpdates.email,
-          id: { not: userId }
-        }
+          id: { not: userId },
+        },
       });
-      
+
       if (existingUser) {
-        throw new Error('Email is already taken by another user');
+        throw new Error("Email is already taken by another user");
       }
     }
-    
+
     // Update user
     const updatedUser = await prisma.user.update({
       where: { id: userId },
@@ -124,14 +131,16 @@ export async function updateUser(userId: string, updates: UpdateUserData) {
         createdAt: true,
         updatedAt: true,
         image: true,
-        emailVerified: true
-      }
+        emailVerified: true,
+      },
     });
-    
+
     return updatedUser;
   } catch (error) {
-    console.error('Failed to update user:', error);
-    throw new Error(error instanceof Error ? error.message : 'Failed to update user');
+    console.error("Failed to update user:", error);
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to update user"
+    );
   }
 }
 
@@ -140,34 +149,45 @@ export async function deleteUser(userId: string) {
   try {
     // Protect admin function
     await protectServerAction();
-    
+
     // Sanitize input
     const sanitizedUserId = sanitizeInput(userId);
-    
+
     // Check if user exists
     const user = await prisma.user.findUnique({
-      where: { id: sanitizedUserId }
+      where: { id: sanitizedUserId },
     });
-    
+
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
-    
-    // Prevent deleting the last admin user (you might want to add role-based logic here)
+
+    // Prevent deleting the last admin user
     const totalUsers = await prisma.user.count();
     if (totalUsers <= 1) {
-      throw new Error('Cannot delete the last user');
+      throw new Error("Cannot delete the last user");
     }
-    
-    // Delete user (this will cascade delete related records like sessions)
-    await prisma.user.delete({
-      where: { id: sanitizedUserId }
+
+    // Delete all sessions and accounts for this user first
+    await prisma.session.deleteMany({
+      where: { userId: sanitizedUserId },
     });
-    
+
+    await prisma.account.deleteMany({
+      where: { userId: sanitizedUserId },
+    });
+
+    // Delete user
+    await prisma.user.delete({
+      where: { id: sanitizedUserId },
+    });
+
     return { success: true };
   } catch (error) {
-    console.error('Failed to delete user:', error);
-    throw new Error(error instanceof Error ? error.message : 'Failed to delete user');
+    console.error("Failed to delete user:", error);
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to delete user"
+    );
   }
 }
 
@@ -176,7 +196,7 @@ export async function getUserById(userId: string) {
   try {
     // Protect admin function
     await protectServerAction();
-    
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -186,18 +206,20 @@ export async function getUserById(userId: string) {
         createdAt: true,
         updatedAt: true,
         image: true,
-        emailVerified: true
-      }
+        emailVerified: true,
+      },
     });
-    
+
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
-    
+
     return user;
   } catch (error) {
-    console.error('Failed to get user:', error);
-    throw new Error(error instanceof Error ? error.message : 'Failed to get user');
+    console.error("Failed to get user:", error);
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to get user"
+    );
   }
 }
 
@@ -206,7 +228,7 @@ export async function getAllUsers() {
   try {
     // Protect admin function
     await protectServerAction();
-    
+
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -215,16 +237,18 @@ export async function getAllUsers() {
         createdAt: true,
         updatedAt: true,
         image: true,
-        emailVerified: true
+        emailVerified: true,
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
-    
+
     return users;
   } catch (error) {
-    console.error('Failed to get users:', error);
-    throw new Error(error instanceof Error ? error.message : 'Failed to get users');
+    console.error("Failed to get users:", error);
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to get users"
+    );
   }
-} 
+}

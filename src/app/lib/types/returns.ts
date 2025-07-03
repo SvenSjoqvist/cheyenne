@@ -17,7 +17,8 @@ export type Return = {
   orderNumber: number;
   customerId: string;
   customerEmail: string;
+  customerName: string | null;
   status: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED";
   additionalNotes: string | null;
   items: ReturnItem[];
-}; 
+};

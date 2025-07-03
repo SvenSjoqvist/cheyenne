@@ -7,7 +7,7 @@ import Link from "next/link";
 import { getProducts } from "@/app/lib/shopify";
 import { Metadata } from "next";
 import Script from "next/script";
-
+import FooterHeader from "@/app/components/client/footer/footerHeader";
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Kilaeko | Luxury Swimwear & Sustainable Fashion",
@@ -283,9 +283,7 @@ const KilaekoPage: React.FC = async () => {
             <RunawaySection />
           </section>
 
-          <section className="text-center px-16 py-24 w-full text-4xl font-bold leading-none bg-[#588FAE] text-neutral-100 tracking-[2px] max-md:px-5 max-md:max-w-full font-[bero]">
-            no restocks, limited quantity.
-          </section>
+          <FooterHeader />
         </div>
       </>
     );

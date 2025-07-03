@@ -4,15 +4,15 @@ import { getProducts } from "@/app/lib/shopify";
 import { getCookies } from "@/app/components/client/account/actions";
 import { Metadata } from "next";
 import Script from "next/script";
-
+import FooterHeader from "@/app/components/client/footer/footerHeader";
 export async function generateMetadata(): Promise<Metadata> {
   const products = await getProducts({ query: "" });
   const hasProducts = products.length > 0;
-  
-  const title = hasProducts 
+
+  const title = hasProducts
     ? "Swimwear Collection | Kilaeko - Luxury Bikinis & One-Piece Swimsuits"
     : "New Collection Coming Soon | Kilaeko - Limited Edition Swimwear";
-    
+
   const description = hasProducts
     ? "Discover our curated collection of luxury swimwear. Handcrafted in Bali, designed on the California coast. Shop limited-edition bikinis, one-piece swimsuits, and beach essentials. Free shipping on all orders."
     : "Join our exclusive community for early access to our upcoming limited-edition swimwear collection. Designed on the California coast, artisan made in Bali. Sign up for member-only access.";
@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     keywords: [
       "luxury swimwear",
-      "designer bikinis", 
+      "designer bikinis",
       "one-piece swimsuits",
       "beachwear",
       "California swimwear",
@@ -30,7 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "limited edition swimwear",
       "sustainable swimwear",
       "premium beach essentials",
-      "coastal fashion"
+      "coastal fashion",
     ].join(", "),
     openGraph: {
       title,
@@ -85,48 +85,50 @@ const BikiniBoutique: React.FC = async () => {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": "Kilaeko Swimwear Collection",
-    "description": "Luxury swimwear collection designed on the California coast, artisan made in Bali",
-    "url": "https://testing.kilaeko.com/catalog",
-    "brand": {
+    name: "Kilaeko Swimwear Collection",
+    description:
+      "Luxury swimwear collection designed on the California coast, artisan made in Bali",
+    url: "https://testing.kilaeko.com/catalog",
+    brand: {
       "@type": "Brand",
-      "name": "Kilaeko",
-      "description": "Luxury swimwear brand designed on the California coast, artisan made in Bali"
+      name: "Kilaeko",
+      description:
+        "Luxury swimwear brand designed on the California coast, artisan made in Bali",
     },
-    "offers": {
+    offers: {
       "@type": "AggregateOffer",
-      "priceCurrency": "USD",
-      "availability": "https://schema.org/InStock",
-      "offerCount": topProducts.length
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      offerCount: topProducts.length,
     },
-    "mainEntity": {
+    mainEntity: {
       "@type": "ItemList",
-      "numberOfItems": topProducts.length,
-      "itemListElement": topProducts.slice(0, 10).map((product, index) => ({
+      numberOfItems: topProducts.length,
+      itemListElement: topProducts.slice(0, 10).map((product, index) => ({
         "@type": "ListItem",
-        "position": index + 1,
-        "item": {
+        position: index + 1,
+        item: {
           "@type": "Product",
-          "name": product.title,
-          "description": product.description,
-          "url": `https://testing.kilaeko.com/catalog/${product.handle}`,
-          "image": product.featuredImage?.url,
-          "brand": {
+          name: product.title,
+          description: product.description,
+          url: `https://testing.kilaeko.com/catalog/${product.handle}`,
+          image: product.featuredImage?.url,
+          brand: {
             "@type": "Brand",
-            "name": "Kilaeko"
+            name: "Kilaeko",
           },
-          "offers": {
+          offers: {
             "@type": "Offer",
-            "price": product.priceRange.minVariantPrice.amount,
-            "priceCurrency": product.priceRange.minVariantPrice.currencyCode,
-            "availability": product.availableForSale 
-              ? "https://schema.org/InStock" 
+            price: product.priceRange.minVariantPrice.amount,
+            priceCurrency: product.priceRange.minVariantPrice.currencyCode,
+            availability: product.availableForSale
+              ? "https://schema.org/InStock"
               : "https://schema.org/OutOfStock",
-            "url": `https://testing.kilaeko.com/catalog/${product.handle}`
-          }
-        }
-      }))
-    }
+            url: `https://testing.kilaeko.com/catalog/${product.handle}`,
+          },
+        },
+      })),
+    },
   };
 
   if (topProducts.length === 0) {
@@ -139,10 +141,11 @@ const BikiniBoutique: React.FC = async () => {
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebPage",
-              "name": "New Collection Coming Soon | Kilaeko",
-              "description": "Join our exclusive community for early access to our upcoming limited-edition swimwear collection.",
-              "url": "https://testing.kilaeko.com/catalog"
-            })
+              name: "New Collection Coming Soon | Kilaeko",
+              description:
+                "Join our exclusive community for early access to our upcoming limited-edition swimwear collection.",
+              url: "https://testing.kilaeko.com/catalog",
+            }),
           }}
         />
         <div className="flex flex-col items-center justify-center min-h-screen text-center">
@@ -156,7 +159,9 @@ const BikiniBoutique: React.FC = async () => {
           <div className="flex flex-col items-center justify-center mt-4">
             {!hasCookie ? (
               <button className="text-black py-2 rounded-md cursor-pointer">
-                <span className="underline underline-offset-5 my-2">Sign up</span>{" "}
+                <span className="underline underline-offset-5 my-2">
+                  Sign up
+                </span>{" "}
                 for early access
               </button>
             ) : null}
@@ -172,7 +177,7 @@ const BikiniBoutique: React.FC = async () => {
         id="structured-data-catalog"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData)
+          __html: JSON.stringify(structuredData),
         }}
       />
       <div className="flex overflow-hidden flex-col bg-[#F5F5F5] pb-10">
@@ -183,7 +188,8 @@ const BikiniBoutique: React.FC = async () => {
             </h1>
             {topProducts.length > 0 && (
               <p className="text-lg md:text-xl font-light font-darker-grotesque text-gray-700 max-w-2xl mx-auto">
-                Discover our curated collection of luxury swimwear. Handcrafted in Bali, designed on the California coast.
+                Discover our curated collection of luxury swimwear. Handcrafted
+                in Bali, designed on the California coast.
               </p>
             )}
           </header>
@@ -192,6 +198,7 @@ const BikiniBoutique: React.FC = async () => {
           <ProductGrid products={topProducts} />
         </Suspense>
       </div>
+      <FooterHeader />
     </>
   );
 };

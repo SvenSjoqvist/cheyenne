@@ -17,7 +17,7 @@ import {
   createSuccessResponse,
   ApiResponse,
 } from "@/app/lib/error-utils";
-import { Return } from "@prisma/client";
+import { Return } from "@/app/lib/types/returns";
 
 export async function getAbandonedCartsCount(): Promise<
   ApiResponse<{ count: number }>

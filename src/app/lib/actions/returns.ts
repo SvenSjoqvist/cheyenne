@@ -1,10 +1,15 @@
 "use server";
-
 import nodemailer from "nodemailer";
 import { prisma } from "@/app/lib/prisma/client";
 import { Return, ReturnItem } from "@/app/lib/types/returns";
 import { protectServerAction, sanitizeInput } from "@/app/lib/auth-utils";
 import { ReturnStatus } from "@prisma/client";
+import {
+  ensureDefaultTemplates,
+  getTemplateByName,
+  processTemplate,
+  processTemplateFromDb,
+} from "./templates";
 
 type ReturnRecordItem = {
   productName: string;
@@ -28,6 +33,11 @@ const transporter = nodemailer.createTransport({
     pass: process.env.SMTP_PASS,
   },
 });
+
+// Helper function to get first name
+function getFirstName(fullName: string): string {
+  return fullName.split(" ")[0] || fullName;
+}
 
 // Function to get existing returns for an order
 export async function getOrderReturns(orderNumber: number) {
@@ -56,11 +66,17 @@ export async function sendReturnRequest(
   items: { name: string; variant: string; reason: string; quantity?: number }[],
   additionalNotes: string,
   customerEmail: string,
-  customerId: string
+  customerId: string,
+  customerName?: string
 ) {
   try {
     // Check for existing returns
     const existingReturns = await getOrderReturns(orderNumber);
+
+    // Use provided customer name or fallback, ensuring string type and getting first name
+    const resolvedCustomerName: string = getFirstName(
+      customerName ?? "Valued Customer"
+    );
 
     // Create a map of already returned items and their quantities
     const returnedItems = new Map<string, number>();
@@ -82,21 +98,29 @@ export async function sendReturnRequest(
       }
     }
 
-    // Create return record in database
+    // Create return record in database with proper type
     const returnRecord = await prisma.return.create({
       data: {
         orderNumber,
         orderId,
         customerEmail,
         customerId,
+        customerName: resolvedCustomerName,
         additionalNotes,
         items: {
-          create: items.map((item) => ({
-            productName: item.name,
-            variant: item.variant,
-            reason: item.reason,
-            quantity: item.quantity || 1,
-          })),
+          create: items.map(
+            (item: {
+              name: string;
+              variant: string;
+              reason: string;
+              quantity?: number;
+            }) => ({
+              productName: item.name,
+              variant: item.variant,
+              reason: item.reason,
+              quantity: item.quantity || 1,
+            })
+          ),
         },
       },
       include: {
@@ -104,148 +128,13 @@ export async function sendReturnRequest(
       },
     });
 
-    // Format date in YYYY-MM-DD format to avoid locale issues
-    const currentDate = new Date().toISOString().split("T")[0];
+    // Ensure all templates exist
+    await ensureDefaultTemplates();
 
-    // Create email content with HTML and CSS
-    const emailContent = (
-      returnRecord: ReturnRecord,
-      additionalNotes: string | null
-    ) => `
-<!DOCTYPE html>
-<html>
-<head>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Inter', Arial, sans-serif;
-      line-height: 1.6;
-      color: #333;
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #F7F7F7;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-      padding: 20px 0;
-    }
-    .header h1 {
-      font-size: 40px;
-      font-weight: 500;
-      margin: 0;
-      color: #000;
-    }
-    .header p {
-      font-size: 16px;
-      color: #666;
-      max-width: 80%;
-      margin: 20px auto 0;
-    }
-    .section {
-      margin-bottom: 30px;
-      padding: 30px;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .section-title {
-      font-size: 32px;
-      font-weight: 500;
-      margin-bottom: 20px;
-      color: #000;
-    }
-    .item {
-      margin-bottom: 20px;
-      padding: 20px;
-      background-color: #f9f9f9;
-      border-radius: 8px;
-      border: 1px solid #eee;
-    }
-    .item p {
-      margin: 8px 0;
-    }
-    .item strong {
-      color: #000;
-    }
-    .next-steps {
-      background-color: #fff;
-      padding: 30px;
-      border-radius: 8px;
-      margin-top: 30px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .next-steps ul {
-      margin: 0;
-      padding-left: 20px;
-      list-style-type: none;
-    }
-    .next-steps li {
-      margin-bottom: 15px;
-      position: relative;
-      padding-left: 25px;
-    }
-    .next-steps li:before {
-      content: "•";
-      position: absolute;
-      left: 0;
-      color: #000;
-      font-size: 20px;
-    }
-    .footer {
-      margin-top: 40px;
-      text-align: center;
-      font-size: 14px;
-      color: #666;
-      padding-top: 20px;
-    }
-    .button {
-      display: inline-block;
-      padding: 12px 24px;
-      background-color: #000;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 4px;
-      margin-top: 20px;
-    }
-    .button:hover {
-      background-color: #333;
-    }
-    .info-text {
-      font-size: 16px;
-      color: #666;
-      margin: 10px 0;
-    }
-    .highlight {
-      color: #000;
-      font-weight: 500;
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>Return Request</h1>
-    <p>Thank you for submitting your return request. We'll review it shortly and get back to you.</p>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Order Information</div>
-    <p class="info-text"><span class="highlight">Order Number:</span> #${orderNumber}</p>
-    <p class="info-text"><span class="highlight">Customer Email:</span> ${customerEmail}</p>
-    <p class="info-text"><span class="highlight">Request Date:</span> ${currentDate}</p>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Items to Return</div>
-    ${returnRecord.items
+    // Generate return items HTML
+    const returnItemsHtml = returnRecord.items
       .map(
-        (item: {
-          productName: string;
-          variant: string;
-          quantity: number;
-          reason: string;
-        }) => `
+        (item: ReturnItem) => `
       <div class="item">
         <p><span class="highlight">Product:</span> ${item.productName}</p>
         <p><span class="highlight">Variant:</span> ${item.variant}</p>
@@ -254,44 +143,29 @@ export async function sendReturnRequest(
       </div>
     `
       )
-      .join("")}
-  </div>
+      .join("");
 
-  ${
-    additionalNotes
-      ? `
-    <div class="section">
-      <div class="section-title">Additional Notes</div>
-      <p class="info-text">${additionalNotes}</p>
-    </div>
-  `
-      : ""
-  }
+    // Process template with data
+    const emailTemplate = await processTemplateFromDb("return_request", {
+      customer_name: resolvedCustomerName,
+      order_number: orderNumber,
+      customer_email: customerEmail,
+      request_date: new Date().toISOString().split("T")[0],
+      return_items: returnItemsHtml,
+      additional_notes: additionalNotes,
+      support_email: process.env.SMTP_FROM,
+    });
 
-  <div class="next-steps">
-    <div class="section-title">Next Steps</div>
-    <ul>
-      <li>Our team will review your return request within 2-3 business days</li>
-      <li>If approved, you'll receive return shipping instructions</li>
-      <li>Once we receive and inspect the items, we'll process your refund</li>
-      <li>If you have any questions about your return request, please contact our customer service team</li>
-    </ul>
-  </div>
-
-  <div class="footer">
-    <p>Kilaeko Customer Service</p>
-    <a href="mailto:${process.env.SMTP_FROM}" class="button">Contact Support</a>
-  </div>
-</body>
-</html>
-`;
+    if (!emailTemplate) {
+      throw new Error("Failed to process return request template");
+    }
 
     // Send email
     await transporter.sendMail({
       from: process.env.SMTP_FROM,
       to: process.env.SMTP_FROM,
-      subject: `Return Request - Order #${orderNumber}`,
-      html: emailContent(returnRecord, additionalNotes),
+      subject: emailTemplate.subject,
+      html: emailTemplate.html,
     });
 
     return { success: true, returnId: returnRecord.id };
@@ -407,20 +281,91 @@ export async function handleReturnAction(
   returnId: string,
   action: "confirm" | "deny",
   emailTo: string,
-  message: string
+  message: string,
+  customerName?: string
 ) {
   try {
     // Protect admin function
     await protectServerAction();
 
+    // Get return record first to access customer info
+    const returnRecord = await prisma.return.findUnique({
+      where: { id: sanitizeInput(returnId) },
+      select: { customerId: true },
+    });
+
+    if (!returnRecord) {
+      throw new Error("Return record not found");
+    }
+
+    // Use provided customer name or fallback, ensuring string type and getting first name
+    const resolvedCustomerName: string = getFirstName(
+      customerName ?? "Valued Customer"
+    );
+
     // Sanitize inputs
     const sanitizedReturnId = sanitizeInput(returnId);
     const sanitizedEmail = sanitizeInput(emailTo);
     const sanitizedMessage = sanitizeInput(message);
+    const sanitizedCustomerName = sanitizeInput(resolvedCustomerName);
 
-    // Determine new status
+    // Determine new status and template name
     const newStatus: Return["status"] =
       action === "confirm" ? "APPROVED" : "REJECTED";
+    const templateName =
+      action === "confirm" ? "return_approved" : "return_denied";
+
+    // Check if template exists
+    let template = await getTemplateByName(templateName);
+
+    // If template doesn't exist, create it
+    if (!template) {
+      template = await prisma.emailTemplate.create({
+        data: {
+          name: templateName,
+          subject: "Return Request Approved",
+          content: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Return Request Approved</title>
+</head>
+<body>
+  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h1 style="color: #333; text-align: center;">Return Request Approved</h1>
+    <p style="color: #666; line-height: 1.6;">
+      Great news! Your return request for order #{{order_number}} has been approved.
+    </p>
+    {{#if message}}
+    <p style="color: #666; line-height: 1.6;">
+      <strong>Message from our team:</strong> {{message}}
+    </p>
+    {{/if}}
+    <div style="background-color: #f9f9f9; padding: 20px; margin: 20px 0; border-radius: 4px;">
+      <h2 style="color: #333; margin-top: 0;">Next Steps</h2>
+      <ul style="color: #666; line-height: 1.6;">
+        <li>Please package your items securely</li>
+        <li>Include your order number: #{{order_number}}</li>
+        <li>Ship to our returns center</li>
+        <li>Once received, we'll process your refund within 5-7 business days</li>
+      </ul>
+    </div>
+    <p style="color: #666; line-height: 1.6;">
+      If you have any questions, please contact our support team.
+    </p>
+    <div style="text-align: center; margin-top: 30px;">
+      <a href="mailto:{{support_email}}" style="background-color: #000; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px;">
+        Contact Support
+      </a>
+    </div>
+  </div>
+</body>
+</html>`,
+          creator: "SYSTEM",
+        },
+      });
+    }
 
     // Update return status
     const updatedReturn = await prisma.return.update({
@@ -435,38 +380,30 @@ export async function handleReturnAction(
       },
     });
 
+    // Process template with data
+    const templateData = {
+      customer_name: sanitizedCustomerName,
+      order_number: updatedReturn.orderNumber,
+      customer_email: updatedReturn.customerEmail,
+      message: sanitizedMessage,
+      support_email: process.env.SMTP_FROM,
+    };
+
+    const emailTemplate = await processTemplateFromDb(
+      templateName,
+      templateData
+    );
+
+    if (!emailTemplate) {
+      throw new Error("Failed to process template");
+    }
+
     // Send email notification
-    const emailSubject =
-      action === "confirm"
-        ? "Return Request Approved"
-        : "Return Request Update";
-
-    const emailContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h2 style="color: #333;">Return Request ${
-          action === "confirm" ? "Approved" : "Denied"
-        }</h2>
-        <p style="color: #666; line-height: 1.6;">
-          Your return request for order ${updatedReturn.orderId} has been ${
-      action === "confirm" ? "approved" : "denied"
-    }.
-        </p>
-        ${
-          sanitizedMessage
-            ? `<p style="color: #666; line-height: 1.6;"><strong>Message:</strong> ${sanitizedMessage}</p>`
-            : ""
-        }
-        <p style="color: #666; line-height: 1.6;">
-          If you have any questions, please contact our support team.
-        </p>
-      </div>
-    `;
-
     await transporter.sendMail({
       from: process.env.SMTP_USER,
       to: sanitizedEmail,
-      subject: emailSubject,
-      html: emailContent,
+      subject: emailTemplate.subject,
+      html: emailTemplate.html,
     });
 
     return updatedReturn;

@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/lib/auth";
 import { NextResponse } from "next/server";
+import { prisma } from "@/app/lib/prisma/client";
 
 // Server-side session validation
 export async function getSession() {
@@ -24,6 +25,21 @@ export async function protectServerAction() {
 
   if (!session) {
     throw new Error("Unauthorized: Authentication required");
+  }
+
+  // Verify user still exists in database
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true },
+    });
+
+    if (!user) {
+      throw new Error("Unauthorized: User not found");
+    }
+  } catch (error) {
+    console.error("Error verifying user:", error);
+    throw new Error("Unauthorized: Authentication failed");
   }
 
   return session;

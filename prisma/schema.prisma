@@ -1,28 +1,26 @@
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
-// NextAuth.js Models
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://kilaeko_owner:npg_6KCb9vrwLPyx@ep-shy-paper-a8ymnliq-pooler.eastus2.azure.neon.tech/kilaeko?sslmode=require"
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -42,10 +40,10 @@ model User {
   emailVerified DateTime?
   password      String?
   image         String?
-  accounts      Account[]
-  sessions      Session[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  sessions      Session[]
 }
 
 model VerificationToken {
@@ -57,45 +55,49 @@ model VerificationToken {
 }
 
 model Subscriber {
-  id              String   @id @default(uuid())
-  email           String   @unique
-  unsubscribeToken String  @unique @default(uuid())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id               String   @id @default(uuid())
+  email            String   @unique
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  unsubscribeToken String   @unique @default(uuid())
 }
 
+
+
 model EmailTemplate {
-  id          String   @id @default(uuid())
-  name        String
-  subject     String
-  content     String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String          @id @default(uuid())
+  name      String         @unique
+  subject   String
+    creator String @default("USER")
+  content   String
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 }
 
 model Return {
-  id              String         @id @default(cuid())
-  orderId         String
+  id              String       @id @default(cuid())
   orderNumber     Int
   customerEmail   String
-  customerId      String
-  status          ReturnStatus   @default(PENDING)
+  customerName    String?
+  status          ReturnStatus @default(PENDING)
   additionalNotes String?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  customerId      String
+  orderId         String
   items           ReturnItem[]
 }
 
 model ReturnItem {
   id          String   @id @default(uuid())
   returnId    String
-  return      Return   @relation(fields: [returnId], references: [id], onDelete: Cascade)
   productName String
   variant     String
   reason      String
   quantity    Int      @default(1)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  return      Return   @relation(fields: [returnId], references: [id], onDelete: Cascade)
 }
 
 model Review {
@@ -104,27 +106,27 @@ model Review {
   orderNumber   Int
   customerEmail String
   customerId    String
-  customerName  String
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+  customerName  String
   items         ReviewItem[]
 }
 
 model ReviewItem {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   reviewId      String
-  review        Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   productName   String
   variant       String
   fitRating     FitRating
   height        String?
   waistSize     String?
   purchasedSize String
-  title         String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   description   String
   rating        Int
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  title         String
+  review        Review    @relation(fields: [reviewId], references: [id], onDelete: Cascade)
 }
 
 enum ReturnStatus {
@@ -139,4 +141,3 @@ enum FitRating {
   TRUE_TO_SIZE
   RUNS_LARGE
 }
-
