@@ -10,46 +10,23 @@ export async function getSession() {
 // API route protection middleware
 export async function protectApiRoute() {
   const session = await getSession();
-  
+
   if (!session) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  
+
   return session;
 }
 
 // Server action protection wrapper
 export async function protectServerAction() {
   const session = await getSession();
-  
+
   if (!session) {
-    throw new Error('Unauthorized: Authentication required');
+    throw new Error("Unauthorized: Authentication required");
   }
-  
+
   return session;
-}
-
-// Rate limiting utility (basic implementation)
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-
-export function rateLimit(identifier: string, limit: number = 10, windowMs: number = 60000) {
-  const now = Date.now();
-  const record = rateLimitMap.get(identifier);
-  
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(identifier, { count: 1, resetTime: now + windowMs });
-    return true;
-  }
-  
-  if (record.count >= limit) {
-    return false;
-  }
-  
-  record.count++;
-  return true;
 }
 
 // CSRF protection utility
@@ -65,28 +42,31 @@ export function validateEmail(email: string): boolean {
   return emailRegex.test(email);
 }
 
-export function validatePassword(password: string): { isValid: boolean; errors: string[] } {
+export function validatePassword(password: string): {
+  isValid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
-  
+
   if (password.length < 8) {
-    errors.push('Password must be at least 8 characters long');
+    errors.push("Password must be at least 8 characters long");
   }
-  
+
   if (!/[A-Z]/.test(password)) {
-    errors.push('Password must contain at least one uppercase letter');
+    errors.push("Password must contain at least one uppercase letter");
   }
-  
+
   if (!/[a-z]/.test(password)) {
-    errors.push('Password must contain at least one lowercase letter');
+    errors.push("Password must contain at least one lowercase letter");
   }
-  
+
   if (!/\d/.test(password)) {
-    errors.push('Password must contain at least one number');
+    errors.push("Password must contain at least one number");
   }
-  
+
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -94,6 +74,6 @@ export function validatePassword(password: string): { isValid: boolean; errors: 
 export function sanitizeInput(input: string): string {
   return input
     .trim()
-    .replace(/[<>]/g, '') // Remove potential HTML tags
+    .replace(/[<>]/g, "") // Remove potential HTML tags
     .slice(0, 1000); // Limit length
-} 
+}

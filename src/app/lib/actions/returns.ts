@@ -1,15 +1,35 @@
-'use server';
+"use server";
 
-import nodemailer from 'nodemailer';
-import { prisma } from '@/app/lib/prisma/client';
-import { Return } from '@/app/lib/types/returns';
-import { protectServerAction, sanitizeInput } from '@/app/lib/auth-utils';
+import nodemailer from "nodemailer";
+import { prisma } from "@/app/lib/prisma/client";
+import { Return, ReturnItem } from "@/app/lib/types/returns";
+import { protectServerAction, sanitizeInput } from "@/app/lib/auth-utils";
+
+// Add type definitions for return items
+type ReturnRequestItem = {
+  name: string;
+  variant: string;
+  reason: string;
+  quantity?: number;
+};
+
+type ReturnRecordItem = {
+  productName: string;
+  variant: string;
+  quantity: number;
+  reason: string;
+};
+
+type ReturnRecord = {
+  id: string;
+  items: ReturnRecordItem[];
+};
 
 // Create reusable transporter object using SMTP transport
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT),
-  secure: process.env.SMTP_SECURE === 'true',
+  secure: process.env.SMTP_SECURE === "true",
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -23,24 +43,24 @@ export async function getOrderReturns(orderNumber: number) {
       where: {
         orderNumber,
         status: {
-          not: 'REJECTED'
-        }
+          not: "REJECTED",
+        },
       },
       include: {
-        items: true
-      }
+        items: true,
+      },
     });
     return returns;
   } catch (error: unknown) {
-    console.error('Failed to fetch order returns:', error);
-    throw new Error('Failed to fetch order returns');
+    console.error("Failed to fetch order returns:", error);
+    throw new Error("Failed to fetch order returns");
   }
 }
 
 export async function sendReturnRequest(
   orderNumber: number,
   orderId: string,
-  items: { name: string, variant: string, reason: string, quantity?: number }[],
+  items: { name: string; variant: string; reason: string; quantity?: number }[],
   additionalNotes: string,
   customerEmail: string,
   customerId: string
@@ -48,11 +68,11 @@ export async function sendReturnRequest(
   try {
     // Check for existing returns
     const existingReturns = await getOrderReturns(orderNumber);
-    
+
     // Create a map of already returned items and their quantities
     const returnedItems = new Map<string, number>();
-    existingReturns.forEach(returnRecord => {
-      returnRecord.items.forEach(item => {
+    existingReturns.forEach((returnRecord: Return) => {
+      returnRecord.items.forEach((item: ReturnItem) => {
         const key = `${item.productName}-${item.variant}`;
         returnedItems.set(key, (returnedItems.get(key) || 0) + item.quantity);
       });
@@ -63,10 +83,12 @@ export async function sendReturnRequest(
       const key = `${item.name}-${item.variant}`;
       const returnedQuantity = returnedItems.get(key) || 0;
       if (returnedQuantity > 0) {
-        throw new Error(`Item "${item.name} (${item.variant})" has already been returned`);
+        throw new Error(
+          `Item "${item.name} (${item.variant})" has already been returned`
+        );
       }
     }
-    
+
     // Create return record in database
     const returnRecord = await prisma.return.create({
       data: {
@@ -76,24 +98,27 @@ export async function sendReturnRequest(
         customerId,
         additionalNotes,
         items: {
-          create: items.map(item => ({
+          create: items.map((item) => ({
             productName: item.name,
             variant: item.variant,
             reason: item.reason,
-            quantity: item.quantity || 1
-          }))
-        }
+            quantity: item.quantity || 1,
+          })),
+        },
       },
       include: {
-        items: true
-      }
+        items: true,
+      },
     });
 
     // Format date in YYYY-MM-DD format to avoid locale issues
-    const currentDate = new Date().toISOString().split('T')[0];
+    const currentDate = new Date().toISOString().split("T")[0];
 
     // Create email content with HTML and CSS
-    const emailContent = `
+    const emailContent = (
+      returnRecord: ReturnRecord,
+      additionalNotes: string | null
+    ) => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -220,22 +245,35 @@ export async function sendReturnRequest(
 
   <div class="section">
     <div class="section-title">Items to Return</div>
-    ${returnRecord.items.map((item) => `
+    ${returnRecord.items
+      .map(
+        (item: {
+          productName: string;
+          variant: string;
+          quantity: number;
+          reason: string;
+        }) => `
       <div class="item">
         <p><span class="highlight">Product:</span> ${item.productName}</p>
         <p><span class="highlight">Variant:</span> ${item.variant}</p>
         <p><span class="highlight">Quantity:</span> ${item.quantity}</p>
         <p><span class="highlight">Reason:</span> ${item.reason}</p>
       </div>
-    `).join('')}
+    `
+      )
+      .join("")}
   </div>
 
-  ${additionalNotes ? `
+  ${
+    additionalNotes
+      ? `
     <div class="section">
       <div class="section-title">Additional Notes</div>
       <p class="info-text">${additionalNotes}</p>
     </div>
-  ` : ''}
+  `
+      : ""
+  }
 
   <div class="next-steps">
     <div class="section-title">Next Steps</div>
@@ -253,70 +291,84 @@ export async function sendReturnRequest(
   </div>
 </body>
 </html>
-    `;
+`;
 
     // Send email
     await transporter.sendMail({
       from: process.env.SMTP_FROM,
       to: process.env.SMTP_FROM,
       subject: `Return Request - Order #${orderNumber}`,
-      html: emailContent,
+      html: emailContent(returnRecord, additionalNotes),
     });
 
     return { success: true, returnId: returnRecord.id };
   } catch (error: unknown) {
-    console.error('Failed to send return request:', error);
-    throw new Error('Failed to send return request');
+    console.error("Failed to send return request:", error);
+    throw new Error("Failed to send return request");
   }
 }
 
 // Function to get all returns for admin dashboard
-export async function getReturns(): Promise<Return[]> {
+export async function getReturns(searchQuery?: string): Promise<Return[]> {
   try {
     // Protect admin function
     await protectServerAction();
-    
+
+    const whereClause = searchQuery
+      ? {
+          OR: [
+            { orderId: { contains: searchQuery } },
+            { customerId: { contains: searchQuery } },
+            { status: { contains: searchQuery } },
+          ],
+        }
+      : {};
+
     const returns = await prisma.return.findMany({
+      where: whereClause,
       include: {
-        items: true
+        items: true,
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
-    
+
     return returns;
   } catch (error: unknown) {
-    console.error('Failed to fetch returns:', error);
-    throw new Error('Failed to fetch returns');
+    console.error("Failed to fetch returns:", error);
+    throw new Error("Failed to fetch returns");
   }
 }
 
 // Function to update return status
-export async function updateReturnStatus(returnId: string, status: Return['status']): Promise<Return> {
+export async function updateReturnStatus(
+  returnId: string,
+  status: Return["status"]
+): Promise<Return> {
   try {
     // Protect admin function
     await protectServerAction();
-    
+
     // Sanitize inputs
     const sanitizedReturnId = sanitizeInput(returnId);
-    
+
     const updatedReturn = await prisma.return.update({
       where: {
-        id: sanitizedReturnId
+        id: sanitizedReturnId,
       },
       data: {
-        status
+        status,
       },
       include: {
-        items: true
-      }
+        items: true,
+      },
     });
-    
+
     return updatedReturn;
   } catch (error: unknown) {
-    console.error('Failed to update return status:', error);
-    throw new Error('Failed to update return status');
+    console.error("Failed to update return status:", error);
+    throw new Error("Failed to update return status");
   }
 }
 
@@ -326,91 +378,107 @@ export async function getCustomerRefunds(customerId: string) {
     const returns = await prisma.return.findMany({
       where: {
         customerId: customerId,
-        status: 'APPROVED' // Only count approved returns
+        status: "APPROVED", // Only count approved returns
       },
       include: {
-        items: true
-      }
+        items: true,
+      },
     });
 
     // Calculate total items returned
-    const totalItems = returns.reduce((sum, returnRecord) => {
-      return sum + returnRecord.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
+    const totalItems = returns.reduce((sum: number, returnRecord: Return) => {
+      return (
+        sum +
+        returnRecord.items.reduce(
+          (itemSum: number, item: ReturnItem) => itemSum + item.quantity,
+          0
+        )
+      );
     }, 0);
 
     return {
       totalRefunds: returns.length,
-      totalItemsReturned: totalItems
+      totalItemsReturned: totalItems,
     };
   } catch (error) {
-    console.error('Failed to fetch customer refunds:', error);
+    console.error("Failed to fetch customer refunds:", error);
     return {
       totalRefunds: 0,
-      totalItemsReturned: 0
+      totalItemsReturned: 0,
     };
   }
 }
 
 // Function to handle return approval/denial with email notification
 export async function handleReturnAction(
-  returnId: string, 
-  action: 'confirm' | 'deny', 
-  emailTo: string, 
+  returnId: string,
+  action: "confirm" | "deny",
+  emailTo: string,
   message: string
 ) {
   try {
     // Protect admin function
     await protectServerAction();
-    
+
     // Sanitize inputs
     const sanitizedReturnId = sanitizeInput(returnId);
     const sanitizedEmail = sanitizeInput(emailTo);
     const sanitizedMessage = sanitizeInput(message);
-    
+
     // Determine new status
-    const newStatus: Return['status'] = action === 'confirm' ? 'APPROVED' : 'REJECTED';
-    
+    const newStatus: Return["status"] =
+      action === "confirm" ? "APPROVED" : "REJECTED";
+
     // Update return status
     const updatedReturn = await prisma.return.update({
       where: {
-        id: sanitizedReturnId
+        id: sanitizedReturnId,
       },
       data: {
-        status: newStatus
+        status: newStatus,
       },
       include: {
-        items: true
-      }
+        items: true,
+      },
     });
-    
+
     // Send email notification
-    const emailSubject = action === 'confirm' 
-      ? 'Return Request Approved' 
-      : 'Return Request Update';
-    
+    const emailSubject =
+      action === "confirm"
+        ? "Return Request Approved"
+        : "Return Request Update";
+
     const emailContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h2 style="color: #333;">Return Request ${action === 'confirm' ? 'Approved' : 'Denied'}</h2>
+        <h2 style="color: #333;">Return Request ${
+          action === "confirm" ? "Approved" : "Denied"
+        }</h2>
         <p style="color: #666; line-height: 1.6;">
-          Your return request for order ${updatedReturn.orderId} has been ${action === 'confirm' ? 'approved' : 'denied'}.
+          Your return request for order ${updatedReturn.orderId} has been ${
+      action === "confirm" ? "approved" : "denied"
+    }.
         </p>
-        ${sanitizedMessage ? `<p style="color: #666; line-height: 1.6;"><strong>Message:</strong> ${sanitizedMessage}</p>` : ''}
+        ${
+          sanitizedMessage
+            ? `<p style="color: #666; line-height: 1.6;"><strong>Message:</strong> ${sanitizedMessage}</p>`
+            : ""
+        }
         <p style="color: #666; line-height: 1.6;">
           If you have any questions, please contact our support team.
         </p>
       </div>
     `;
-    
+
     await transporter.sendMail({
       from: process.env.SMTP_USER,
       to: sanitizedEmail,
       subject: emailSubject,
-      html: emailContent
+      html: emailContent,
     });
-    
+
     return updatedReturn;
   } catch (error: unknown) {
-    console.error('Failed to handle return action:', error);
-    throw new Error('Failed to handle return action');
+    console.error("Failed to handle return action:", error);
+    throw new Error("Failed to handle return action");
   }
-} 
+}

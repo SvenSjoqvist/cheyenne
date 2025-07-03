@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface HeroSectionProps {
   minHeight?: string | number;
@@ -13,6 +13,7 @@ const HeroSection: React.FC<HeroSectionProps> = () => {
       <div className="relative w-full aspect-[16/9]">
         <video
           src="/videos/home-opening.mp4"
+          poster="/images/home-opening-poster.png"
           autoPlay
           loop
           preload="auto"

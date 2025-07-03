@@ -2,19 +2,22 @@
 
 import { updateReturnStatus } from "@/app/lib/actions/returns";
 import { useRouter } from "next/navigation";
-import { ReturnStatus } from "@prisma/client";
+import { ReturnStatus } from "@/app/lib/types";
 
 interface ReturnStatusFormProps {
   returnId: string;
   currentStatus: ReturnStatus;
 }
 
-export default function ReturnStatusForm({ returnId, currentStatus }: ReturnStatusFormProps) {
+export default function ReturnStatusForm({
+  returnId,
+  currentStatus,
+}: ReturnStatusFormProps) {
   const router = useRouter();
 
   const handleStatusUpdate = async (formData: FormData) => {
-    const newStatus = formData.get('status') as string;
-    await updateReturnStatus(returnId, newStatus as ReturnStatus);
+    const newStatus = formData.get("status") as ReturnStatus;
+    await updateReturnStatus(returnId, newStatus);
     router.refresh();
   };
 
@@ -28,12 +31,12 @@ export default function ReturnStatusForm({ returnId, currentStatus }: ReturnStat
             defaultValue={currentStatus}
             className="p-2 rounded-md border-none appearance-none focus:outline-none bg-gray-100 w-full"
           >
-            <option value="PENDING">Pending</option>
-            <option value="APPROVED">Approved</option>
-            <option value="REJECTED">Rejected</option>
-            <option value="COMPLETED">Completed</option>
+            <option value={ReturnStatus.PENDING}>Pending</option>
+            <option value={ReturnStatus.APPROVED}>Approved</option>
+            <option value={ReturnStatus.REJECTED}>Rejected</option>
+            <option value={ReturnStatus.COMPLETED}>Completed</option>
           </select>
-          <button 
+          <button
             type="submit"
             className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
@@ -43,4 +46,4 @@ export default function ReturnStatusForm({ returnId, currentStatus }: ReturnStat
       </div>
     </div>
   );
-} 
+}

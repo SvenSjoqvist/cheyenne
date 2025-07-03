@@ -1,15 +1,18 @@
-import { ShopifyCustomer, ShopifyOrder } from '../types';
-import { protectServerAction } from '@/app/lib/auth-utils';
+import { ShopifyCustomer, ShopifyOrder } from "../types";
+import { protectServerAction } from "@/app/lib/auth-utils";
 
 const SHOPIFY_ADMIN_API_URL = `https://kilaeko-application.myshopify.com/admin/api/2024-01/graphql.json`;
 
-async function shopifyRequest<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
+async function shopifyRequest<T>(
+  query: string,
+  variables: Record<string, unknown> = {}
+): Promise<T> {
   try {
     const response = await fetch(SHOPIFY_ADMIN_API_URL, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'X-Shopify-Access-Token': process.env.SHOPIFY_ACCESS_TOKEN || '',
-        'Content-Type': 'application/json',
+        "X-Shopify-Access-Token": process.env.SHOPIFY_ACCESS_TOKEN || "",
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         query,
@@ -22,12 +25,14 @@ async function shopifyRequest<T>(query: string, variables: Record<string, unknow
     try {
       data = JSON.parse(responseText);
     } catch (e: unknown) {
-      console.error('Failed to parse JSON response:', e);
+      console.error("Failed to parse JSON response:", e);
       throw new Error(`Invalid JSON response: ${responseText}`);
     }
 
     if (!response.ok) {
-      throw new Error(`Shopify API error (${response.status}): ${JSON.stringify(data)}`);
+      throw new Error(
+        `Shopify API error (${response.status}): ${JSON.stringify(data)}`
+      );
     }
 
     if (data.errors) {
@@ -35,7 +40,7 @@ async function shopifyRequest<T>(query: string, variables: Record<string, unknow
     }
 
     if (!data.data) {
-      throw new Error('No data in response');
+      throw new Error("No data in response");
     }
 
     return data.data as T;
@@ -47,7 +52,17 @@ async function shopifyRequest<T>(query: string, variables: Record<string, unknow
 interface CustomersResponse {
   customers: {
     edges: Array<{
-      node: ShopifyCustomer;
+      node: {
+        id: string;
+        firstName: string | null;
+        lastName: string | null;
+        email: string | null;
+        phone: string | null;
+        amountSpent: {
+          amount: string;
+          currencyCode: string;
+        };
+      };
     }>;
     pageInfo: {
       hasNextPage: boolean;
@@ -68,60 +83,81 @@ interface OrdersResponse {
   };
 }
 
-export async function getCustomers(first: number = 10, after?: string, customerIds?: string[]): Promise<CustomersResponse> {
+export async function getCustomers(
+  first: number = 10,
+  after?: string,
+  searchQuery?: string,
+  dateFilter?: string
+): Promise<CustomersResponse> {
   // Protect admin function
   await protectServerAction();
-  
+
   const query = `
-    query GetCustomers($first: Int!, $after: String, $query: String) {
-      customers(first: $first, after: $after, query: $query) {
-        edges {
-          node {
-            id
-            firstName
-            lastName
-            email
-            phone
-            createdAt
-            orders(first: 1) {
-              pageInfo {
-                hasNextPage
-              }
-              edges {
-                node {
-                  totalPriceSet {
-                    shopMoney {
-                      amount
-                      currencyCode
-                    }
-                  }
-                }
-              }
-            }
+  query GetCustomers($first: Int!, $after: String, $query: String) {
+    customers(first: $first, after: $after, query: $query) {
+      edges {
+        node {
+          id
+          firstName
+          lastName
+          email
+          phone
+          createdAt
+          amountSpent {
+            amount
+            currencyCode
           }
         }
-        pageInfo {
-          hasNextPage
-          endCursor
-        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
       }
     }
-  `;
+  }
+`;
 
-  // Create query string for specific customer IDs
-  const queryString = customerIds?.length ? `id:${customerIds.join(' OR id:')}` : null;
-
-  return shopifyRequest<CustomersResponse>(query, { 
+  return shopifyRequest<CustomersResponse>(query, {
     first,
     after: after || undefined,
-    query: queryString
+    query: buildCustomerSearchQuery(searchQuery, dateFilter),
   });
 }
 
-export async function getOrders(first: number, after?: string, customerId?: string): Promise<{ edges: Array<{ node: ShopifyOrder }>; pageInfo: { hasNextPage: boolean; endCursor: string } }> {
+// Helper function to build the customer search query
+function buildCustomerSearchQuery(
+  searchQuery?: string,
+  dateFilter?: string
+): string {
+  let query = "";
+
+  if (searchQuery) {
+    query += searchQuery;
+  }
+
+  if (dateFilter) {
+    // Format: YYYY-MM-DD
+    if (query) {
+      query += " AND ";
+    }
+    query += `created_at:${dateFilter}`;
+  }
+
+  return query;
+}
+
+export async function getOrders(
+  first: number,
+  after?: string,
+  searchQuery?: string,
+  dateFilter?: string
+): Promise<{
+  edges: Array<{ node: ShopifyOrder }>;
+  pageInfo: { hasNextPage: boolean; endCursor: string };
+}> {
   // Protect admin function
   await protectServerAction();
-  
+
   const query = `
     query GetOrders($first: Int!, $after: String, $query: String) {
       orders(first: $first, after: $after, query: $query) {
@@ -173,13 +209,34 @@ export async function getOrders(first: number, after?: string, customerId?: stri
   const variables = {
     first,
     after,
-    query: customerId ? `customer_id:${customerId}` : undefined
+    query: buildOrderSearchQuery(searchQuery, dateFilter),
   };
 
   const response = await shopifyRequest<OrdersResponse>(query, variables);
   return response.orders;
 }
 
+// Helper function to build the order search query
+function buildOrderSearchQuery(
+  searchQuery?: string,
+  dateFilter?: string
+): string {
+  let query = "";
+
+  if (searchQuery) {
+    query += searchQuery;
+  }
+
+  if (dateFilter) {
+    // Format: YYYY-MM-DD
+    if (query) {
+      query += " AND ";
+    }
+    query += `created_at:${dateFilter}`;
+  }
+
+  return query;
+}
 
 interface DashboardStats {
   shop: {
@@ -226,16 +283,15 @@ interface DashboardStats {
   };
 }
 
-
 interface RecentItemsResponse {
-  orders: DashboardStats['orders'];
-  products: DashboardStats['products'];
+  orders: DashboardStats["orders"];
+  products: DashboardStats["products"];
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
   // Protect admin function
   await protectServerAction();
-  
+
   const countsQuery = `
     query {
       shop {
@@ -318,17 +374,32 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const [countsData, recentData] = await Promise.all([
     shopifyRequest<{
       shop: { name: string };
-      orders: { pageInfo: { hasNextPage: boolean }; edges: Array<{ node: { id: string } }> };
-      products: { pageInfo: { hasNextPage: boolean }; edges: Array<{ node: { id: string } }> };
-      customers: { pageInfo: { hasNextPage: boolean }; edges: Array<{ node: { id: string } }> };
+      orders: {
+        pageInfo: { hasNextPage: boolean };
+        edges: Array<{ node: { id: string } }>;
+      };
+      products: {
+        pageInfo: { hasNextPage: boolean };
+        edges: Array<{ node: { id: string } }>;
+      };
+      customers: {
+        pageInfo: { hasNextPage: boolean };
+        edges: Array<{ node: { id: string } }>;
+      };
     }>(countsQuery),
-    shopifyRequest<RecentItemsResponse>(recentItemsQuery)
+    shopifyRequest<RecentItemsResponse>(recentItemsQuery),
   ]);
 
   // Count actual items and add "+" if there are more
-  const totalOrders = countsData.orders.edges.length + (countsData.orders.pageInfo.hasNextPage ? '+' : '');
-  const totalProducts = countsData.products.edges.length + (countsData.products.pageInfo.hasNextPage ? '+' : '');
-  const totalCustomers = countsData.customers.edges.length + (countsData.customers.pageInfo.hasNextPage ? '+' : '');
+  const totalOrders =
+    countsData.orders.edges.length +
+    (countsData.orders.pageInfo.hasNextPage ? "+" : "");
+  const totalProducts =
+    countsData.products.edges.length +
+    (countsData.products.pageInfo.hasNextPage ? "+" : "");
+  const totalCustomers =
+    countsData.customers.edges.length +
+    (countsData.customers.pageInfo.hasNextPage ? "+" : "");
 
   return {
     shop: {
@@ -374,10 +445,13 @@ interface ProductsResponse {
   };
 }
 
-export async function getProducts(cursor: string | null = null, limit = 10): Promise<ProductsResponse> {
+export async function getProducts(
+  cursor: string | null = null,
+  limit = 10
+): Promise<ProductsResponse> {
   // Protect admin function
   await protectServerAction();
-  
+
   const query = `
     query getProducts($first: Int!, $after: String) {
       products(first: $first, after: $after, sortKey: CREATED_AT, reverse: true) {
@@ -419,7 +493,7 @@ export async function getProducts(cursor: string | null = null, limit = 10): Pro
 export async function fetchAbandonedCarts() {
   // Protect admin function
   await protectServerAction();
-  
+
   const query = `
     query {
       orders(first: 100, query: "status:any financial_status:abandoned OR financial_status:voided") {
@@ -463,22 +537,13 @@ export async function fetchAbandonedCarts() {
   }>(query);
 
   // Return the count of abandoned orders
-  const count = data.orders.edges.length;
-  console.log('Abandoned orders:', data.orders.edges.map(edge => ({
-    id: edge.node.id,
-    name: edge.node.name,
-    status: edge.node.displayFinancialStatus,
-    amount: edge.node.totalPriceSet.shopMoney.amount,
-    currency: edge.node.totalPriceSet.shopMoney.currencyCode,
-    createdAt: edge.node.createdAt
-  })));
-  return count;
+  return data.orders.edges.length;
 }
 
 export async function getAverageCartValue() {
   // Protect admin function
   await protectServerAction();
-  
+
   const query = `
     query {
       orders(first: 100, sortKey: CREATED_AT, reverse: true) {
@@ -512,7 +577,7 @@ export async function getAverageCartValue() {
   }>(query);
 
   if (data.orders.edges.length === 0) {
-    return { amount: 0, currency: 'USD' };
+    return { amount: 0, currency: "USD" };
   }
 
   // Calculate average
@@ -521,16 +586,17 @@ export async function getAverageCartValue() {
   }, 0);
 
   const average = total / data.orders.edges.length;
-  const currency = data.orders.edges[0]?.node.totalPriceSet.shopMoney.currencyCode || 'USD';
+  const currency =
+    data.orders.edges[0]?.node.totalPriceSet.shopMoney.currencyCode || "USD";
 
-  console.log('Average cart value:', average, currency);
+  console.log("Average cart value:", average, currency);
   return { amount: Math.round(average), currency };
 }
 
 export async function getOrderStatusBreakdown() {
   // Protect admin function
   await protectServerAction();
-  
+
   const query = `
     query ($first: Int) {
       orders(first: $first) {
@@ -558,80 +624,90 @@ export async function getOrderStatusBreakdown() {
           name: string;
           displayFulfillmentStatus: string;
           displayFinancialStatus: string;
-        }
+        };
       }>;
       pageInfo: {
         hasNextPage: boolean;
         endCursor: string | null;
-      }
-    }
+      };
+    };
   }>(query, { first: 100 });
-  
+
   // Process the results
-  const orders = response.orders.edges.map(edge => edge.node);
-  
+  const orders = response.orders.edges.map((edge) => edge.node);
+
   // Count by fulfillment status
   const fulfillmentStatusCounts: Record<string, number> = {};
-  
-  orders.forEach(order => {
+
+  orders.forEach((order) => {
     const fulfillmentStatus = order.displayFulfillmentStatus;
-    fulfillmentStatusCounts[fulfillmentStatus] = (fulfillmentStatusCounts[fulfillmentStatus] || 0) + 1;
+    fulfillmentStatusCounts[fulfillmentStatus] =
+      (fulfillmentStatusCounts[fulfillmentStatus] || 0) + 1;
   });
 
   // Map Shopify fulfillment statuses to user-requested labels for the pie chart
   let chartData = [
     {
       label: "Orders to Ship", // Unfulfilled, Scheduled, On hold, Awaiting shipment
-      value: (fulfillmentStatusCounts["Unfulfilled"] || 0)
-        + (fulfillmentStatusCounts["Scheduled"] || 0)
-        + (fulfillmentStatusCounts["On hold"] || 0)
-        + (fulfillmentStatusCounts["Awaiting shipment"] || 0),
-      color: "#666DAF"
+      value:
+        (fulfillmentStatusCounts["Unfulfilled"] || 0) +
+        (fulfillmentStatusCounts["Scheduled"] || 0) +
+        (fulfillmentStatusCounts["On hold"] || 0) +
+        (fulfillmentStatusCounts["Awaiting shipment"] || 0),
+      color: "#666DAF",
     },
     {
       label: "Partially Delivered", // Partially fulfilled
       value: fulfillmentStatusCounts["Partially fulfilled"] || 0,
-      color: "#F7B801"
+      color: "#F7B801",
     },
     {
       label: "Delivered", // Fulfilled, Complete
-      value: (fulfillmentStatusCounts["Fulfilled"] || 0)
-        + (fulfillmentStatusCounts["Complete"] || 0),
-      color: "#43AA8B"
+      value:
+        (fulfillmentStatusCounts["Fulfilled"] || 0) +
+        (fulfillmentStatusCounts["Complete"] || 0),
+      color: "#43AA8B",
     },
-  ].filter(item => item.value > 0); // Only include statuses that have orders
+  ].filter((item) => item.value > 0); // Only include statuses that have orders
 
   // Special case: Only FULFILLED and UNFULFILLED present
   const keys = Object.keys(fulfillmentStatusCounts);
   if (
     keys.length === 2 &&
-    ((keys.includes("Fulfilled") && keys.includes("Unfulfilled")) || (keys.includes("FULFILLED") && keys.includes("UNFULFILLED")))
+    ((keys.includes("Fulfilled") && keys.includes("Unfulfilled")) ||
+      (keys.includes("FULFILLED") && keys.includes("UNFULFILLED")))
   ) {
     chartData = [
       {
         label: "Orders to Ship",
-        value: fulfillmentStatusCounts["Unfulfilled"] || fulfillmentStatusCounts["UNFULFILLED"] || 0,
-        color: "#666DAF"
+        value:
+          fulfillmentStatusCounts["Unfulfilled"] ||
+          fulfillmentStatusCounts["UNFULFILLED"] ||
+          0,
+        color: "#666DAF",
       },
       {
         label: "Delivered",
-        value: fulfillmentStatusCounts["Fulfilled"] || fulfillmentStatusCounts["FULFILLED"] || 0,
-        color: "#43AA8B"
-      }
+        value:
+          fulfillmentStatusCounts["Fulfilled"] ||
+          fulfillmentStatusCounts["FULFILLED"] ||
+          0,
+        color: "#43AA8B",
+      },
     ];
   }
 
-  return { 
+  return {
     chartData,
     fulfillmentStatusCounts,
-    totalOrders: orders.length
+    totalOrders: orders.length,
   };
 }
 
 export async function getOrdersByCountry() {
   // Protect admin function
   await protectServerAction();
-  
+
   const query = `
     query getOrdersByCountry {
       orders(first: 250) {
@@ -684,16 +760,19 @@ export async function getOrdersByCountry() {
     };
   }>(query);
 
-  const orders = data.orders.edges.map(edge => edge.node);
-  
+  const orders = data.orders.edges.map((edge) => edge.node);
+
   // Count orders by country
   const countryCount: { [key: string]: number } = {};
-  
+
   orders.forEach((order) => {
     // Use shipping address first, fallback to billing address
-    const country = order.shippingAddress?.country || order.billingAddress?.country;
-    const countryCode = order.shippingAddress?.countryCodeV2 || order.billingAddress?.countryCodeV2;
-    
+    const country =
+      order.shippingAddress?.country || order.billingAddress?.country;
+    const countryCode =
+      order.shippingAddress?.countryCodeV2 ||
+      order.billingAddress?.countryCodeV2;
+
     if (country && countryCode) {
       if (!countryCount[countryCode]) {
         countryCount[countryCode] = 0;
@@ -715,7 +794,6 @@ export async function getOrdersByCountry() {
     totalOrders: orders.length,
   };
 }
-
 
 interface CancelledOrderNode {
   id: string;
@@ -776,14 +854,16 @@ interface OrderUpdateResponse {
 
 export async function getCancelledOrders(
   first: number = 10,
-  after?: string
+  after?: string,
+  searchQuery?: string,
+  dateFilter?: string
 ): Promise<CancelledOrdersResult> {
   // Protect admin function
   await protectServerAction();
-  
+
   const query = `
-    query getCancelledOrders($first: Int!, $after: String) {
-      orders(first: $first, after: $after, query: "status:cancelled") {
+    query getCancelledOrders($first: Int!, $after: String, $query: String) {
+      orders(first: $first, after: $after, query: $query) {
         edges {
           node {
             id
@@ -813,16 +893,17 @@ export async function getCancelledOrders(
   `;
 
   const response = await fetch(SHOPIFY_ADMIN_API_URL, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'X-Shopify-Access-Token': process.env.SHOPIFY_ACCESS_TOKEN || '',
+      "Content-Type": "application/json",
+      "X-Shopify-Access-Token": process.env.SHOPIFY_ACCESS_TOKEN || "",
     },
     body: JSON.stringify({
       query,
       variables: {
         first,
         after,
+        query: buildSearchQuery(searchQuery, dateFilter),
       },
     }),
   });
@@ -852,10 +933,29 @@ export async function getCancelledOrders(
   };
 }
 
-export async function updateCancellationStatus(orderId: string, status: string): Promise<{ id: string; displayFulfillmentStatus: string }> {
+// Helper function to build the search query
+function buildSearchQuery(searchQuery?: string, dateFilter?: string): string {
+  let query = "status:cancelled";
+
+  if (searchQuery) {
+    query += ` AND (${searchQuery})`;
+  }
+
+  if (dateFilter) {
+    // Format: YYYY-MM-DD
+    query += ` AND created_at:${dateFilter}`;
+  }
+
+  return query;
+}
+
+export async function updateCancellationStatus(
+  orderId: string,
+  status: string
+): Promise<{ id: string; displayFulfillmentStatus: string }> {
   // Protect admin function
   await protectServerAction();
-  
+
   const mutation = `
     mutation orderUpdate($input: OrderInput!) {
       orderUpdate(input: $input) {
@@ -874,20 +974,23 @@ export async function updateCancellationStatus(orderId: string, status: string):
   const variables = {
     input: {
       id: orderId,
-      displayFulfillmentStatus: status
-    }
+      displayFulfillmentStatus: status,
+    },
   };
 
   try {
-    const response = await shopifyRequest<OrderUpdateResponse>(mutation, variables);
-    
+    const response = await shopifyRequest<OrderUpdateResponse>(
+      mutation,
+      variables
+    );
+
     if (response.orderUpdate.userErrors.length > 0) {
       throw new Error(response.orderUpdate.userErrors[0].message);
     }
 
     return response.orderUpdate.order;
   } catch (error) {
-    console.error('Error updating order status:', error);
+    console.error("Error updating order status:", error);
     throw error;
   }
 }
@@ -899,7 +1002,7 @@ interface OrderResponse {
 export async function getOrder(id: string): Promise<ShopifyOrder | null> {
   // Protect admin function
   await protectServerAction();
-  
+
   const query = `
     query getOrder($id: ID!) {
       order(id: $id) {
@@ -965,7 +1068,7 @@ shippingLine {
     const response = await shopifyRequest<OrderResponse>(query, { id });
     return response.order;
   } catch (error) {
-    console.error('Error fetching order:', error);
+    console.error("Error fetching order:", error);
     return null;
   }
 }
@@ -1006,10 +1109,13 @@ interface DetailedProductResponse {
   };
 }
 
-export async function getDetailedProducts(first: number = 10, after?: string): Promise<DetailedProductResponse> {
+export async function getDetailedProducts(
+  first: number = 10,
+  after?: string
+): Promise<DetailedProductResponse> {
   // Protect admin function
   await protectServerAction();
-  
+
   const query = `
     query getDetailedProducts($first: Int!, $after: String) {
       products(first: $first, after: $after) {
@@ -1050,31 +1156,34 @@ export async function getDetailedProducts(first: number = 10, after?: string): P
 
   const variables = {
     first,
-    after
+    after,
   };
 
   return await shopifyRequest<DetailedProductResponse>(query, variables);
 }
 
-export async function getProductsServerAction(first: number = 10, after?: string) {
-  'use server';
-  
+export async function getProductsServerAction(
+  first: number = 10,
+  after?: string
+) {
+  "use server";
+
   // Protect admin function
   await protectServerAction();
-  
+
   try {
     const response = await getDetailedProducts(first, after);
     return {
-      products: response.products.edges.map(edge => {
+      products: response.products.edges.map((edge) => {
         const inventory = edge.node.totalInventory;
-        let stock: 'in_stock' | 'low_stock' | 'out_of_stock';
-        
+        let stock: "in_stock" | "low_stock" | "out_of_stock";
+
         if (inventory <= 0) {
-          stock = 'out_of_stock';
+          stock = "out_of_stock";
         } else if (inventory <= 5) {
-          stock = 'low_stock';
+          stock = "low_stock";
         } else {
-          stock = 'in_stock';
+          stock = "in_stock";
         }
 
         return {
@@ -1082,17 +1191,17 @@ export async function getProductsServerAction(first: number = 10, after?: string
           title: edge.node.title,
           description: edge.node.description,
           totalInventory: edge.node.totalInventory,
-          sku: edge.node.variants.edges[0]?.node.sku || 'N/A',
-          category: edge.node.category?.name || 'Uncategorized',
-          stock
+          sku: edge.node.variants.edges[0]?.node.sku || "N/A",
+          category: edge.node.category?.name || "Uncategorized",
+          stock,
         };
       }),
       hasNextPage: response.products.pageInfo.hasNextPage,
-      endCursor: response.products.pageInfo.endCursor
+      endCursor: response.products.pageInfo.endCursor,
     };
   } catch (error) {
-    console.error('Error fetching products:', error);
-    throw new Error('Failed to fetch products');
+    console.error("Error fetching products:", error);
+    throw new Error("Failed to fetch products");
   }
 }
 
@@ -1134,10 +1243,12 @@ interface SingleProductResponse {
   };
 }
 
-export async function getProductById(productId: string): Promise<SingleProductResponse> {
+export async function getProductById(
+  productId: string
+): Promise<SingleProductResponse> {
   // Protect admin function
   await protectServerAction();
-  
+
   const query = `
     query getProductById($id: ID!) {
       product(id: $id) {
@@ -1179,7 +1290,7 @@ export async function getProductById(productId: string): Promise<SingleProductRe
   `;
 
   const variables = {
-    id: productId
+    id: productId,
   };
 
   return await shopifyRequest<SingleProductResponse>(query, variables);

@@ -1,15 +1,21 @@
-'use client';
+"use client";
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from "next/navigation";
 import { formatCurrency } from "@/app/lib/utils";
-import { TableData, Column, DataTableProps, CustomerData, CancellationData } from './types';
-import React from 'react';
-import Image from 'next/image';
+import {
+  TableData,
+  Column,
+  DataTableProps,
+  CustomerData,
+  CancellationData,
+} from "./types";
+import React from "react";
+import Image from "next/image";
 
-export default function DataTable<T extends TableData>({ 
-  data, 
-  hasNextPage, 
-  endCursor, 
+export default function DataTable<T extends TableData>({
+  data,
+  hasNextPage,
+  endCursor,
   baseUrl,
   type,
   hideActions = false,
@@ -20,7 +26,7 @@ export default function DataTable<T extends TableData>({
 
   const handleLoadMore = () => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set('cursor', endCursor);
+    params.set("cursor", endCursor);
     router.push(`${baseUrl}?${params.toString()}`);
   };
 
@@ -28,221 +34,248 @@ export default function DataTable<T extends TableData>({
     if (customColumns) return customColumns;
 
     switch (type) {
-      case 'orders':
+      case "orders":
         return [
-          { header: 'OrderID', accessor: 'id' as keyof T },
-          { header: 'CustomerID', accessor: 'customer' as keyof T },
-          { header: 'Total Price', accessor: 'totalPriceSet' as keyof T },
-          { header: 'Date', accessor: 'createdAt' as keyof T },
-          { header: 'Status', accessor: 'displayFulfillmentStatus' as keyof T }
+          { header: "OrderID", accessor: "id" as keyof T },
+          { header: "CustomerID", accessor: "customer" as keyof T },
+          { header: "Total Price", accessor: "totalPriceSet" as keyof T },
+          { header: "Date", accessor: "createdAt" as keyof T },
+          { header: "Status", accessor: "displayFulfillmentStatus" as keyof T },
         ] as Column<T>[];
-      case 'customers':
+      case "customers":
         return [
-          { header: 'CustomerID', accessor: 'id' as keyof T },
-          { header: 'Name', accessor: 'firstName' as keyof T },
-          { header: 'Email', accessor: 'email' as keyof T },
-          { header: 'Phone', accessor: 'phone' as keyof T },
-          { header: 'Total Spent', accessor: 'orders' as keyof T }
+          { header: "CustomerID", accessor: "id" as keyof T },
+          { header: "Name", accessor: "firstName" as keyof T },
+          { header: "Email", accessor: "email" as keyof T },
+          { header: "Phone", accessor: "phone" as keyof T },
+          { header: "Total Spent", accessor: "amountSpent" as keyof T },
         ] as Column<T>[];
-      case 'cancellations':
+      case "cancellations":
         return [
-          { header: 'OrderID', accessor: 'orderNumber' as keyof T },
-          { header: 'CustomerID', accessor: 'customerId' as keyof T },
-          { header: 'Total Price', accessor: 'totalAmount' as keyof T },
-          { header: 'Date', accessor: 'createdAt' as keyof T },
-          { header: 'Status', accessor: 'status' as keyof T }
+          { header: "OrderID", accessor: "orderNumber" as keyof T },
+          { header: "CustomerID", accessor: "customerId" as keyof T },
+          { header: "Total Price", accessor: "totalAmount" as keyof T },
+          { header: "Date", accessor: "createdAt" as keyof T },
+          { header: "Status", accessor: "status" as keyof T },
         ] as Column<T>[];
-      case 'returns':
+      case "returns":
         return [
-          { header: 'Return ID', accessor: 'id' as keyof T },
-          { header: 'Customer ID', accessor: 'customerId' as keyof T },
-          { header: 'Order ID', accessor: 'orderId' as keyof T },
-          { header: 'Date', accessor: 'createdAt' as keyof T },
-          { header: 'Status', accessor: 'status' as keyof T },
-          { header: 'Reason', accessor: 'items' as keyof T }
+          { header: "Return ID", accessor: "id" as keyof T },
+          { header: "Customer ID", accessor: "customerId" as keyof T },
+          { header: "Order ID", accessor: "orderId" as keyof T },
+          { header: "Date", accessor: "createdAt" as keyof T },
+          { header: "Status", accessor: "status" as keyof T },
+          { header: "Reason", accessor: "items" as keyof T },
         ] as Column<T>[];
-      case 'products':
+      case "products":
         return [
-          { header: 'SKU', accessor: 'sku' as keyof T },
-          { header: 'Name', accessor: 'title' as keyof T },
-          { header: 'Description', accessor: 'description' as keyof T },
-          { header: 'Quantity', accessor: 'totalInventory' as keyof T },
-          { header: 'Category', accessor: 'category' as keyof T },
-          { header: 'Status', accessor: 'status' as keyof T }
+          { header: "SKU", accessor: "sku" as keyof T },
+          { header: "Name", accessor: "title" as keyof T },
+          { header: "Description", accessor: "description" as keyof T },
+          { header: "Quantity", accessor: "totalInventory" as keyof T },
+          { header: "Category", accessor: "category" as keyof T },
+          { header: "Status", accessor: "status" as keyof T },
         ] as Column<T>[];
-      case 'inventory-detail':
+      case "inventory-detail":
         return [
-          { header: 'SKU', accessor: 'sku' as keyof T },
-          { header: 'Name', accessor: 'name' as keyof T },
-          { header: 'Color Description', accessor: 'colorDescription' as keyof T },
-          { header: 'Category', accessor: 'category' as keyof T }
+          { header: "SKU", accessor: "sku" as keyof T },
+          { header: "Name", accessor: "name" as keyof T },
+          {
+            header: "Color Description",
+            accessor: "colorDescription" as keyof T,
+          },
+          { header: "Category", accessor: "category" as keyof T },
         ] as Column<T>[];
-      case 'inventory-quantity':
+      case "inventory-quantity":
         return [
-          { header: 'Total Quantity', accessor: 'totalQuantity' as keyof T },
-          { header: 'XS Quantity', accessor: 'xsQuantity' as keyof T },
-          { header: 'S Quantity', accessor: 'sQuantity' as keyof T },
-          { header: 'M Quantity', accessor: 'mQuantity' as keyof T },
-          { header: 'L Quantity', accessor: 'lQuantity' as keyof T },
-          { header: 'XL Quantity', accessor: 'xlQuantity' as keyof T }
+          { header: "Total Quantity", accessor: "totalQuantity" as keyof T },
+          { header: "XS Quantity", accessor: "xsQuantity" as keyof T },
+          { header: "S Quantity", accessor: "sQuantity" as keyof T },
+          { header: "M Quantity", accessor: "mQuantity" as keyof T },
+          { header: "L Quantity", accessor: "lQuantity" as keyof T },
+          { header: "XL Quantity", accessor: "xlQuantity" as keyof T },
         ] as Column<T>[];
-      case 'product-detail':
+      case "product-detail":
         return [
-          { header: 'Images', accessor: 'images' as keyof T },
-          { header: 'Description', accessor: 'description' as keyof T },
-          { header: 'Product Info', accessor: 'productInfo' as keyof T }
+          { header: "Images", accessor: "images" as keyof T },
+          { header: "Description", accessor: "description" as keyof T },
+          { header: "Product Info", accessor: "productInfo" as keyof T },
         ] as Column<T>[];
     }
   };
 
-  const formatValue = (value: unknown, column: Column<T>, row: T): string | React.ReactElement => {
-    if (value === undefined || value === null) return '-';
+  const formatValue = (
+    value: unknown,
+    column: Column<T>,
+    row: T
+  ): string | React.ReactElement => {
+    if (value === undefined || value === null) return "-";
 
     switch (type) {
-      case 'orders':
+      case "orders":
         switch (column.accessor) {
-          case 'id':
-            return String(value).split('/').pop() || String(value);
-          case 'customer':
+          case "id":
+            return String(value).split("/").pop() || String(value);
+          case "customer":
             const customer = value as { id?: string };
-            if (!customer?.id) return 'Guest';
-            return String(customer.id).split('/').pop() || 'Guest';
-          case 'totalPriceSet':
-            const priceSet = value as { shopMoney: { amount: string; currencyCode: string } };
-            return formatCurrency(priceSet.shopMoney.amount, priceSet.shopMoney.currencyCode);
-          case 'createdAt':
-            return (value as Date).toISOString().split('T')[0];
+            if (!customer?.id) return "Guest";
+            return String(customer.id).split("/").pop() || "Guest";
+          case "totalPriceSet":
+            const priceSet = value as {
+              shopMoney: { amount: string; currencyCode: string };
+            };
+            return formatCurrency(
+              priceSet.shopMoney.amount,
+              priceSet.shopMoney.currencyCode
+            );
+          case "createdAt":
+            return (value as Date).toISOString().split("T")[0];
           default:
             return String(value);
         }
-      case 'customers':
+      case "customers":
         const customerRow = row as CustomerData;
         switch (column.accessor) {
-          case 'id':
-            return String(value).split('/').pop() || String(value);
-          case 'firstName':
-            return `${String(value)} ${customerRow.lastName || ''}`;
-          case 'orders':
-            const orders = value as { edges?: Array<{ node: { totalPriceSet: { shopMoney: { amount: string } } } }> };
-            if (!orders?.edges?.length) return formatCurrency(0, 'USD');
-            const total = orders.edges.reduce((sum: number, edge) => {
-              const amount = parseFloat(edge.node.totalPriceSet.shopMoney.amount);
-              return sum + (isNaN(amount) ? 0 : amount);
-            }, 0);
-            return formatCurrency(total, 'USD');
+          case "id":
+            return String(value).split("/").pop() || String(value);
+          case "firstName":
+            return `${String(value)} ${customerRow.lastName || ""}`;
+          case "amountSpent":
+            const totalSpent = value as {
+              amount: string;
+              currencyCode: string;
+            };
+            return formatCurrency(totalSpent.amount, totalSpent.currencyCode);
           default:
             return String(value);
         }
-      case 'cancellations':
+      case "cancellations":
         const cancellationRow = row as CancellationData;
         switch (column.accessor) {
-          case 'customerId':
-            if (!value) return '-';
-            return String(value).split('/').pop() || '-';
-          case 'totalAmount':
+          case "customerId":
+            if (!value) return "-";
+            return String(value).split("/").pop() || "-";
+          case "totalAmount":
             return formatCurrency(value as number, cancellationRow.currency);
-          case 'createdAt':
-            return (value as Date).toISOString().split('T')[0];
+          case "createdAt":
+            return (value as Date).toISOString().split("T")[0];
           default:
             return String(value);
         }
-      case 'returns':
+      case "returns":
         switch (column.accessor) {
-          case 'customerId':
-          case 'orderId':
-            if (!value) return '-';
-            return String(value).split('/').pop()?.split('?')[0] || '-';
-          case 'createdAt':
+          case "customerId":
+          case "orderId":
+            if (!value) return "-";
+            return String(value).split("/").pop()?.split("?")[0] || "-";
+          case "createdAt":
             return (value as Date).toLocaleDateString();
-          case 'items':
+          case "items":
             const items = value as Array<{ reason?: string }>;
-            return items?.[0]?.reason || '-';
+            return items?.[0]?.reason || "-";
           default:
             return String(value);
         }
-      case 'products':
+      case "products":
         switch (column.accessor) {
-          case 'variants':
-            const variants = value as { edges?: Array<{ node: { sku?: string; title?: string; selectedOptions?: Array<{ name: string; value: string }> } }> };
-            if (!variants?.edges?.length) return '-';
+          case "variants":
+            const variants = value as {
+              edges?: Array<{
+                node: {
+                  sku?: string;
+                  title?: string;
+                  selectedOptions?: Array<{ name: string; value: string }>;
+                };
+              }>;
+            };
+            if (!variants?.edges?.length) return "-";
             // For SKU column, show the first variant's SKU
-            if (column.header === 'SKU') {
-              return variants.edges[0]?.node?.sku || '-';
+            if (column.header === "SKU") {
+              return variants.edges[0]?.node?.sku || "-";
             }
             // For Description column, show color information
-            if (column.header === 'Description') {
+            if (column.header === "Description") {
               const colors = new Set<string>();
-              variants.edges.forEach(edge => {
-                edge.node.selectedOptions?.forEach(option => {
-                  if (option.name.toLowerCase().includes('color') || option.name.toLowerCase().includes('colour')) {
+              variants.edges.forEach((edge) => {
+                edge.node.selectedOptions?.forEach((option) => {
+                  if (
+                    option.name.toLowerCase().includes("color") ||
+                    option.name.toLowerCase().includes("colour")
+                  ) {
                     colors.add(option.value);
                   }
                 });
               });
-              return colors.size > 0 ? Array.from(colors).join(', ') : '-';
+              return colors.size > 0 ? Array.from(colors).join(", ") : "-";
             }
-            return '-';
-          case 'category':
+            return "-";
+          case "category":
             const category = value as { name?: string; fullName?: string };
-            return category?.name || category?.fullName || '-';
-          case 'stock':
+            return category?.name || category?.fullName || "-";
+          case "stock":
             const stockStatusStyles = {
-              in_stock: 'bg-green-100 text-green-800',
-              low_stock: 'bg-yellow-100 text-yellow-800',
-              out_of_stock: 'bg-red-100 text-red-800'
+              in_stock: "bg-green-100 text-green-800",
+              low_stock: "bg-yellow-100 text-yellow-800",
+              out_of_stock: "bg-red-100 text-red-800",
             };
             const stockStatusLabels = {
-              in_stock: 'In Stock',
-              low_stock: 'Low Stock',
-              out_of_stock: 'Out of Stock'
+              in_stock: "In Stock",
+              low_stock: "Low Stock",
+              out_of_stock: "Out of Stock",
             };
             const stockValue = value as keyof typeof stockStatusStyles;
-            if (!stockValue || !(stockValue in stockStatusStyles)) return '-';
+            if (!stockValue || !(stockValue in stockStatusStyles)) return "-";
             const statusLabel = stockStatusLabels[stockValue];
             return (
-              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${stockStatusStyles[stockValue]}`}>
+              <span
+                className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${stockStatusStyles[stockValue]}`}
+              >
                 {statusLabel}
               </span>
             );
-          case 'description':
+          case "description":
             const desc = value as string;
             return desc.length > 100 ? `${desc.substring(0, 100)}...` : desc;
           default:
             return String(value);
         }
-      case 'inventory-detail':
+      case "inventory-detail":
         switch (column.accessor) {
-          case 'colorDescription':
+          case "colorDescription":
             const desc = value as string;
             return desc.length > 50 ? `${desc.substring(0, 50)}...` : desc;
           default:
             return String(value);
         }
-      case 'inventory-quantity':
+      case "inventory-quantity":
         return String(value);
-      case 'product-detail':
+      case "product-detail":
         switch (column.accessor) {
-          case 'images':
-            const images = value as { edges?: Array<{ node: { url: string; altText: string } }> };
-            if (!images?.edges?.length) return 'No images';
+          case "images":
+            const images = value as {
+              edges?: Array<{ node: { url: string; altText: string } }>;
+            };
+            if (!images?.edges?.length) return "No images";
             return (
               <div className="flex gap-1">
                 {images.edges.slice(0, 3).map((edge, index) => (
                   <Image
                     key={index}
                     src={edge.node.url}
-                    alt={edge.node.altText || 'Product image'}
+                    alt={edge.node.altText || "Product image"}
                     width={48}
                     height={48}
                     className="w-12 h-12 object-cover rounded"
                   />
                 ))}
                 {images.edges.length > 3 && (
-                  <span className="text-xs text-gray-500">+{images.edges.length - 3}</span>
+                  <span className="text-xs text-gray-500">
+                    +{images.edges.length - 3}
+                  </span>
                 )}
               </div>
             );
-          case 'description':
+          case "description":
             return value as string;
           default:
             return String(value);
@@ -255,7 +288,7 @@ export default function DataTable<T extends TableData>({
   const columns = getColumns();
 
   return (
-    <>
+    <div>
       <div className="mt-4 w-full">
         <div className="overflow-x-auto rounded-2xl border-2 border-[#DADEE0]">
           <div className="inline-block min-w-full align-middle">
@@ -263,8 +296,8 @@ export default function DataTable<T extends TableData>({
               <thead>
                 <tr className="border-b-2 border-[#DADEE0]">
                   {columns.map((column) => (
-                    <th 
-                      key={String(column.accessor)} 
+                    <th
+                      key={String(column.accessor)}
                       className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 text-xs sm:text-sm md:text-base lg:text-[26px] font-semibold font-darker-grotesque text-[#212121] tracking-wider"
                     >
                       {column.header}
@@ -279,13 +312,14 @@ export default function DataTable<T extends TableData>({
               </thead>
               <tbody className="divide-y divide-[#DADEE0]">
                 {data.map(({ node }) => {
-                  const id = String(node.id).split('/').pop() || String(node.id);
-                  
+                  const id =
+                    String(node.id).split("/").pop() || String(node.id);
+
                   return (
                     <tr key={String(node.id)} className="hover:bg-gray-50">
                       {columns.map((column) => (
-                        <td 
-                          key={String(column.accessor)} 
+                        <td
+                          key={String(column.accessor)}
                           className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 text-xs sm:text-sm md:text-base lg:text-lg text-center"
                         >
                           {formatValue(node[column.accessor], column, node)}
@@ -312,7 +346,7 @@ export default function DataTable<T extends TableData>({
         </div>
       </div>
 
-      <div className="mt-3 sm:mt-4 md:mt-6 flex justify-end gap-2 sm:gap-4 items-center">
+      <div className="mt-3 sm:mt-4 md:mt-6 flex justify-center gap-2 sm:gap-4 items-center">
         {hasNextPage && (
           <button
             onClick={handleLoadMore}
@@ -322,6 +356,6 @@ export default function DataTable<T extends TableData>({
           </button>
         )}
       </div>
-    </>
+    </div>
   );
-} 
+}

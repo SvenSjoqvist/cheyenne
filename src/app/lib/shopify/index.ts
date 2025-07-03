@@ -66,7 +66,6 @@ import {
 import { cookies } from "next/headers";
 import { customerOrderQuery, customerQuery } from "./queries/customer";
 
-
 const domain = ensureStartWith(process.env.SHOPIFY_STORE_DOMAIN, "https://");
 const endpoint = `${domain}/api/2025-01/graphql.json`;
 const adminEndpoint = `${domain}/admin/api/2025-01/graphql.json`;
@@ -193,6 +192,7 @@ export async function shopifyFetch<T>({
 function removeEdgesAndNodes<T>(array: Connection<T>): T[] {
   return array.edges.map((edge) => edge?.node);
 }
+
 function reshapeImages(images: Connection<Image>, productTitle: string) {
   const flattend = removeEdgesAndNodes(images);
   return flattend.map((image) => {
@@ -203,6 +203,7 @@ function reshapeImages(images: Connection<Image>, productTitle: string) {
     };
   });
 }
+
 function reshapeProduct(
   product: ShopifyProduct,
   filterHiddenProducts: boolean = true
@@ -253,12 +254,12 @@ export async function getProducts({
       variables: { query, reverse, sortKey },
     });
 
-    const processedData = removeEdgesAndNodes(res.body.data.products);
+    const processedData = res.body.data.products.edges.map((edge) => edge.node);
     const reshapedProducts = reshapeProducts(processedData);
 
     return reshapedProducts;
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.error("Error fetching products:", error);
     return [];
   }
 }
@@ -296,7 +297,7 @@ export async function getCollections(): Promise<Collection[]> {
     tags: [TAGS.collections],
   });
 
-  const shopifyCollections = removeEdgesAndNodes(res?.body?.data?.collections);
+  const shopifyCollections = removeEdgesAndNodes(res.body.data.collections);
   const collections = [
     {
       id: "all",
@@ -343,7 +344,9 @@ export async function getCollectionProducts({
   }
 
   return reshapeProducts(
-    removeEdgesAndNodes(res.body.data.collection.products)
+    res.body.data.collection.products.edges.map(
+      (edge: { node: ShopifyProduct }) => edge.node
+    )
   );
 }
 
@@ -355,7 +358,7 @@ export async function getProduct(handle: string): Promise<Product | undefined> {
       handle,
     },
   });
-  return reshapeProduct(res.body.data.product, false);
+  return reshapeProduct(res.body.data.product);
 }
 
 // First, let's create a type for the response
@@ -393,11 +396,9 @@ export async function getGlobalContent(): Promise<GlobalContent[]> {
   }
 
   // Use the removeEdgesAndNodes helper function you already have
-  const content = removeEdgesAndNodes(res.body.data.metaobjects).map(
-    (node) => ({
-      fields: node.fields,
-    })
-  );
+  const content = res.body.data.metaobjects.edges.map((edge) => ({
+    fields: edge.node.fields,
+  }));
   return content;
 }
 
@@ -454,7 +455,7 @@ function reshapeCart(cart: ShopifyCart): Cart {
 
   return {
     ...cart,
-    lines: removeEdgesAndNodes(cart.lines),
+    lines: cart.lines.edges.map((edge) => edge?.node),
   };
 }
 

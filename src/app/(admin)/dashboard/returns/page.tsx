@@ -24,8 +24,8 @@ export default function ReturnsPage() {
         setReturns(data);
         console.log(data);
       } catch (error) {
-        console.error('Error fetching returns:', error);
-        setError('Failed to load returns');
+        console.error("Error fetching returns:", error);
+        setError("Failed to load returns");
       } finally {
         setLoading(false);
       }
@@ -40,23 +40,25 @@ export default function ReturnsPage() {
       const { returnId, newStatus } = customEvent.detail;
       try {
         await updateReturnStatus(returnId, newStatus);
-        
-        setReturns(returns.map(returnRequest => 
-          returnRequest.id === returnId 
-            ? { ...returnRequest, status: newStatus }
-            : returnRequest
-        ));
-        
+
+        setReturns(
+          returns.map((returnRequest) =>
+            returnRequest.id === returnId
+              ? { ...returnRequest, status: newStatus }
+              : returnRequest
+          )
+        );
+
         refreshData();
       } catch (error) {
-        console.error('Error updating return status:', error);
-        setError('Failed to update return status');
+        console.error("Error updating return status:", error);
+        setError("Failed to update return status");
       }
     };
 
-    window.addEventListener('statusUpdate', handleStatusUpdate);
+    window.addEventListener("statusUpdate", handleStatusUpdate);
     return () => {
-      window.removeEventListener('statusUpdate', handleStatusUpdate);
+      window.removeEventListener("statusUpdate", handleStatusUpdate);
     };
   }, [returns, refreshData]);
 
@@ -73,7 +75,7 @@ export default function ReturnsPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <p className="text-xl text-red-600 mb-4">{error}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
@@ -88,11 +90,13 @@ export default function ReturnsPage() {
     <div className="pt-20 bg-[#F7F7F7] min-h-screen">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col gap-4 justify-center items-center mb-10">
-          <h1 className="text-[40px] font-darker-grotesque tracking-wider font-regular">Returns</h1>
+          <h1 className="text-[40px] font-darker-grotesque tracking-wider font-regular">
+            Returns
+          </h1>
         </div>
 
         <DataTable
-          data={returns.map(returnRequest => ({ node: returnRequest }))}
+          data={returns.map((returnRequest) => ({ node: returnRequest }))}
           hasNextPage={false}
           endCursor=""
           baseUrl="/dashboard/returns"
@@ -101,4 +105,4 @@ export default function ReturnsPage() {
       </div>
     </div>
   );
-} 
+}

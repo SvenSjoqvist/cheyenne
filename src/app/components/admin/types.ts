@@ -2,24 +2,16 @@ export interface BaseTableData {
   id: string;
 }
 
-export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock';
+export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 
 export interface CustomerData extends BaseTableData {
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
-  orders: {
-    edges: Array<{
-      node: {
-        totalPriceSet: {
-          shopMoney: {
-            amount: string;
-            currencyCode: string;
-          };
-        };
-      };
-    }>;
+  amountSpent: {
+    amount: string;
+    currencyCode: string;
   };
 }
 
@@ -43,27 +35,36 @@ export interface OrderData extends BaseTableData {
   createdAt: Date;
   displayFulfillmentStatus: string;
   displayFinancialStatus: string;
-  billingAddress: {
-    address1?: string;
-    address2?: string;
-    city?: string;
-    province?: string;
-    zip?: string;
-    country?: string;
-  } | null | undefined;
-  shippingAddress: {
-    address1?: string;
-    address2?: string;
-    city?: string;
-    province?: string;
-    zip?: string;
-    country?: string;
-  } | null | undefined;
+  billingAddress:
+    | {
+        address1?: string;
+        address2?: string;
+        city?: string;
+        province?: string;
+        zip?: string;
+        country?: string;
+      }
+    | null
+    | undefined;
+  shippingAddress:
+    | {
+        address1?: string;
+        address2?: string;
+        city?: string;
+        province?: string;
+        zip?: string;
+        country?: string;
+      }
+    | null
+    | undefined;
   discountApplications: { edges: { node: { code: string } }[] } | undefined;
-  shippingLine: {
-    title: string;
-    price: string;
-  } | null | undefined;
+  shippingLine:
+    | {
+        title: string;
+        price: string;
+      }
+    | null
+    | undefined;
   paymentGatewayNames: string[] | undefined;
   fulfillments: { trackingInfo: { number: string; url: string } }[] | undefined;
 }
@@ -125,9 +126,64 @@ export interface ProductDetailData extends BaseTableData {
   productInfo: string;
 }
 
-export type TableData = CustomerData | OrderData | CancellationData | ReturnData | ProductData | InventoryDetailData | InventoryQuantityData | ProductDetailData;
+export interface CustomerDetailData extends BaseTableData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  amountSpent: {
+    amount: string;
+    currencyCode: string;
+  };
+  orders: {
+    edges: Array<{
+      node: {
+        id: string;
+        createdAt: string;
+        status: string;
+        financialStatus: string;
+        name: string;
+        totalQuantity: number;
+        totalPriceSet: {
+          shopMoney: {
+            amount: string;
+            currencyCode: string;
+          };
+        };
+      };
+    }>;
+  };
+  refunds?: {
+    totalRefunds: number;
+    totalItemsReturned: number;
+  };
+  metrics: {
+    region: string;
+    averageOrderValue: number;
+    totalOrders: number;
+  };
+}
 
-export type TableType = 'orders' | 'customers' | 'cancellations' | 'returns' | 'products' | 'inventory-detail' | 'inventory-quantity' | 'product-detail';
+export type TableData =
+  | CustomerData
+  | OrderData
+  | CancellationData
+  | ReturnData
+  | ProductData
+  | InventoryDetailData
+  | InventoryQuantityData
+  | ProductDetailData
+  | CustomerDetailData;
+
+export type TableType =
+  | "orders"
+  | "customers"
+  | "cancellations"
+  | "returns"
+  | "products"
+  | "inventory-detail"
+  | "inventory-quantity"
+  | "product-detail";
 
 export interface Column<T extends TableData> {
   header: string;
@@ -142,4 +198,4 @@ export interface DataTableProps<T extends TableData> {
   type: TableType;
   hideActions?: boolean;
   customColumns?: Column<T>[];
-} 
+}
