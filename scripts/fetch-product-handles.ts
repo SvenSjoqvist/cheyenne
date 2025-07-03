@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { getProducts } from '../src/app/lib/shopify';
 
+
 async function main() {
   const products = await getProducts({ query: "" });
   const handles = products.map((product) => product.handle);
