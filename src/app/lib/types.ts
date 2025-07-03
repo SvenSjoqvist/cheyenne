@@ -1,8 +1,3 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
-type Prisma = typeof prisma;
-
 export enum ReturnStatus {
   PENDING = "PENDING",
   APPROVED = "APPROVED",

@@ -17,6 +17,7 @@ import {
   createSuccessResponse,
   ApiResponse,
 } from "@/app/lib/error-utils";
+import { Return } from "@prisma/client";
 
 export async function getAbandonedCartsCount(): Promise<
   ApiResponse<{ count: number }>
@@ -355,10 +356,19 @@ export async function getDashboardData() {
       getDashboardStats(),
     ]);
 
+    if (
+      !abandonedCartsResult.success ||
+      !returnsResult.success ||
+      !abandonedCartsResult.data ||
+      !returnsResult.data
+    ) {
+      throw new Error("Failed to fetch required data");
+    }
+
     return {
       success: true,
       data: {
-        abandonedCarts: abandonedCartsResult.count,
+        abandonedCarts: abandonedCartsResult.data.count,
         averageCartValue: {
           amount: averageCartValueResult.amount,
           currency: averageCartValueResult.currency,
@@ -368,8 +378,8 @@ export async function getDashboardData() {
           subscribers: marketingResult.subscribers,
         },
         returns: {
-          totalReturns: returnsResult.totalReturns,
-          pendingReturns: returnsResult.pendingReturns,
+          totalReturns: returnsResult.data.totalReturns,
+          pendingReturns: returnsResult.data.pendingReturns,
         },
         orderStatus: {
           chartData: orderStatusResult.chartData || [],
@@ -379,7 +389,7 @@ export async function getDashboardData() {
           totalOrders: countryOrdersResult.totalOrders || 0,
         },
         shop: shopStats.shop,
-        helpTickets: 0, // This will need to be implemented when we have a help ticket system
+        helpTickets: 0,
       },
     };
   } catch (error) {

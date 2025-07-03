@@ -1,6 +1,7 @@
 import { getCustomers } from "@/app/lib/shopify/admin/shopify-admin";
 import DataTable from "@/app/components/admin/DataTable";
 import { CustomerData } from "@/app/components/admin/types";
+import Link from "next/link";
 
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -53,12 +54,12 @@ export default async function CustomersPage({ searchParams }: Props) {
               Search
             </button>
             {(searchQuery || dateFilter) && (
-              <a
+              <Link
                 href="/dashboard/customers"
                 className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
               >
                 Clear
-              </a>
+              </Link>
             )}
           </form>
         </div>

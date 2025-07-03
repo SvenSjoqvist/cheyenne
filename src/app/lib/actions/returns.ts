@@ -4,14 +4,7 @@ import nodemailer from "nodemailer";
 import { prisma } from "@/app/lib/prisma/client";
 import { Return, ReturnItem } from "@/app/lib/types/returns";
 import { protectServerAction, sanitizeInput } from "@/app/lib/auth-utils";
-
-// Add type definitions for return items
-type ReturnRequestItem = {
-  name: string;
-  variant: string;
-  reason: string;
-  quantity?: number;
-};
+import { ReturnStatus } from "@prisma/client";
 
 type ReturnRecordItem = {
   productName: string;
@@ -317,9 +310,9 @@ export async function getReturns(searchQuery?: string): Promise<Return[]> {
     const whereClause = searchQuery
       ? {
           OR: [
-            { orderId: { contains: searchQuery } },
-            { customerId: { contains: searchQuery } },
-            { status: { contains: searchQuery } },
+            { orderId: searchQuery },
+            { customerId: searchQuery },
+            { status: searchQuery as ReturnStatus },
           ],
         }
       : {};

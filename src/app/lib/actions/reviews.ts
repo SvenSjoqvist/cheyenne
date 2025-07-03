@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/app/lib/prisma";
-import { FitRating } from "@/app/lib/types";
+import { FitRating } from "@prisma/client";
 
 interface ReviewItem {
   name: string;
@@ -18,33 +18,13 @@ interface ReviewData {
   customerName: string;
 }
 
-// Add type definitions for Prisma ReviewItem
-type PrismaReviewItem = {
-  id: string;
+// Add type definitions for database query result
+type ReviewQueryResult = {
   productName: string;
   variant: string;
   review: {
     orderNumber: number;
     customerId: string;
-  };
-};
-
-// Add type for the transformed review item
-type TransformedReviewItem = {
-  id: string;
-  productName: string;
-  variant: string;
-  fitRating: FitRating;
-  height: string | null;
-  waistSize: string | null;
-  purchasedSize: string;
-  title: string;
-  description: string;
-  rating: number;
-  createdAt: Date;
-  updatedAt: Date;
-  review: {
-    customerName: string;
   };
 };
 
@@ -149,7 +129,7 @@ export async function sendReview(
     // Filter out items that have already been reviewed
     const reviewedProducts = new Set(
       existingReviews.map(
-        (item: PrismaReviewItem) => `${item.productName}-${item.variant}`
+        (item: ReviewQueryResult) => `${item.productName}-${item.variant}`
       )
     );
 
@@ -272,7 +252,7 @@ export async function getProductReviews(productName: string) {
     });
 
     // Transform dates to strings for client-side consumption
-    const transformedReviews = reviews.map((review: TransformedReviewItem) => ({
+    const transformedReviews = reviews.map((review) => ({
       ...review,
       createdAt: review.createdAt.toISOString(),
       updatedAt: review.updatedAt.toISOString(),

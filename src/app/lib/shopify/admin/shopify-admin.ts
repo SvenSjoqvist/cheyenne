@@ -1,4 +1,4 @@
-import { ShopifyCustomer, ShopifyOrder } from "../types";
+import { ShopifyOrder } from "../types";
 import { protectServerAction } from "@/app/lib/auth-utils";
 
 const SHOPIFY_ADMIN_API_URL = `https://kilaeko-application.myshopify.com/admin/api/2024-01/graphql.json`;
