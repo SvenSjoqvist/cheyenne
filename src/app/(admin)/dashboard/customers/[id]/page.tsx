@@ -234,39 +234,41 @@ export default async function CustomerViewPage({ params }: PageProps) {
           customColumns={customColumns}
         />
       </div>
-      <div className="flex flex-row gap-3 sm:gap-4 lg:gap-8 mt-3 sm:mt-4 px-6 max-w-7xl justify-center">
-        <CustomerDetailsCard
-          title="Order Details"
-          data={orderDetails}
-          bgColor="white"
-        />
-        <div className="h-auto w-full flex flex-col gap-6">
-          <MetricCard
-            title="Total Spent"
-            value={formattedTotalSpent}
-            variant="black"
-            valueSize="text-[68px]"
+      <div className="flex justify-center w-full max-w-7xl mx-auto">
+        <div className="flex flex-row gap-3 sm:gap-4 lg:gap-8 mt-3 sm:mt-4 px-6 w-full">
+          <CustomerDetailsCard
+            title="Order Details"
+            data={orderDetails}
+            bgColor="white"
           />
-          <MetricCard
-            title="Average Order Value"
-            value={averageOrderValue}
-            variant="white"
-            valueSize="text-[68px]"
-          />
-        </div>
-        <div className="h-auto w-full flex flex-col gap-6">
-          <MetricCard
-            title="Active Region"
-            value={customer.metrics.region}
-            variant="white"
-            valueSize="text-[60px]"
-          />
-          <MetricCard
-            title="Total Orders"
-            value={customer.metrics.totalOrders}
-            variant="black"
-            valueSize="text-[68px]"
-          />
+          <div className="h-auto w-full flex flex-col gap-6">
+            <MetricCard
+              title="Total Spent"
+              value={formattedTotalSpent}
+              variant="black"
+              valueSize="text-[68px]"
+            />
+            <MetricCard
+              title="Average Order Value"
+              value={averageOrderValue}
+              variant="white"
+              valueSize="text-[68px]"
+            />
+          </div>
+          <div className="h-auto w-full flex flex-col gap-6">
+            <MetricCard
+              title="Active Region"
+              value={customer.metrics.region}
+              variant="white"
+              valueSize="text-[60px]"
+            />
+            <MetricCard
+              title="Total Orders"
+              value={customer.metrics.totalOrders}
+              variant="black"
+              valueSize="text-[68px]"
+            />
+          </div>
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-7 mt-8">
