@@ -234,7 +234,7 @@ export default async function CustomerViewPage({ params }: PageProps) {
           customColumns={customColumns}
         />
       </div>
-      <div className="flex flex-row gap-3 sm:gap-4 lg:gap-8 mt-3 sm:mt-4 px-6 max-w-7xl">
+      <div className="flex flex-row gap-3 sm:gap-4 lg:gap-8 mt-3 sm:mt-4 px-6 max-w-7xl justify-center">
         <CustomerDetailsCard
           title="Order Details"
           data={orderDetails}
