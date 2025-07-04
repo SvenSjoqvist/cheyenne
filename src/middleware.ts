@@ -5,6 +5,7 @@ export default withAuth(
   // Enhanced Security Headers
   function middleware() {
     const response = NextResponse.next();
+    
 
     
     response.headers.set("X-Frame-Options", "DENY");
