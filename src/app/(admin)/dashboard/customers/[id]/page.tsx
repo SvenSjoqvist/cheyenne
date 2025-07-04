@@ -218,7 +218,7 @@ export default async function CustomerViewPage({ params }: PageProps) {
 
   return (
     <div className="pt-16 bg-[#F7F7F7] min-h-screen">
-      <div className="max-w-7xl mx-auto px-7">
+      <div className="max-w-7xl mx-auto px-7 ">
         <div className="flex flex-col gap-4 justify-center items-center mb-7">
           <h1 className="text-[40px] font-darker-grotesque tracking-wider font-regular">
             Customers
@@ -234,7 +234,7 @@ export default async function CustomerViewPage({ params }: PageProps) {
           customColumns={customColumns}
         />
       </div>
-      <div className="flex flex-row gap-3 sm:gap-4 lg:gap-8 mt-3 sm:mt-4 px-6">
+      <div className="flex flex-row gap-3 sm:gap-4 lg:gap-8 mt-3 sm:mt-4 px-6 max-w-7xl">
         <CustomerDetailsCard
           title="Order Details"
           data={orderDetails}
