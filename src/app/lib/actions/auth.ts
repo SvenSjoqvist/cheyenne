@@ -1,93 +1,78 @@
-"use server";
-
-import { signOut } from "next-auth/react";
-import { redirect } from "next/navigation";
-import bcrypt from "bcryptjs";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/app/lib/prisma/client";
+import bcrypt from "bcryptjs";
 
-export async function loginAction(formData: FormData) {
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-
-  if (!email || !password) {
-    return { error: "Email and password are required" };
-  }
-
-  try {
-    // Verify credentials directly
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (!user || !user.password) {
-      return { error: "Invalid credentials" };
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      return { error: "Invalid credentials" };
-    }
-
-    // If credentials are valid, redirect to dashboard
-    // The session will be created by NextAuth middleware
-    redirect("/dashboard");
-  } catch (error) {
-    console.error("Login error:", error);
-    return { error: "An error occurred during login" };
-  }
-}
-
-export async function logoutAction() {
-  await signOut({ redirect: true, callbackUrl: "/admin/login" });
-}
-
-export async function createAdminUser(
-  email: string,
-  password: string,
-  name?: string
-) {
-  try {
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      return { error: "User already exists" };
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name: name || email.split("@")[0],
+export const authOptions = {
+  // Remove PrismaAdapter when using JWT strategy
+  providers: [
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
-    });
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
 
-    return {
-      success: true,
-      user: { id: user.id, email: user.email, name: user.name },
-    };
-  } catch (error) {
-    console.error("Error creating admin user:", error);
-    return { error: "Failed to create admin user" };
-  }
-}
+        try {
+          const user = await prisma.user.findUnique({
+            where: {
+              email: credentials.email,
+            },
+          });
 
-export async function verifyUser(userId: string): Promise<boolean> {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true },
-    });
-    return !!user;
-  } catch (error) {
-    console.error("Error verifying user:", error);
-    return false;
-  }
-}
+          if (!user || !user.password) {
+            return null;
+          }
+
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+
+          if (!isPasswordValid) {
+            return null;
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          };
+        } catch (error) {
+          console.error("Auth error:", error);
+          return null;
+        }
+      },
+    }),
+  ],
+  session: {
+    strategy: "jwt" as const,
+    maxAge: 24 * 60 * 60, // 24 hours
+  },
+  pages: {
+    signIn: "/admin/login",
+    error: "/admin/login",
+  },
+  callbacks: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async jwt(params: any) {
+      const { token, user } = params;
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async session(params: any) {
+      const { session, token } = params;
+      if (token && session.user) {
+        session.user.id = token.id;
+      }
+      return session;
+    },
+  },
+  debug: process.env.NODE_ENV === "development",
+};

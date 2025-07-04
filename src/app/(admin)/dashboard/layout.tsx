@@ -1,10 +1,6 @@
 import "@/app/globals.css";
 import Sidebar from "@/app/components/admin/Sidebar";
 import { DashboardProvider } from "@/app/components/admin/DashboardContext";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/lib/auth";
-import { redirect } from "next/navigation";
-import { verifyUser } from "@/app/lib/actions/auth";
 
 export default async function DashboardLayout({
   children,

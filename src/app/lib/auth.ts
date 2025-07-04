@@ -1,8 +1,6 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/app/lib/prisma/client";
 import bcrypt from "bcryptjs";
-import { JWT } from "next-auth/jwt";
-import { Session } from "next-auth";
 
 // Track login attempts
 const loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
@@ -96,36 +94,12 @@ export const authOptions = {
     }),
   ],
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
     maxAge: 24 * 60 * 60, // 24 hours
   },
   pages: {
     signIn: "/admin/login",
     error: "/admin/login",
-  },
-  callbacks: {
-    async jwt({ token, user }: { token: JWT; user: any }) {
-      if (user) {
-        token.id = user.id;
-      }
-      // Verify user still exists in database
-      if (token.id) {
-        const userExists = await prisma.user.findUnique({
-          where: { id: token.id },
-          select: { id: true },
-        });
-        if (!userExists) {
-          return null;
-        }
-      }
-      return token;
-    },
-    async session({ session, token }: { session: Session; token: JWT }) {
-      if (session.user && token) {
-        session.user.id = token.id;
-      }
-      return session;
-    },
   },
   debug: process.env.NODE_ENV === "development",
 };

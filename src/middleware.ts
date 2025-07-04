@@ -1,10 +1,9 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
-import type { NextRequestWithAuth } from "next-auth/middleware";
 
 export default withAuth(
   // Enhanced Security Headers
-  function middleware(req: NextRequestWithAuth) {
+  function middleware() {
     const response = NextResponse.next();
 
     response.headers.set("X-Frame-Options", "DENY");

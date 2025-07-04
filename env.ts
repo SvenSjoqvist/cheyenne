@@ -14,6 +14,14 @@ const envSchema = z.object({
   NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN: z.string(),
   NEXT_PUBLIC_SHOPIFY_ACCESS_TOKEN: z.string(),
   NEXT_PUBLIC_SHOPIFY_REVALIDATION_SECRET: z.string(),
+  // Email configuration
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.string().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().optional(),
+  SMTP_SECURE: z.string().optional(),
+  SUPPORT_EMAIL: z.string().optional(),
 });
 
 envSchema.parse(process.env);

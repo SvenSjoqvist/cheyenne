@@ -7,21 +7,8 @@ import { ReturnStatus } from "@prisma/client";
 import {
   ensureDefaultTemplates,
   getTemplateByName,
-  processTemplate,
   processTemplateFromDb,
 } from "./templates";
-
-type ReturnRecordItem = {
-  productName: string;
-  variant: string;
-  quantity: number;
-  reason: string;
-};
-
-type ReturnRecord = {
-  id: string;
-  items: ReturnRecordItem[];
-};
 
 // Create reusable transporter object using SMTP transport
 const transporter = nodemailer.createTransport({
@@ -67,7 +54,8 @@ export async function sendReturnRequest(
   additionalNotes: string,
   customerEmail: string,
   customerId: string,
-  customerName?: string
+  customerName?: string,
+  totalPaid?: number
 ) {
   try {
     // Check for existing returns
@@ -107,6 +95,7 @@ export async function sendReturnRequest(
         customerId,
         customerName: resolvedCustomerName,
         additionalNotes,
+        totalPaid: totalPaid || 0,
         items: {
           create: items.map(
             (item: {
@@ -154,6 +143,7 @@ export async function sendReturnRequest(
       return_items: returnItemsHtml,
       additional_notes: additionalNotes,
       support_email: process.env.SMTP_FROM,
+      total_paid: totalPaid?.toFixed(2) || "0.00",
     });
 
     if (!emailTemplate) {
@@ -288,10 +278,12 @@ export async function handleReturnAction(
     // Protect admin function
     await protectServerAction();
 
-    // Get return record first to access customer info
+    // Get return record first to access customer info and items
     const returnRecord = await prisma.return.findUnique({
       where: { id: sanitizeInput(returnId) },
-      select: { customerId: true },
+      include: {
+        items: true, // Include items to generate return_items HTML
+      },
     });
 
     if (!returnRecord) {
@@ -302,6 +294,20 @@ export async function handleReturnAction(
     const resolvedCustomerName: string = getFirstName(
       customerName ?? "Valued Customer"
     );
+
+    // Generate return items HTML
+    const returnItemsHtml = returnRecord.items
+      .map(
+        (item) => `
+      <div class="item">
+        <p><span class="highlight">Product:</span> ${item.productName}</p>
+        <p><span class="highlight">Variant:</span> ${item.variant}</p>
+        <p><span class="highlight">Quantity:</span> ${item.quantity}</p>
+        <p><span class="highlight">Reason:</span> ${item.reason}</p>
+      </div>
+    `
+      )
+      .join("");
 
     // Sanitize inputs
     const sanitizedReturnId = sanitizeInput(returnId);
@@ -320,51 +326,11 @@ export async function handleReturnAction(
 
     // If template doesn't exist, create it
     if (!template) {
-      template = await prisma.emailTemplate.create({
-        data: {
-          name: templateName,
-          subject: "Return Request Approved",
-          content: `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Return Request Approved</title>
-</head>
-<body>
-  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-    <h1 style="color: #333; text-align: center;">Return Request Approved</h1>
-    <p style="color: #666; line-height: 1.6;">
-      Great news! Your return request for order #{{order_number}} has been approved.
-    </p>
-    {{#if message}}
-    <p style="color: #666; line-height: 1.6;">
-      <strong>Message from our team:</strong> {{message}}
-    </p>
-    {{/if}}
-    <div style="background-color: #f9f9f9; padding: 20px; margin: 20px 0; border-radius: 4px;">
-      <h2 style="color: #333; margin-top: 0;">Next Steps</h2>
-      <ul style="color: #666; line-height: 1.6;">
-        <li>Please package your items securely</li>
-        <li>Include your order number: #{{order_number}}</li>
-        <li>Ship to our returns center</li>
-        <li>Once received, we'll process your refund within 5-7 business days</li>
-      </ul>
-    </div>
-    <p style="color: #666; line-height: 1.6;">
-      If you have any questions, please contact our support team.
-    </p>
-    <div style="text-align: center; margin-top: 30px;">
-      <a href="mailto:{{support_email}}" style="background-color: #000; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px;">
-        Contact Support
-      </a>
-    </div>
-  </div>
-</body>
-</html>`,
-          creator: "SYSTEM",
-        },
-      });
+      await ensureDefaultTemplates();
+      template = await getTemplateByName(templateName);
+      if (!template) {
+        throw new Error("Failed to create template");
+      }
     }
 
     // Update return status
@@ -387,6 +353,10 @@ export async function handleReturnAction(
       customer_email: updatedReturn.customerEmail,
       message: sanitizedMessage,
       support_email: process.env.SMTP_FROM,
+      return_items: returnItemsHtml,
+      request_date: updatedReturn.createdAt.toISOString().split("T")[0],
+      today_date: new Date().toISOString().split("T")[0],
+      total_paid: updatedReturn.totalPaid.toFixed(2),
     };
 
     const emailTemplate = await processTemplateFromDb(

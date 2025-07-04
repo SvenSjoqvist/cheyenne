@@ -133,6 +133,26 @@ export default function RefundPage() {
         throw new Error("Customer ID not found");
       }
 
+      // Calculate total amount for returned items only
+      const totalAmount = items.reduce((total, item) => {
+        const lineItem = order.lineItems.edges.find(
+          (edge) => edge.node.title === item.name
+        );
+        // Get the quantity from the current return item
+        const returnQuantity = item.quantity || 1;
+
+        // Calculate the unit price from the order total and original quantity
+        const unitPrice = lineItem
+          ? parseFloat(order.totalPrice.amount) /
+            order.lineItems.edges.reduce(
+              (sum, edge) => sum + edge.node.quantity,
+              0
+            )
+          : 0;
+
+        return total + unitPrice * returnQuantity;
+      }, 0);
+
       // Send return request using server action with customer name
       await sendReturnRequest(
         order.orderNumber,
@@ -141,7 +161,8 @@ export default function RefundPage() {
         additionalNotes,
         customerEmail,
         customerId,
-        customer?.firstName === null ? undefined : customer?.firstName
+        customer?.firstName === null ? undefined : customer?.firstName,
+        totalAmount // Pass the calculated total for returned items only
       );
 
       alert(

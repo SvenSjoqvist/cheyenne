@@ -23,26 +23,33 @@ export async function protectApiRoute() {
 export async function protectServerAction() {
   const session = await getSession();
 
-  if (!session) {
+  if (!session || !session.user?.email) {
     throw new Error("Unauthorized: Authentication required");
   }
 
-  // Verify user still exists in database
+  // Verify user still exists in database using email since we don't have id in session
   try {
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true },
+      where: { email: session.user.email },
+      select: { id: true, email: true },
     });
 
     if (!user) {
       throw new Error("Unauthorized: User not found");
     }
+
+    // Return session with user id for convenience
+    return {
+      ...session,
+      user: {
+        ...session.user,
+        id: user.id,
+      },
+    };
   } catch (error) {
     console.error("Error verifying user:", error);
     throw new Error("Unauthorized: Authentication failed");
   }
-
-  return session;
 }
 
 // CSRF protection utility

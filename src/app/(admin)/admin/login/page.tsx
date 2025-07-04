@@ -19,12 +19,14 @@ export default async function AdminLoginPage() {
             <h1 className="text-3xl font-darker-grotesque font-semibold tracking-wider mb-2">
               Admin Login
             </h1>
-            <p className="text-gray-600">Sign in to access the admin dashboard</p>
+            <p className="text-gray-600">
+              Sign in to access the admin dashboard
+            </p>
           </div>
-          
+
           <LoginForm />
         </div>
       </div>
     </div>
   );
-} 
+}

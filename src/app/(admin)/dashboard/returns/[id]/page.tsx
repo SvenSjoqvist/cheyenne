@@ -12,6 +12,7 @@ interface PageProps {
 export default async function ReturnViewPage({ params }: PageProps) {
   const resolvedParams = await params;
   const returns = await getReturns();
+  console.log(returns);
   const returnRequest = returns.find((r) => r.id === resolvedParams.id);
 
   if (!returnRequest) {
@@ -103,6 +104,7 @@ export default async function ReturnViewPage({ params }: PageProps) {
           <ReturnActionForm
             returnId={returnRequest.id}
             customerEmail={returnRequest.customerEmail}
+            customerName={returnRequest.customerName}
           />
         )}
       </div>

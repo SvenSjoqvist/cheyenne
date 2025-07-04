@@ -62,8 +62,6 @@ model Subscriber {
   unsubscribeToken String   @unique @default(uuid())
 }
 
-
-
 model EmailTemplate {
   id        String          @id @default(uuid())
   name      String         @unique
@@ -85,6 +83,7 @@ model Return {
   updatedAt       DateTime     @updatedAt
   customerId      String
   orderId         String
+  totalPaid       Float        @default(0)
   items           ReturnItem[]
 }
 

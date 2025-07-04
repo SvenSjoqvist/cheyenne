@@ -249,6 +249,22 @@ export async function ensureReturnApprovedTemplate() {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Return Request Approved</title>
+  <style>
+    .item {
+      margin-bottom: 20px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #eee;
+    }
+    .item p {
+      margin: 8px 0;
+    }
+    .highlight {
+      color: #000;
+      font-weight: 500;
+    }
+  </style>
 </head>
 <body>
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -261,11 +277,27 @@ export async function ensureReturnApprovedTemplate() {
       <strong>Message from our team:</strong> {{message}}
     </p>
     {{/if}}
+    
+    <div style="background-color: #f9f9f9; padding: 20px; margin: 20px 0; border-radius: 4px;">
+      <h2 style="color: #333; margin-top: 0;">Order Information</h2>
+      <p style="color: #666; line-height: 1.6;">Order Number: #{{order_number}}</p>
+      <p style="color: #666; line-height: 1.6;">Total Amount: {{
+        total_paid,
+      }}</p>
+      <p style="color: #666; line-height: 1.6;">Request Date: {{request_date}}</p>
+      <p style="color: #666; line-height: 1.6;">Approval Date: {{today_date}}</p>
+    </div>
+
+    <div style="background-color: #f9f9f9; padding: 20px; margin: 20px 0; border-radius: 4px;">
+      <h2 style="color: #333; margin-top: 0;">Items Approved for Return</h2>
+      {{return_items}}
+    </div>
+
     <div style="background-color: #f9f9f9; padding: 20px; margin: 20px 0; border-radius: 4px;">
       <h2 style="color: #333; margin-top: 0;">Next Steps</h2>
       <ul style="color: #666; line-height: 1.6;">
         <li>Please package your items securely</li>
-        <li>Include your order number: {{order_number}}</li>
+        <li>Include your order number: #{{order_number}}</li>
         <li>Ship to our returns center</li>
         <li>Once received, we'll process your refund within 5-7 business days</li>
       </ul>
@@ -311,6 +343,22 @@ export async function ensureReturnDeniedTemplate() {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Return Request Update</title>
+  <style>
+    .item {
+      margin-bottom: 20px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #eee;
+    }
+    .item p {
+      margin: 8px 0;
+    }
+    .highlight {
+      color: #000;
+      font-weight: 500;
+    }
+  </style>
 </head>
 <body>
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -318,11 +366,28 @@ export async function ensureReturnDeniedTemplate() {
     <p style="color: #666; line-height: 1.6;">
       Hello {{customer_name}}, we've reviewed your return request for order #{{order_number}}.
     </p>
+    
+    <div style="background-color: #f9f9f9; padding: 20px; margin: 20px 0; border-radius: 4px;">
+      <h2 style="color: #333; margin-top: 0;">Order Information</h2>
+      <p style="color: #666; line-height: 1.6;">Order Number: #{{order_number}}</p>
+      <p style="color: #666; line-height: 1.6;">Total Amount: {{
+        total_paid,
+      }}</p>
+      <p style="color: #666; line-height: 1.6;">Request Date: {{request_date}}</p>
+      <p style="color: #666; line-height: 1.6;">Review Date: {{today_date}}</p>
+    </div>
+
+    <div style="background-color: #f9f9f9; padding: 20px; margin: 20px 0; border-radius: 4px;">
+      <h2 style="color: #333; margin-top: 0;">Items Requested for Return</h2>
+      {{return_items}}
+    </div>
+
     {{#if message}}
     <p style="color: #666; line-height: 1.6;">
       <strong>Message from our team:</strong> {{message}}
     </p>
     {{/if}}
+    
     <p style="color: #666; line-height: 1.6;">
       Unfortunately, we are unable to accept your return request at this time. If you believe this decision was made in error or have additional information to provide, please don't hesitate to contact our support team.
     </p>
@@ -437,6 +502,16 @@ export async function updateTemplate(
 
 interface TemplateData {
   [key: string]: string | number | boolean | undefined;
+  customer_name?: string;
+  order_number?: string | number;
+  customer_email?: string;
+  request_date?: string;
+  message?: string;
+  support_email?: string;
+  return_items?: string;
+  total_paid?: string | number;
+  today_date?: string;
+  additional_notes?: string;
 }
 
 export async function processTemplate(
@@ -516,6 +591,136 @@ export async function processTemplateFromDb(
   }
 }
 
+export async function ensureCancellationTemplate() {
+  // Protect admin function
+  await protectServerAction();
+
+  try {
+    const existingTemplate = await prisma.emailTemplate.findFirst({
+      where: {
+        name: "order_cancelled",
+      },
+    });
+
+    if (!existingTemplate) {
+      const data: Prisma.EmailTemplateCreateInput = {
+        name: "order_cancelled",
+        subject: "Order Cancellation Confirmation - Order #{{order_number}}",
+        creator: "SYSTEM",
+        content: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Cancellation Confirmation</title>
+  <style>
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #F7F7F7;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 20px 0;
+    }
+    .header h1 {
+      font-size: 40px;
+      font-weight: 500;
+      margin: 0;
+      color: #000;
+    }
+    .header p {
+      font-size: 16px;
+      color: #666;
+      max-width: 80%;
+      margin: 20px auto 0;
+    }
+    .section {
+      margin-bottom: 30px;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .section-title {
+      font-size: 32px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: #000;
+    }
+    .item {
+      margin-bottom: 20px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #eee;
+    }
+    .item p {
+      margin: 8px 0;
+    }
+    .item strong {
+      color: #000;
+    }
+    .highlight {
+      color: #000;
+      font-weight: 500;
+    }
+    .info-text {
+      font-size: 16px;
+      color: #666;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Order Cancellation Confirmation</h1>
+    <p>Hello {{customer_name}}, your order has been successfully cancelled.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Order Details</div>
+    <p class="info-text"><span class="highlight">Order Number:</span> #{{order_number}}</p>
+    <p class="info-text"><span class="highlight">Total Amount:</span> {{total_paid}}</p>
+    <p class="info-text"><span class="highlight">Cancellation Date:</span> {{today_date}}</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Cancelled Items</div>
+    {{return_items}}
+  </div>
+
+  <div class="section">
+    <div class="section-title">Next Steps</div>
+    <ul style="list-style-type: none; padding: 0;">
+      <li class="info-text">• Your order has been cancelled successfully</li>
+      <li class="info-text">• A refund of {{total_paid}} will be processed to your original payment method</li>
+      <li class="info-text">• Please allow 5-7 business days for the refund to appear in your account</li>
+      <li class="info-text">• If you have any questions, please contact our support team</li>
+    </ul>
+  </div>
+
+  <div style="text-align: center; margin-top: 30px;">
+    <p class="info-text">Need help? Contact our support team</p>
+    <a href="mailto:{{support_email}}" style="background-color: #000; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; margin-top: 10px;">
+      Contact Support
+    </a>
+  </div>
+</body>
+</html>`,
+      };
+      await prisma.emailTemplate.create({ data });
+    }
+  } catch (error) {
+    console.error("Failed to ensure cancellation template:", error);
+  }
+}
+
 export async function ensureDefaultTemplates() {
   try {
     await Promise.all([
@@ -523,6 +728,7 @@ export async function ensureDefaultTemplates() {
       ensureReturnTemplate(),
       ensureReturnApprovedTemplate(),
       ensureReturnDeniedTemplate(),
+      ensureCancellationTemplate(),
     ]);
   } catch (error) {
     console.error("Failed to ensure default templates:", error);
@@ -550,6 +756,8 @@ export async function getTemplatePreview(
       request_date: new Date().toISOString().split("T")[0],
       message: "Sample message for preview",
       support_email: "support@example.com",
+      total_paid: "100.00",
+      today_date: new Date().toISOString().split("T")[0],
       return_items: `
         <div class="item">
           <p><span class="highlight">Product:</span> Sample Product</p>
