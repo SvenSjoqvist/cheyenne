@@ -56,7 +56,7 @@ export default function Gallery({
               sizes="(min-width: 1024px) 66vw, 100vw"
               src={images[imageIndex]?.src as string}
               alt={images[imageIndex]?.altText as string}
-              priority={true}
+              priority
             />
           )}
         </div>

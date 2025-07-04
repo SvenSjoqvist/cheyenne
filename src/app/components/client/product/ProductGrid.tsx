@@ -1,22 +1,19 @@
 "use client";
 
-import React from 'react';
-import Image from 'next/image';
-import ProductItem from '@/app/components/client/product/ProductItem';
-import { Product } from '@/app/lib/shopify/types';
-
-
+import React from "react";
+import Image from "next/image";
+import ProductItem from "@/app/components/client/product/ProductItem";
+import { Product } from "@/app/lib/shopify/types";
 
 interface ProductGridProps {
   products: Product[];
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
-
-  const formatPrice = (priceRange: Product['priceRange']) => {
+  const formatPrice = (priceRange: Product["priceRange"]) => {
     const { minVariantPrice } = priceRange;
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
       currency: minVariantPrice.currencyCode,
     }).format(parseFloat(minVariantPrice.amount));
   };
@@ -30,6 +27,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
               src={product.featuredImage.url}
               alt={product.featuredImage.altText || product.title}
               fill
+              priority
               className="object-cover hover:scale-105 transition-transform duration-300"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
