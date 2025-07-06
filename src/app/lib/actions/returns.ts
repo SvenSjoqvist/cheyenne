@@ -4,11 +4,9 @@ import { prisma } from "@/app/lib/prisma/client";
 import { Return, ReturnItem } from "@/app/lib/types/returns";
 import { protectServerAction, sanitizeInput } from "@/app/lib/auth-utils";
 import { ReturnStatus } from "@prisma/client";
-import {
-  ensureDefaultTemplates,
-  getTemplateByName,
-  processTemplateFromDb,
-} from "./templates";
+import { ensureDefaultTemplates, processTemplateFromDb } from "./templates";
+import { processTemplate } from "@/app/lib/actions/templates";
+import { sendEmail } from "@/app/lib/actions/email";
 
 // Create reusable transporter object using SMTP transport
 const transporter = nodemailer.createTransport({
@@ -312,26 +310,12 @@ export async function handleReturnAction(
     // Sanitize inputs
     const sanitizedReturnId = sanitizeInput(returnId);
     const sanitizedEmail = sanitizeInput(emailTo);
-    const sanitizedMessage = sanitizeInput(message);
+    // Don't sanitize the message as it contains HTML
     const sanitizedCustomerName = sanitizeInput(resolvedCustomerName);
 
-    // Determine new status and template name
+    // Determine new status
     const newStatus: Return["status"] =
       action === "confirm" ? "APPROVED" : "REJECTED";
-    const templateName =
-      action === "confirm" ? "return_approved" : "return_denied";
-
-    // Check if template exists
-    let template = await getTemplateByName(templateName);
-
-    // If template doesn't exist, create it
-    if (!template) {
-      await ensureDefaultTemplates();
-      template = await getTemplateByName(templateName);
-      if (!template) {
-        throw new Error("Failed to create template");
-      }
-    }
 
     // Update return status
     const updatedReturn = await prisma.return.update({
@@ -346,12 +330,12 @@ export async function handleReturnAction(
       },
     });
 
-    // Process template with data
+    // Process the message with template variables
     const templateData = {
       customer_name: sanitizedCustomerName,
       order_number: updatedReturn.orderNumber,
       customer_email: updatedReturn.customerEmail,
-      message: sanitizedMessage,
+      message: message, // Use original message here
       support_email: process.env.SMTP_FROM,
       return_items: returnItemsHtml,
       request_date: updatedReturn.createdAt.toISOString().split("T")[0],
@@ -359,21 +343,17 @@ export async function handleReturnAction(
       total_paid: updatedReturn.totalPaid.toFixed(2),
     };
 
-    const emailTemplate = await processTemplateFromDb(
-      templateName,
-      templateData
-    );
-
-    if (!emailTemplate) {
-      throw new Error("Failed to process template");
-    }
+    // Process the provided message as a template
+    const processedMessage = await processTemplate(message, templateData);
 
     // Send email notification
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
+    await sendEmail({
       to: sanitizedEmail,
-      subject: emailTemplate.subject,
-      html: emailTemplate.html,
+      subject:
+        action === "confirm"
+          ? "Return Request Approved"
+          : "Return Request Denied",
+      html: processedMessage,
     });
 
     return updatedReturn;

@@ -1,9 +1,25 @@
 "use client";
 import { useUser } from "@/app/components/client/account/AccountContext";
+import { Order } from "@/app/components/client/account/AccountContext";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { sendReturnRequest, getOrderReturns } from "@/app/lib/actions/returns";
+
+// Add type for edge nodes
+type LineItemEdge = {
+  node: {
+    id: string;
+    title: string;
+    quantity: number;
+    variant: {
+      title: string;
+      image: {
+        url: string;
+      } | null;
+    } | null;
+  };
+};
 
 const RETURN_REASONS = [
   "Wrong size",
@@ -19,7 +35,18 @@ export default function RefundPage() {
   const { orders, user, customer } = useUser();
 
   const router = useRouter();
-  const order = orders.find((order) => order.orderNumber === Number(orderId));
+  const [isPageLoading, setIsPageLoading] = useState(true);
+  const [isReturnsLoading, setIsReturnsLoading] = useState(true);
+  const [order, setOrder] = useState<Order | undefined>(undefined);
+
+  // Initialize order when orders array is available
+  useEffect(() => {
+    if (orders && orders.length > 0) {
+      const foundOrder = orders.find((o) => o.orderNumber === Number(orderId));
+      setOrder(foundOrder);
+      setIsPageLoading(false);
+    }
+  }, [orders, orderId]);
 
   const [selectedItems, setSelectedItems] = useState<{
     [key: string]: boolean;
@@ -33,7 +60,6 @@ export default function RefundPage() {
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [returnedItems, setReturnedItems] = useState<Set<string>>(new Set());
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchExistingReturns = async () => {
@@ -53,15 +79,35 @@ export default function RefundPage() {
       } catch (error) {
         console.error("Error fetching existing returns:", error);
       } finally {
-        setIsLoading(false);
+        setIsReturnsLoading(false);
       }
     };
 
     fetchExistingReturns();
   }, [order]);
 
+  // Show loading state while either orders or returns are loading
+  if (isPageLoading || isReturnsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-xl">Loading...</p>
+      </div>
+    );
+  }
+
+  // Show error state if order is not found after loading
   if (!order) {
-    return <div>Order not found</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <p className="text-xl">Order not found</p>
+        <button
+          onClick={() => router.push("/account")}
+          className="px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800"
+        >
+          Return to Account
+        </button>
+      </div>
+    );
   }
 
   const handleItemSelect = (itemId: string) => {
@@ -108,7 +154,7 @@ export default function RefundPage() {
       // Prepare items for email
       const items = returnItems.map((item) => {
         const lineItem = order.lineItems.edges.find(
-          (edge) => edge.node.title === item.itemId
+          (edge: LineItemEdge) => edge.node.title === item.itemId
         );
         if (!lineItem?.node.title || !lineItem?.node.variant?.title) {
           throw new Error("Invalid item data");
@@ -136,7 +182,7 @@ export default function RefundPage() {
       // Calculate total amount for returned items only
       const totalAmount = items.reduce((total, item) => {
         const lineItem = order.lineItems.edges.find(
-          (edge) => edge.node.title === item.name
+          (edge: LineItemEdge) => edge.node.title === item.name
         );
         // Get the quantity from the current return item
         const returnQuantity = item.quantity || 1;
@@ -145,7 +191,7 @@ export default function RefundPage() {
         const unitPrice = lineItem
           ? parseFloat(order.totalPrice.amount) /
             order.lineItems.edges.reduce(
-              (sum, edge) => sum + edge.node.quantity,
+              (sum: number, edge: LineItemEdge) => sum + edge.node.quantity,
               0
             )
           : 0;
@@ -183,14 +229,6 @@ export default function RefundPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-xl">Loading...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="pt-20 bg-[#F7F7F7] min-h-screen">
       <div className="max-w-4xl mx-auto px-4">
@@ -212,7 +250,7 @@ export default function RefundPage() {
               Select Items to Return
             </h2>
             <div className="space-y-6">
-              {order.lineItems.edges.map((item) => {
+              {order.lineItems.edges.map((item: LineItemEdge) => {
                 const isReturned = returnedItems.has(
                   `${item.node.title}-${item.node.variant?.title}`
                 );

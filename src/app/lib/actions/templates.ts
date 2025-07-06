@@ -436,6 +436,9 @@ export async function getTemplates() {
 
   try {
     const templates = await prisma.emailTemplate.findMany({
+      where: {
+        creator: "USER",
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -534,8 +537,10 @@ export async function processTemplate(
 
   // Replace simple placeholders
   Object.entries(processedData).forEach(([key, value]) => {
-    const placeholder = new RegExp(`{{${key}}}`, "g");
-    processedTemplate = processedTemplate.replace(placeholder, String(value));
+    if (value !== undefined) {
+      const placeholder = new RegExp(`{{\\s*${key}\\s*}}`, "g");
+      processedTemplate = processedTemplate.replace(placeholder, String(value));
+    }
   });
 
   // Process conditional blocks
@@ -545,6 +550,20 @@ export async function processTemplate(
       return processedData[condition] ? content.trim() : "";
     }
   );
+
+  // Ensure the template has proper HTML structure
+  if (!processedTemplate.includes("<!DOCTYPE html>")) {
+    processedTemplate = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    ${processedTemplate}
+</body>
+</html>`;
+  }
 
   return processedTemplate;
 }

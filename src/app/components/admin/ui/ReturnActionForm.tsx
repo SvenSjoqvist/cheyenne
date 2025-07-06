@@ -1,19 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { handleReturnAction } from "@/app/lib/actions/returns";
+
+interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  content: string;
+  creator: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 interface ReturnActionFormProps {
   returnId: string;
   customerEmail: string;
   customerName: string | null;
+  approvedTemplate: EmailTemplate | null;
+  deniedTemplate: EmailTemplate | null;
 }
 
 export default function ReturnActionForm({
   returnId,
   customerEmail,
   customerName,
+  approvedTemplate,
+  deniedTemplate,
 }: ReturnActionFormProps) {
   const router = useRouter();
   const [action, setAction] = useState<"confirm" | "deny" | null>(null);
@@ -24,6 +38,15 @@ export default function ReturnActionForm({
     type: "success" | "error";
     message: string;
   } | null>(null);
+
+  // Update message when action changes
+  useEffect(() => {
+    if (action === "confirm" && approvedTemplate) {
+      setMessage(approvedTemplate.content);
+    } else if (action === "deny" && deniedTemplate) {
+      setMessage(deniedTemplate.content);
+    }
+  }, [action, approvedTemplate, deniedTemplate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +68,6 @@ export default function ReturnActionForm({
     setFeedback(null);
 
     try {
-      // The server action now throws errors instead of returning success/error objects
       await handleReturnAction(
         returnId,
         action,
@@ -54,7 +76,6 @@ export default function ReturnActionForm({
         customerName ?? undefined
       );
 
-      // If we get here, the action was successful
       setFeedback({
         type: "success",
         message: `Return ${
@@ -173,7 +194,7 @@ export default function ReturnActionForm({
               id="message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              rows={4}
+              rows={6}
               className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter your message to the customer..."
             />

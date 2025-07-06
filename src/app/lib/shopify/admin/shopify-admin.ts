@@ -160,7 +160,7 @@ export async function getOrders(
 
   const query = `
     query GetOrders($first: Int!, $after: String, $query: String) {
-      orders(first: $first, after: $after, query: $query) {
+      orders(first: $first, after: $after, query: $query, sortKey: CREATED_AT, reverse: true) {
         edges {
           node {
             id
@@ -863,7 +863,7 @@ export async function getCancelledOrders(
 
   const query = `
     query getCancelledOrders($first: Int!, $after: String, $query: String) {
-      orders(first: $first, after: $after, query: $query) {
+      orders(first: $first, after: $after, query: $query, sortKey: CREATED_AT, reverse: true) {
         edges {
           node {
             id

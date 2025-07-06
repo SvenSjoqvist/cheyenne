@@ -1,4 +1,5 @@
 import { getReturns } from "@/app/lib/actions/returns";
+import { getTemplateByName } from "@/app/lib/actions/templates";
 import Link from "next/link";
 import DataTable from "@/app/components/admin/DataTable";
 import ReturnCards from "@/app/components/admin/ui/EditableReturnCards";
@@ -12,8 +13,13 @@ interface PageProps {
 export default async function ReturnViewPage({ params }: PageProps) {
   const resolvedParams = await params;
   const returns = await getReturns();
-  console.log(returns);
   const returnRequest = returns.find((r) => r.id === resolvedParams.id);
+
+  // Fetch email templates
+  const [returnApprovedTemplate, returnDeniedTemplate] = await Promise.all([
+    getTemplateByName("return_approved"),
+    getTemplateByName("return_denied"),
+  ]);
 
   if (!returnRequest) {
     return (
@@ -105,6 +111,8 @@ export default async function ReturnViewPage({ params }: PageProps) {
             returnId={returnRequest.id}
             customerEmail={returnRequest.customerEmail}
             customerName={returnRequest.customerName}
+            approvedTemplate={returnApprovedTemplate}
+            deniedTemplate={returnDeniedTemplate}
           />
         )}
       </div>

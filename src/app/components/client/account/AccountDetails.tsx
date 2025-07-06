@@ -5,12 +5,18 @@ import { useState } from "react";
 
 import { updateCustomerPassword } from "@/app/lib/shopify";
 import { Customer } from "@/app/lib/shopify/types";
+
 // Define an interface for the form data
 interface CustomerFormData {
   firstName: string;
   lastName: string;
   email: string;
   newPassword: string;
+}
+
+interface Alert {
+  type: "success" | "error";
+  message: string;
 }
 
 export default function AccountDetails({ customer }: { customer: Customer }) {
@@ -20,6 +26,7 @@ export default function AccountDetails({ customer }: { customer: Customer }) {
     email: customer.email || "",
     newPassword: "",
   });
+  const [alert, setAlert] = useState<Alert | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -30,26 +37,39 @@ export default function AccountDetails({ customer }: { customer: Customer }) {
     e.preventDefault();
 
     try {
-      // Only attempt password update if both fields are provided
       if (formData.newPassword) {
         const result = await updateCustomerPassword(formData.newPassword);
 
         if (result.error) {
-          console.log(result.error);
+          setAlert({
+            type: "error",
+            message:
+              result.error || "Failed to update password. Please try again.",
+          });
         } else {
-          console.log("Your password has been updated successfully");
+          setAlert({
+            type: "success",
+            message: "Your password has been updated successfully!",
+          });
 
           // Clear password fields
           setFormData((prev) => ({
             ...prev,
             newPassword: "",
           }));
+
+          // Clear alert after 5 seconds
+          setTimeout(() => {
+            setAlert(null);
+          }, 5000);
         }
       }
     } catch (err: unknown) {
-      console.log(
-        err instanceof Error ? err.message : "Failed to update password"
-      );
+      setAlert({
+        type: "error",
+        message:
+          err instanceof Error ? err.message : "Failed to update password",
+      });
     }
   };
 
@@ -57,6 +77,20 @@ export default function AccountDetails({ customer }: { customer: Customer }) {
     <div className="p-10 flex flex-1 flex-col py-20 w-full h-screen">
       <div className="flex justify-between mb-6 flex-col font-darker-grotesque text-black">
         <h1 className="text-2xl font-medium">account details</h1>
+
+        {/* Alert Message */}
+        {alert && (
+          <div
+            className={`my-4 p-4 rounded-lg ${
+              alert.type === "success"
+                ? "bg-green-100 border border-green-400 text-green-700"
+                : "bg-red-100 border border-red-400 text-red-700"
+            }`}
+            role="alert"
+          >
+            <p className="text-sm">{alert.message}</p>
+          </div>
+        )}
 
         <div>
           <p className="text-lg">
@@ -66,40 +100,44 @@ export default function AccountDetails({ customer }: { customer: Customer }) {
           <p className="text-lg">email: {customer.email}</p>
         </div>
         <div>
-        <form onSubmit={handleSubmit}>
-  {/* Hidden username field for accessibility */}
-  <input 
-    type="email" 
-    id="username" 
-    name="username" 
-    defaultValue={customer.email || ""}
-    autoComplete="username" 
-    className="hidden"
-    aria-hidden="true"
-  />
-  
-  <div className="flex flex-col">
-    <label htmlFor="newPassword" className="text-2xl font-medium mb-1">
-      password
-    </label>
-    <input
-      type="password"
-      id="newPassword"
-      name="newPassword"
-      className="placeholder:text-black placeholder:text-sm p-2 rounded-lg border border-black w-2/3 focus:border-black focus:outline-none"
-      placeholder="****************"
-      value={formData.newPassword}
-      onChange={handleChange}
-      autoComplete="new-password"
-    />
-  </div>
-  <button
-    type="submit"
-    className="text-blackrounded-md mt-2 text-lg underline underline-offset-6 decoration-1"
-  >
-    change your password
-  </button>
-</form>
+          <form onSubmit={handleSubmit}>
+            {/* Hidden username field for accessibility */}
+            <input
+              type="email"
+              id="username"
+              name="username"
+              defaultValue={customer.email || ""}
+              autoComplete="username"
+              className="hidden"
+              aria-hidden="true"
+            />
+
+            <div className="flex flex-col">
+              <label
+                htmlFor="newPassword"
+                className="text-2xl font-medium mb-1"
+              >
+                password
+              </label>
+              <input
+                type="password"
+                id="newPassword"
+                name="newPassword"
+                className="placeholder:text-black placeholder:text-sm p-2 rounded-lg border border-black w-2/3 focus:border-black focus:outline-none"
+                placeholder="****************"
+                value={formData.newPassword}
+                onChange={handleChange}
+                autoComplete="new-password"
+              />
+            </div>
+            <button
+              type="submit"
+              className="text-black rounded-md mt-2 text-lg underline underline-offset-6 decoration-1"
+              disabled={!formData.newPassword}
+            >
+              change your password
+            </button>
+          </form>
         </div>
       </div>
     </div>
