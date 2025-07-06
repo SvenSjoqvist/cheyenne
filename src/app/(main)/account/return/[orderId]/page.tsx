@@ -110,24 +110,35 @@ export default function RefundPage() {
     );
   }
 
-  const handleItemSelect = (itemId: string) => {
+  const handleItemSelect = (itemId: string, variant: string) => {
+    const uniqueId = `${itemId}-${variant}`;
     setSelectedItems((prev) => ({
       ...prev,
-      [itemId]: !prev[itemId],
+      [uniqueId]: !prev[uniqueId],
     }));
   };
 
-  const handleReasonChange = (itemId: string, reason: string) => {
+  const handleReasonChange = (
+    itemId: string,
+    variant: string,
+    reason: string
+  ) => {
+    const uniqueId = `${itemId}-${variant}`;
     setReturnReasons((prev) => ({
       ...prev,
-      [itemId]: reason,
+      [uniqueId]: reason,
     }));
   };
 
-  const handleQuantityChange = (itemId: string, quantity: number) => {
+  const handleQuantityChange = (
+    itemId: string,
+    variant: string,
+    quantity: number
+  ) => {
+    const uniqueId = `${itemId}-${variant}`;
     setReturnQuantities((prev) => ({
       ...prev,
-      [itemId]: quantity,
+      [uniqueId]: quantity,
     }));
   };
 
@@ -138,11 +149,15 @@ export default function RefundPage() {
     // Get selected items with their reasons and quantities
     const returnItems = Object.entries(selectedItems)
       .filter(([, selected]) => selected)
-      .map(([itemId]) => ({
-        itemId,
-        reason: returnReasons[itemId] || "Not specified",
-        quantity: returnQuantities[itemId] || 1,
-      }));
+      .map(([uniqueId]) => {
+        const [itemId, variant] = uniqueId.split("-");
+        return {
+          itemId,
+          variant,
+          reason: returnReasons[uniqueId] || "Not specified",
+          quantity: returnQuantities[uniqueId] || 1,
+        };
+      });
 
     if (returnItems.length === 0) {
       alert("Please select at least one item to return");
@@ -251,20 +266,22 @@ export default function RefundPage() {
             </h2>
             <div className="space-y-6">
               {order.lineItems.edges.map((item: LineItemEdge) => {
-                const isReturned = returnedItems.has(
-                  `${item.node.title}-${item.node.variant?.title}`
-                );
+                const variant = item.node.variant?.title || "";
+                const uniqueId = `${item.node.title}-${variant}`;
+                const isReturned = returnedItems.has(uniqueId);
                 return (
                   <div
-                    key={item.node.title}
+                    key={uniqueId}
                     className="flex items-start gap-6 p-4 bg-white rounded-lg shadow-sm"
                   >
                     <div className="flex-shrink-0">
                       <input
                         type="checkbox"
-                        id={`item-${item.node.title}`}
-                        checked={selectedItems[item.node.title] || false}
-                        onChange={() => handleItemSelect(item.node.title)}
+                        id={`item-${uniqueId}`}
+                        checked={selectedItems[uniqueId] || false}
+                        onChange={() =>
+                          handleItemSelect(item.node.title, variant)
+                        }
                         disabled={isReturned}
                         className="w-5 h-5 mt-2"
                       />
@@ -291,17 +308,18 @@ export default function RefundPage() {
                               This item has already been returned
                             </p>
                           )}
-                          {selectedItems[item.node.title] && !isReturned && (
+                          {selectedItems[uniqueId] && !isReturned && (
                             <div className="mt-4 space-y-4">
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                   Reason for Return
                                 </label>
                                 <select
-                                  value={returnReasons[item.node.title] || ""}
+                                  value={returnReasons[uniqueId] || ""}
                                   onChange={(e) =>
                                     handleReasonChange(
                                       item.node.title,
+                                      variant,
                                       e.target.value
                                     )
                                   }
@@ -324,10 +342,11 @@ export default function RefundPage() {
                                   type="number"
                                   min="1"
                                   max={item.node.quantity || 1}
-                                  value={returnQuantities[item.node.title] || 1}
+                                  value={returnQuantities[uniqueId] || 1}
                                   onChange={(e) =>
                                     handleQuantityChange(
                                       item.node.title,
+                                      variant,
                                       parseInt(e.target.value)
                                     )
                                   }

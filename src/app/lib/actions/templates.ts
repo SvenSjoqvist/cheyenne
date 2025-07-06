@@ -64,159 +64,47 @@ export async function ensureReturnTemplate() {
         subject: "Return Request - Order #{{order_number}}",
         creator: "SYSTEM",
         content: `
-<!DOCTYPE html>
-<html>
-<head>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Inter', Arial, sans-serif;
-      line-height: 1.6;
-      color: #333;
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #F7F7F7;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-      padding: 20px 0;
-    }
-    .header h1 {
-      font-size: 40px;
-      font-weight: 500;
-      margin: 0;
-      color: #000;
-    }
-    .header p {
-      font-size: 16px;
-      color: #666;
-      max-width: 80%;
-      margin: 20px auto 0;
-    }
-    .section {
-      margin-bottom: 30px;
-      padding: 30px;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .section-title {
-      font-size: 32px;
-      font-weight: 500;
-      margin-bottom: 20px;
-      color: #000;
-    }
-    .item {
-      margin-bottom: 20px;
-      padding: 20px;
-      background-color: #f9f9f9;
-      border-radius: 8px;
-      border: 1px solid #eee;
-    }
-    .item p {
-      margin: 8px 0;
-    }
-    .item strong {
-      color: #000;
-    }
-    .next-steps {
-      background-color: #fff;
-      padding: 30px;
-      border-radius: 8px;
-      margin-top: 30px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .next-steps ul {
-      margin: 0;
-      padding-left: 20px;
-      list-style-type: none;
-    }
-    .next-steps li {
-      margin-bottom: 15px;
-      position: relative;
-      padding-left: 25px;
-    }
-    .next-steps li:before {
-      content: "•";
-      position: absolute;
-      left: 0;
-      color: #000;
-      font-size: 20px;
-    }
-    .footer {
-      margin-top: 40px;
-      text-align: center;
-      font-size: 14px;
-      color: #666;
-      padding-top: 20px;
-    }
-    .button {
-      display: inline-block;
-      padding: 12px 24px;
-      background-color: #000;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 4px;
-      margin-top: 20px;
-    }
-    .button:hover {
-      background-color: #333;
-    }
-    .info-text {
-      font-size: 16px;
-      color: #666;
-      margin: 10px 0;
-    }
-    .highlight {
-      color: #000;
-      font-weight: 500;
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>Return Request</h1>
-    <p>Hello {{customer_name}}, thank you for submitting your return request. We'll review it shortly and get back to you.</p>
+<div style="font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #F7F7F7;">
+  <div class="header" style="text-align: center; margin-bottom: 40px; padding: 20px 0;">
+    <h1 style="font-size: 40px; font-weight: 500; margin: 0; color: #000;">Return Request</h1>
+    <p style="font-size: 16px; color: #666; max-width: 80%; margin: 20px auto 0;">Hello {{customer_name}}, thank you for submitting your return request. We'll review it shortly and get back to you.</p>
   </div>
 
-  <div class="section">
-    <div class="section-title">Order Information</div>
-    <p class="info-text"><span class="highlight">Customer Name:</span> {{customer_name}}</p>
-    <p class="info-text"><span class="highlight">Order Number:</span> #{{order_number}}</p>
-    <p class="info-text"><span class="highlight">Customer Email:</span> {{customer_email}}</p>
-    <p class="info-text"><span class="highlight">Request Date:</span> {{request_date}}</p>
+  <div class="section" style="margin-bottom: 30px; padding: 30px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <div class="section-title" style="font-size: 32px; font-weight: 500; margin-bottom: 20px; color: #000;">Order Information</div>
+    <p class="info-text" style="font-size: 16px; color: #666; margin: 10px 0;"><span class="highlight" style="color: #000; font-weight: 500;">Customer Name:</span> {{customer_name}}</p>
+    <p class="info-text" style="font-size: 16px; color: #666; margin: 10px 0;"><span class="highlight" style="color: #000; font-weight: 500;">Order Number:</span> #{{order_number}}</p>
+    <p class="info-text" style="font-size: 16px; color: #666; margin: 10px 0;"><span class="highlight" style="color: #000; font-weight: 500;">Customer Email:</span> {{customer_email}}</p>
+    <p class="info-text" style="font-size: 16px; color: #666; margin: 10px 0;"><span class="highlight" style="color: #000; font-weight: 500;">Request Date:</span> {{request_date}}</p>
   </div>
 
-  <div class="section">
-    <div class="section-title">Items to Return</div>
+  <div class="section" style="margin-bottom: 30px; padding: 30px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <div class="section-title" style="font-size: 32px; font-weight: 500; margin-bottom: 20px; color: #000;">Items to Return</div>
     {{return_items}}
   </div>
 
   {{#if additional_notes}}
-  <div class="section">
-    <div class="section-title">Additional Notes</div>
-    <p class="info-text">{{additional_notes}}</p>
+  <div class="section" style="margin-bottom: 30px; padding: 30px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <div class="section-title" style="font-size: 32px; font-weight: 500; margin-bottom: 20px; color: #000;">Additional Notes</div>
+    <p class="info-text" style="font-size: 16px; color: #666; margin: 10px 0;">{{additional_notes}}</p>
   </div>
   {{/if}}
 
-  <div class="next-steps">
-    <div class="section-title">Next Steps</div>
-    <ul>
-      <li>Our team will review your return request within 2-3 business days</li>
-      <li>If approved, you'll receive return shipping instructions</li>
-      <li>Once we receive and inspect the items, we'll process your refund</li>
-      <li>If you have any questions about your return request, please contact our customer service team</li>
+  <div class="next-steps" style="background-color: #fff; padding: 30px; border-radius: 8px; margin-top: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <div class="section-title" style="font-size: 32px; font-weight: 500; margin-bottom: 20px; color: #000;">Next Steps</div>
+    <ul style="margin: 0; padding-left: 20px; list-style-type: none;">
+      <li style="margin-bottom: 15px; position: relative; padding-left: 25px;">Our team will review your return request within 2-3 business days</li>
+      <li style="margin-bottom: 15px; position: relative; padding-left: 25px;">If approved, you'll receive return shipping instructions</li>
+      <li style="margin-bottom: 15px; position: relative; padding-left: 25px;">Once we receive and inspect the items, we'll process your refund</li>
+      <li style="margin-bottom: 15px; position: relative; padding-left: 25px;">If you have any questions about your return request, please contact our customer service team</li>
     </ul>
   </div>
 
-  <div class="footer">
+  <div class="footer" style="margin-top: 40px; text-align: center; font-size: 14px; color: #666; padding-top: 20px;">
     <p>Kilaeko Customer Service</p>
-    <a href="mailto:{{support_email}}" class="button">Contact Support</a>
+    <a href="mailto:{{support_email}}" style="display: inline-block; padding: 12px 24px; background-color: #000; color: #fff; text-decoration: none; border-radius: 4px; margin-top: 20px;">Contact Support</a>
   </div>
-</body>
-</html>
+</div>
         `,
       };
       await prisma.emailTemplate.create({ data });
@@ -519,7 +407,8 @@ interface TemplateData {
 
 export async function processTemplate(
   template: string,
-  data: TemplateData
+  data: TemplateData,
+  isSubject: boolean = false
 ): Promise<string> {
   let processedTemplate = template;
   const processedData = { ...data };
@@ -543,7 +432,12 @@ export async function processTemplate(
     }
   });
 
-  // Process conditional blocks
+  // If this is a subject line, return it as is without any HTML processing
+  if (isSubject) {
+    return processedTemplate;
+  }
+
+  // Process conditional blocks for content
   processedTemplate = processedTemplate.replace(
     /{{#if\s+([^}]+)}}([\s\S]*?){{\/if}}/g,
     (match, condition, content) => {
@@ -551,18 +445,19 @@ export async function processTemplate(
     }
   );
 
-  // Ensure the template has proper HTML structure
-  if (!processedTemplate.includes("<!DOCTYPE html>")) {
-    processedTemplate = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body>
+  // Extract the body content if it exists
+  const bodyMatch = processedTemplate.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  if (bodyMatch) {
+    // If we have a body tag, just use its contents
+    processedTemplate = bodyMatch[1].trim();
+  }
+
+  // Wrap in a minimal HTML structure if needed
+  if (!processedTemplate.includes("<body")) {
+    processedTemplate = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
     ${processedTemplate}
-</body>
-</html>`;
+</div>`;
   }
 
   return processedTemplate;
@@ -597,8 +492,12 @@ export async function processTemplateFromDb(
       return null;
     }
 
-    const processedSubject = await processTemplate(template.subject, data);
-    const processedHtml = await processTemplate(template.content, data);
+    const processedSubject = await processTemplate(
+      template.subject,
+      data,
+      true
+    );
+    const processedHtml = await processTemplate(template.content, data, false);
 
     return {
       subject: processedSubject,

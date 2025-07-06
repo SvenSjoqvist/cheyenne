@@ -59,10 +59,17 @@ export async function sendReturnRequest(
     // Check for existing returns
     const existingReturns = await getOrderReturns(orderNumber);
 
-    // Use provided customer name or fallback, ensuring string type and getting first name
-    const resolvedCustomerName: string = getFirstName(
-      customerName ?? "Valued Customer"
-    );
+    // Validate that there are no pending or approved returns for this order
+    if (existingReturns.length > 0) {
+      const activeReturn = existingReturns.find(
+        (ret) => ret.status === "PENDING" || ret.status === "APPROVED"
+      );
+      if (activeReturn) {
+        throw new Error(
+          `A return request for order #${orderNumber} already exists and is ${activeReturn.status.toLowerCase()}`
+        );
+      }
+    }
 
     // Create a map of already returned items and their quantities
     const returnedItems = new Map<string, number>();
@@ -79,10 +86,15 @@ export async function sendReturnRequest(
       const returnedQuantity = returnedItems.get(key) || 0;
       if (returnedQuantity > 0) {
         throw new Error(
-          `Item "${item.name} (${item.variant})" has already been returned`
+          `Item ${item.name} (${item.variant}) has already been returned`
         );
       }
     }
+
+    // Use provided customer name or fallback, ensuring string type and getting first name
+    const resolvedCustomerName: string = getFirstName(
+      customerName ?? "Valued Customer"
+    );
 
     // Create return record in database with proper type
     const returnRecord = await prisma.return.create({
