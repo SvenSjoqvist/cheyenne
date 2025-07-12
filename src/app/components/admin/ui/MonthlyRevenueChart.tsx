@@ -12,6 +12,17 @@ interface MonthlyRevenueChartProps {
   data: MonthlyRevenueData[];
 }
 
+// Function to determine bar color based on revenue amount
+function getBarColor(revenue: number): string {
+  if (revenue <= 500) {
+    return '#A3D2EC';
+  } else if (revenue <= 1000) {
+    return '#5FADE7';
+  } else {
+    return '#0B6EB7';
+  }
+}
+
 export default function MonthlyRevenueChart({ data }: MonthlyRevenueChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -51,8 +62,8 @@ export default function MonthlyRevenueChart({ data }: MonthlyRevenueChartProps) 
       const barHeight = item.revenue * scale;
       const y = height - padding - barHeight;
 
-      // Draw bar
-      ctx.fillStyle = '#212121';
+      // Draw bar with color based on revenue amount
+      ctx.fillStyle = getBarColor(item.revenue);
       ctx.fillRect(x, y, barWidth, barHeight);
 
       // Draw value on top of bar

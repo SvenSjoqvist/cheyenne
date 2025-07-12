@@ -1,6 +1,11 @@
+"use client";
 import Link from "next/link";
 import Image from "next/image";
 import { NewsLetter } from "./footer/newsLetter";
+import { useState } from "react";
+import AuthModals from "./account/form";
+import { getCookies } from "./account/actions";
+import { useRouter } from "next/navigation";
 
 type FooterSection = {
   title: string;
@@ -17,8 +22,6 @@ const footerSections: FooterSection[] = [
     links: [
       { label: "Contact", href: "/contact" },
       { label: "Size & Fit", href: "/size-guide" },
-      /*{ label: "Track an Order", href: "/order-tracking" },*/
-      /*{ label: "Shipping & Delivery", href: "/shipping" },*/
       { label: "Account", href: "/account" },
       { label: "FAQ", href: "/faq" },
     ],
@@ -59,6 +62,30 @@ const footerSections: FooterSection[] = [
 ];
 
 export const Footer = () => {
+  const [showModal, setShowModal] = useState(false);
+  const router = useRouter();
+
+  const handleAccountClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Only handle the Account link
+    const target = e.currentTarget;
+    if (target.textContent?.trim() === "Account") {
+      e.preventDefault();
+      
+      try {
+        const hasCookie = await getCookies({ cookieName: "customerAccessToken" });
+        if (hasCookie) {
+          router.push("/account");
+        } else {
+          setShowModal(true);
+        }
+      } catch (error) {
+        console.error("Error checking authentication:", error);
+        // Fallback to showing the modal
+        setShowModal(true);
+      }
+    }
+  };
+
   return (
     <footer className="flex flex-col items-center pt-8 w-full border-t bg-neutral-100 border-zinc-200">
       <div className="flex flex-wrap gap-1.5 items-start w-full px-8">
@@ -83,6 +110,7 @@ export const Footer = () => {
                   rel={
                     link.href.startsWith("http") ? "noopener noreferrer" : ""
                   }
+                  onClick={handleAccountClick}
                 >
                   {link.label}
                 </Link>
@@ -110,6 +138,8 @@ export const Footer = () => {
           <span>&copy; Kilaeko 2025</span>
         </p>
       </div>
+
+      {showModal && <AuthModals onClose={() => setShowModal(false)} />}
     </footer>
   );
 };

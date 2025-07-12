@@ -93,7 +93,7 @@ export default function Reviews({ productName }: ReviewsProps) {
             <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
               <div>
                 <span className="font-medium">Fit:</span>{' '}
-                {review.fitRating.replace('_', ' ').toLowerCase()}
+                {review.fitRating.replace(/_/g, ' ').toLowerCase()}
               </div>
               {review.height && (
                 <div>

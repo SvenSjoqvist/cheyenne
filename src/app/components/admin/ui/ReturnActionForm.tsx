@@ -25,7 +25,6 @@ interface ReturnActionFormProps {
 export default function ReturnActionForm({
   returnId,
   customerEmail,
-  customerName,
   approvedTemplate,
   deniedTemplate,
 }: ReturnActionFormProps) {
@@ -72,8 +71,7 @@ export default function ReturnActionForm({
         returnId,
         action,
         emailTo,
-        message,
-        customerName ?? undefined
+        message
       );
 
       setFeedback({

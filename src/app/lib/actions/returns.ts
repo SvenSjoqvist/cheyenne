@@ -91,10 +91,8 @@ export async function sendReturnRequest(
       }
     }
 
-    // Use provided customer name or fallback, ensuring string type and getting first name
-    const resolvedCustomerName: string = getFirstName(
-      customerName ?? "Valued Customer"
-    );
+    // Use provided customer name or fallback
+    const resolvedCustomerName: string = customerName ?? "Valued Customer";
 
     // Create return record in database with proper type
     const returnRecord = await prisma.return.create({
@@ -144,9 +142,9 @@ export async function sendReturnRequest(
       )
       .join("");
 
-    // Process template with data
+    // Process template with data - use first name for email template
     const emailTemplate = await processTemplateFromDb("return_request", {
-      customer_name: resolvedCustomerName,
+      customer_name: getFirstName(resolvedCustomerName),
       order_number: orderNumber,
       customer_email: customerEmail,
       request_date: new Date().toISOString().split("T")[0],
@@ -281,8 +279,7 @@ export async function handleReturnAction(
   returnId: string,
   action: "confirm" | "deny",
   emailTo: string,
-  message: string,
-  customerName?: string
+  message: string
 ) {
   try {
     // Protect admin function
@@ -300,10 +297,8 @@ export async function handleReturnAction(
       throw new Error("Return record not found");
     }
 
-    // Use provided customer name or fallback, ensuring string type and getting first name
-    const resolvedCustomerName: string = getFirstName(
-      customerName ?? "Valued Customer"
-    );
+    // Use customer name from database record or fallback
+    const resolvedCustomerName: string = returnRecord.customerName ?? "Valued Customer";
 
     // Generate return items HTML
     const returnItemsHtml = returnRecord.items
@@ -323,7 +318,7 @@ export async function handleReturnAction(
     const sanitizedReturnId = sanitizeInput(returnId);
     const sanitizedEmail = sanitizeInput(emailTo);
     // Don't sanitize the message as it contains HTML
-    const sanitizedCustomerName = sanitizeInput(resolvedCustomerName);
+    const sanitizedCustomerName = sanitizeInput(getFirstName(resolvedCustomerName));
 
     // Determine new status
     const newStatus: Return["status"] =

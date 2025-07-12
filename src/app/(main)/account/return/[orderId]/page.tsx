@@ -194,6 +194,11 @@ export default function RefundPage() {
         throw new Error("Customer ID not found");
       }
 
+      // Get full customer name (first name + last name)
+      const fullCustomerName = customer?.firstName && customer?.lastName 
+        ? `${customer.firstName} ${customer.lastName}`
+        : customer?.firstName || customer?.lastName || undefined;
+
       // Calculate total amount for returned items only
       const totalAmount = items.reduce((total, item) => {
         const lineItem = order.lineItems.edges.find(
@@ -214,7 +219,7 @@ export default function RefundPage() {
         return total + unitPrice * returnQuantity;
       }, 0);
 
-      // Send return request using server action with customer name
+      // Send return request using server action with full customer name
       await sendReturnRequest(
         order.orderNumber,
         order.id,
@@ -222,7 +227,7 @@ export default function RefundPage() {
         additionalNotes,
         customerEmail,
         customerId,
-        customer?.firstName === null ? undefined : customer?.firstName,
+        fullCustomerName,
         totalAmount // Pass the calculated total for returned items only
       );
 

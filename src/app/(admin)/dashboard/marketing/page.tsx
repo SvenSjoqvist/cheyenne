@@ -45,7 +45,7 @@ export default function Subscribers() {
         await ensureWelcomeTemplate();
 
         const templatesData = await getTemplates();
-        setTemplates(templatesData);
+        setTemplates(templatesData as EmailTemplate[]);
       } catch (error) {
         console.error("Error fetching templates:", error);
         setError("Failed to load templates");
@@ -65,7 +65,7 @@ export default function Subscribers() {
         subject,
         newsletterContent
       );
-      setTemplates([template, ...templates]);
+      setTemplates([template, ...templates] as EmailTemplate[]);
       setSuccess("Template created successfully!");
       setTemplateName("");
     } catch (error) {
@@ -117,8 +117,8 @@ export default function Subscribers() {
 
       setTemplates(
         templates.map((t) =>
-          t.id === editingTemplate.id ? updatedTemplate : t
-        )
+          t.id === editingTemplate.id ? (updatedTemplate as EmailTemplate) : t
+        ) as EmailTemplate[]
       );
 
       setSuccess("Template updated successfully!");
@@ -199,6 +199,19 @@ export default function Subscribers() {
               Marketing
             </h1>
           </div>
+
+          {error && (
+            <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg mb-6">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg mb-6">
+              {success}
+            </div>
+          )}
+
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex flex-col gap-4 w-full">
               <h2 className="text-[22px] sm:text-[26px] font-darker-grotesque tracking-wider font-semibold">
@@ -373,18 +386,6 @@ export default function Subscribers() {
           </div>
         </div>
       </div>
-
-      {error && (
-        <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-          {success}
-        </div>
-      )}
     </div>
   );
 }

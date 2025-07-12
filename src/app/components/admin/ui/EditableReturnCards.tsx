@@ -21,6 +21,7 @@ type Return = {
   orderNumber: number;
   customerId: string;
   customerEmail: string;
+  customerName: string | null;
   status: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED";
   additionalNotes: string | null;
   items: ReturnItem[];
@@ -31,6 +32,24 @@ interface ReturnCardsProps {
 }
 
 export default function ReturnCards({ returnRequest }: ReturnCardsProps) {
+  // Parse customer name into first and last name
+  const parseCustomerName = (fullName: string | null) => {
+    if (!fullName) return { firstName: 'N/A', lastName: 'N/A' };
+    
+    const nameParts = fullName.trim().split(' ');
+    if (nameParts.length === 1) {
+      return { firstName: nameParts[0], lastName: 'N/A' };
+    } else if (nameParts.length >= 2) {
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ');
+      return { firstName, lastName };
+    }
+    
+    return { firstName: 'N/A', lastName: 'N/A' };
+  };
+
+  const { firstName, lastName } = parseCustomerName(returnRequest.customerName);
+
   return (
     <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 w-full mb-8">
       <div className="flex-1 min-w-0">
@@ -48,7 +67,7 @@ export default function ReturnCards({ returnRequest }: ReturnCardsProps) {
                     <div className="break-words">First Name</div>
                   </td>
                   <td className="text-black text-xs sm:text-sm lg:text-base font-regular font-darker-grotesque py-2 sm:py-3 px-3 sm:px-4 md:px-6 w-2/3 align-top">
-                    <div className="break-words">{returnRequest.customerEmail.split('@')[0]}</div>
+                    <div className="break-words">{firstName}</div>
                   </td>
                 </tr>
                 <tr className="border-b border-[#E0E0E0]">
@@ -56,7 +75,7 @@ export default function ReturnCards({ returnRequest }: ReturnCardsProps) {
                     <div className="break-words">Last Name</div>
                   </td>
                   <td className="text-black text-xs sm:text-sm lg:text-base font-regular font-darker-grotesque py-2 sm:py-3 px-3 sm:px-4 md:px-6 w-2/3 align-top">
-                    <div className="break-words">N/A</div>
+                    <div className="break-words">{lastName}</div>
                   </td>
                 </tr>
                 <tr className="border-b border-[#E0E0E0]">
@@ -98,7 +117,7 @@ export default function ReturnCards({ returnRequest }: ReturnCardsProps) {
                         <div className="break-words">Product Name</div>
                       </td>
                       <td className="text-black text-xs sm:text-sm lg:text-base font-regular font-darker-grotesque py-2 sm:py-3 px-3 sm:px-4 md:px-6 w-2/3 align-top">
-                        <div className="break-words">{item.productName}</div>
+                        <div className="break-words">{item.productName} {item.variant}</div>
                       </td>
                     </tr>
                     <tr className="border-b border-[#E0E0E0]">
@@ -122,7 +141,7 @@ export default function ReturnCards({ returnRequest }: ReturnCardsProps) {
                         <div className="break-words">More Info</div>
                       </td>
                       <td className="text-black text-xs sm:text-sm lg:text-base font-regular font-darker-grotesque py-2 sm:py-3 px-3 sm:px-4 md:px-6 w-2/3 align-top">
-                        <div className="break-words">{item.variant}</div>
+                        <div className="break-words">{returnRequest.additionalNotes || 'N/A'}</div>
                       </td>
                     </tr>
                   </React.Fragment>
