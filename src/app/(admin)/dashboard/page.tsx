@@ -1,54 +1,39 @@
-"use client";
-
-import { useDashboard } from "@/app/components/admin/DashboardContext";
+import { getDashboardData, getSalesData, getMonthlyRevenueData } from "@/app/lib/actions/dashboard";
+import { getOrderStatusBreakdown } from "@/app/lib/shopify/admin/shopify-admin";
 import PieChart from "@/app/components/admin/PieChart";
 import WorldMap from "@/app/components/admin/WorldMap";
-import { useState } from "react";
-import { revalidateProducts } from "@/app/lib/actions/cache";
-import { signOut } from "next-auth/react";
+import DashboardError from "@/app/components/admin/DashboardError";
+import DashboardWrapper from "@/app/components/admin/DashboardWrapper";
 
-export default function DashboardPage() {
-  const { data, loading, error, refreshData } = useDashboard();
-  const [showQuickActions, setShowQuickActions] = useState(false);
-  const [isRevalidating, setIsRevalidating] = useState(false);
+export default async function DashboardPage() {
+  // Fetch all required dashboard data server-side
+  const dashboardRes = await getDashboardData();
+  const salesRes = await getSalesData();
+  const monthlyRevenueRes = await getMonthlyRevenueData();
+  const orderStatusBreakdown = await getOrderStatusBreakdown();
 
-  const handleRevalidateProducts = async () => {
-    try {
-      setIsRevalidating(true);
-      await revalidateProducts();
-      // Refresh dashboard data after revalidation
-      await refreshData();
-      setShowQuickActions(false);
-    } catch (error) {
-      console.error("Failed to revalidate products:", error);
-    } finally {
-      setIsRevalidating(false);
-    }
+  if (!dashboardRes.success || !salesRes.success || !monthlyRevenueRes.success) {
+    return (
+      <DashboardError error={dashboardRes.error || salesRes.error || monthlyRevenueRes.error || "Failed to fetch dashboard data"} onRetry={async () => {}} />
+    );
+  }
+
+  // Extract numbers from shop.shop (strings)
+  const totalOrders = Number(dashboardRes.data.countryOrders.totalOrders ?? dashboardRes.data.shop?.totalOrders ?? 0);
+  const totalProducts = Number(dashboardRes.data.shop?.totalProducts ?? 0);
+  const todaysOrders = salesRes.data.todaysOrders;
+  const awaitingShipment = orderStatusBreakdown.fulfillmentStatusCounts["Awaiting shipment"] || 0;
+
+  // Merge all data into a single object for the client
+  const data = {
+    ...dashboardRes.data,
+    sales: salesRes.data,
+    monthlyRevenue: monthlyRevenueRes.data,
+    totalOrders,
+    totalProducts,
+    todaysOrders,
+    awaitingShipment,
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-xl">Loading dashboard...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-xl text-red-600 mb-4">{error}</p>
-          <button
-            onClick={refreshData}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="p-9.5 bg-white">
@@ -157,31 +142,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="mt-4 relative flex justify-center">
-        {showQuickActions && (
-          <div className="absolute bottom-full mb-2 bg-[#212121] rounded-lg shadow-lg border border-gray-200 p-2 w-38 transform transition-all duration-200 ease-in-out">
-            <button
-              className="w-full text-center px-4 py-2 hover:opacity-80 rounded-md cursor-pointer text-white font-darker-grotesque whitespace-nowrap font-medium"
-              onClick={() => signOut({ callbackUrl: "/admin/login" })}
-            >
-              Log out
-            </button>
-            <button
-              onClick={handleRevalidateProducts}
-              disabled={isRevalidating}
-              className="w-full text-center px-4 py-2 hover:opacity-80 cursor-pointer rounded-md text-white font-darker-grotesque whitespace-nowrap font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isRevalidating ? "Revalidating..." : "Revalidate Products"}
-            </button>
-          </div>
-        )}
-        <button
-          onClick={() => setShowQuickActions(!showQuickActions)}
-          className="w-38 cursor-pointer px-6 py-2.5 bg-[#212121] text-white font-semibold rounded-lg transition-colors font-darker-grotesque text-lg flex items-center justify-center gap-2"
-        >
-          Quick Actions
-        </button>
-      </div>
+      {/* Quick Actions (client) */}
+      <DashboardWrapper data={data} />
     </div>
   );
 }

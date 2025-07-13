@@ -174,13 +174,6 @@ export default async function ContactPage() {
       </div>
 
       <div>
-        <p className="text-[14px] sm:text-[16px] font-darker-grotesque tracking-wider font-medium mt-4 sm:mt-7 text-center px-4">
-          For detailed sizing information and fit notes, refer to the guide
-          below before placing your order.
-        </p>
-      </div>
-
-      <div>
         <h1 className="text-[32px] sm:text-[32px] font-darker-grotesque tracking-wider font-medium mt-4 sm:mt-7 text-center px-4">
           Sizing Concerns
         </h1>

@@ -81,7 +81,6 @@ const TOP_COUNTRY_COLORS = [
 ];
 
 export default function WorldMap({ countryData }: WorldMapProps) {
-  console.log(countryData);
   const [svgContent, setSvgContent] = useState<string>('');
 
   const { topCountries, countryColorMap } = useMemo(() => {

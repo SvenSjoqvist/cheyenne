@@ -17,7 +17,8 @@ const PieChart: React.FC<PieChartProps> = ({ data, title }) => {
   const radius = 139;
   const labelOffset = 3;
   const total = data.reduce((sum, item) => sum + item.value, 0);
-
+  console.log(data);
+  console.log(total);
   if (total === 0) {
     return (
       <div className="flex items-center justify-center h-64">
