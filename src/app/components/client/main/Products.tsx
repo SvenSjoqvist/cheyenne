@@ -19,7 +19,7 @@ const ProductSection = ({
 
   // Helper function to format price
   const formatPrice = (amount: string) => {
-    return `${amount}€`;
+    return `$${amount}`;
   };
 
   // Helper function to get clean title
