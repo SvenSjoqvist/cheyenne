@@ -418,19 +418,19 @@ export default function Reviews() {
                               <label className="block text-sm font-medium text-gray-900 mb-2">
                                 Rating
                               </label>
-                              <div className="flex gap-2">
+                              <div className="flex gap-1">
                                 {[1, 2, 3, 4, 5].map((rating) => (
                                   <button
                                     key={rating}
                                     type="button"
                                     onClick={() => handleRatingChange(node.title, rating)}
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
-                                      ratings[node.title] === rating
-                                        ? 'bg-black text-white'
-                                        : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                                    className={`text-2xl transition-colors hover:scale-110 ${
+                                      ratings[node.title] >= rating
+                                        ? 'text-yellow-400'
+                                        : 'text-gray-300'
                                     }`}
                                   >
-                                    {rating}
+                                    ★
                                   </button>
                                 ))}
                               </div>

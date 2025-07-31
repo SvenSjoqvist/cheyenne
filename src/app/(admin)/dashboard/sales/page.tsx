@@ -8,6 +8,50 @@ import { exportSalesDataToCSV } from "@/app/lib/utils/csvExport";
 export default function Sales() {
   const { data, loading, error, refreshData } = useDashboard();
 
+  // Function to extract number from formatted currency string
+  const extractNumber = (formattedValue: string): number => {
+    return parseFloat(formattedValue.replace(/[^0-9.-]+/g, ''));
+  };
+
+  // Function to format numbers with k/m suffixes
+  const formatNumber = (num: number, addCurrency = false): string => {
+    const prefix = addCurrency ? '$' : '';
+    
+    if (num >= 1000000) {
+      const formatted = (num / 1000000).toFixed(1);
+      return prefix + (formatted.endsWith('.0') ? formatted.slice(0, -2) : formatted) + 'm';
+    }
+    if (num >= 1000) {
+      const formatted = (num / 1000).toFixed(1);
+      return prefix + (formatted.endsWith('.0') ? formatted.slice(0, -2) : formatted) + 'k';
+    }
+    return prefix + Math.round(num).toString();
+  };
+
+  // Format currency values by extracting number and reformatting
+  const formatCurrency = (formattedValue: string): string => {
+    const numericValue = extractNumber(formattedValue);
+    return formatNumber(numericValue, true);
+  };
+
+  // Calculate daily average (total revenue divided by number of days estimated from months)
+  const calculateDailyAverage = (): string => {
+    if (data.monthlyRevenue.length === 0) return '$0';
+    const totalRevenue = data.sales.totalRevenue.amount;
+    const monthsWithData = data.monthlyRevenue.length;
+    const estimatedDays = monthsWithData * 30; // Rough estimate
+    const dailyAvg = totalRevenue / estimatedDays;
+    return formatNumber(dailyAvg, true);
+  };
+
+  // Calculate monthly average from monthlyRevenue data
+  const calculateMonthlyAverage = (): string => {
+    if (data.monthlyRevenue.length === 0) return '$0';
+    const totalMonthlyRevenue = data.monthlyRevenue.reduce((sum, month) => sum + month.revenue, 0);
+    const monthlyAvg = totalMonthlyRevenue / data.monthlyRevenue.length;
+    return formatNumber(monthlyAvg, true);
+  };
+
   const handleExportCSV = () => {
     exportSalesDataToCSV(
       data.monthlyRevenue,
@@ -49,10 +93,12 @@ export default function Sales() {
         </div>
         
         {/* Sales Cards */}
-        <div className="flex flex-row gap-8 w-full mb-8">
-          <SalesCard title="Total Revenue" value={data.sales.totalRevenue.formatted} />
-          <SalesCard title="Today's Revenue" value={data.sales.todaysRevenue.formatted} />
-          <SalesCard title="Total Orders" value={data.sales.totalOrders.toString()} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 w-full mb-8">
+          <SalesCard title="Total Revenue" value={formatCurrency(data.sales.totalRevenue.formatted)} />
+          <SalesCard title="Monthly Average" value={calculateMonthlyAverage()} />
+          <SalesCard title="Daily Average" value={calculateDailyAverage()} />
+          <SalesCard title="Today's Revenue" value={formatCurrency(data.sales.todaysRevenue.formatted)} />
+          <SalesCard title="Total Orders" value={formatNumber(data.sales.totalOrders)} />
         </div>
 
         {/* Monthly Revenue Chart */}

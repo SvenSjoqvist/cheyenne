@@ -117,9 +117,9 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
   if (orders.length === 0) {
     return (
       <div className="p-10 flex flex-2 flex-col py-20 w-full h-full">
-        <h1 className="text-3xl font-bold mb-2 font-[bero]">Order History</h1>
+        <h1 className="text-3xl font-medium mb-2 font-darker-grotesque">Order History</h1>
         <div className="text-left">
-          <p className="mb-4 font-[bero]">
+          <p className="mb-4 font-darker-grotesque">
             You don&apos;t have any orders yet.
           </p>{" "}
         </div>
@@ -128,195 +128,242 @@ export default function OrderHistory({ orders }: { orders: Order[] }) {
   }
 
   return (
-    <div className="p-10 flex flex-2 flex-col py-20 w-full h-full">
-      <h1 className="text-3xl font-bold mb-6 font-[bero]">Order History</h1>
+    <div className="p-4 lg:p-10 w-full">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-2xl lg:text-3xl font-semibold mb-6 font-darker-grotesque mt-8">Order History</h1>
 
-      <div className="overflow-x-auto w-full">
-        <table className="min-w-full border border-gray-300">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border border-gray-300 p-3 text-left font-semibold">
-                Order
-              </th>
-              <th className="border border-gray-300 p-3 text-left font-semibold">
-                Date
-              </th>
-              <th className="border border-gray-300 p-3 text-left font-semibold">
-                Payment Status
-              </th>
-              <th className="border border-gray-300 p-3 text-left font-semibold">
-                Fulfillment Status
-              </th>
-              <th className="border border-gray-300 p-3 text-left font-semibold">
-                Total
-              </th>
-              <th className="border border-gray-300 p-3 text-left font-semibold">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <React.Fragment key={order.id}>
-                <tr
-                  className="hover:bg-gray-50 cursor-pointer"
+        {/* Mobile Card Layout */}
+        <div className="lg:hidden space-y-4">
+          {orders.map((order) => (
+            <div key={order.id} className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="font-semibold text-lg">Order #{order.orderNumber}</h3>
+                    <p className="text-sm text-gray-600">{formatDate(order.processedAt)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold">
+                      {formatCurrency(order.totalPrice.amount, order.totalPrice.currencyCode)}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-4 mb-3">
+                  <span className={`px-2 py-1 text-xs rounded ${
+                    order.financialStatus === "PAID" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                  }`}>
+                    {order.financialStatus}
+                  </span>
+                  <span className={`px-2 py-1 text-xs rounded ${
+                    order.fulfillmentStatus === "FULFILLED" ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"
+                  }`}>
+                    {order.fulfillmentStatus}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-2 text-sm">
+                  <button
+                    className="text-blue-600 hover:underline"
+                    onClick={() => router.push(`/account/return/${order.orderNumber}`)}
+                  >
+                    Request Return
+                  </button>
+                  <button
+                    className="text-blue-600 hover:underline"
+                    onClick={() => router.push(`/account/review/${order.orderNumber}`)}
+                  >
+                    Create Review
+                  </button>
+                  {isOrderEditable(order) && (
+                    <button
+                      className="text-red-600 hover:underline"
+                      onClick={(e) => handleCancelOrder(order.id, order.orderNumber, e)}
+                      disabled={isCanceling}
+                    >
+                      {cancelingOrderId === order.id ? "Confirm Cancel" : "Cancel Order"}
+                    </button>
+                  )}
+                  <button className="text-blue-600 hover:underline">Reorder</button>
+                </div>
+
+                <button
+                  className="w-full mt-3 py-2 text-sm text-gray-600 border-t border-gray-200 hover:bg-gray-50"
                   onClick={() => toggleOrderDetails(order.id)}
                 >
-                  <td className="border border-gray-300 p-3 font-medium">
-                    {order.orderNumber}
-                  </td>
-                  <td className="border border-gray-300 p-3">
-                    {formatDate(order.processedAt)}
-                  </td>
-                  <td className="border border-gray-300 p-3">
-                    <span
-                      className={`px-2 py-1 text-xs ${
-                        order.financialStatus === "PAID"
-                          ? "text-green-800"
-                          : "text-yellow-800"
-                      }`}
-                    >
-                      {order.financialStatus}
-                    </span>
-                  </td>
-                  <td className="border border-gray-300 p-3">
-                    <span
-                      className={`px-2 py-1 text-xs ${
-                        order.fulfillmentStatus === "FULFILLED"
-                          ? "text-green-800"
-                          : "text-orange-800"
-                      }`}
-                    >
-                      {order.fulfillmentStatus}
-                    </span>
-                  </td>
-                  <td className="border border-gray-300 p-3 font-medium">
-                    {formatCurrency(
-                      order.totalPrice.amount,
-                      order.totalPrice.currencyCode
-                    )}
-                  </td>
-                  <td className="border border-gray-300 p-3">
-                    <div className="flex flex-col space-y-1">
-                      <button
-                        className="text-xs text-blue-600 hover:underline cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(`/account/return/${order.orderNumber}`);
-                        }}
-                      >
-                        Request Return
-                      </button>
-                      <button
-                        className="text-xs text-blue-600 hover:underline cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(`/account/review/${order.orderNumber}`);
-                        }}
-                      >
-                        Create Review
-                      </button>
-                      {isOrderEditable(order) && (
-                        <button
-                          className="text-xs text-red-600 hover:underline cursor-pointer"
-                          onClick={(e) =>
-                            handleCancelOrder(order.id, order.orderNumber, e)
-                          }
-                          disabled={isCanceling}
-                        >
-                          {cancelingOrderId === order.id
-                            ? "Confirm Cancel"
-                            : "Cancel Order"}
-                        </button>
-                      )}
-                      <button className="text-xs text-blue-600 hover:underline cursor-pointer">
-                        Reorder
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                {expandedOrder === order.id && (
-                  <tr>
-                    <td colSpan={6} className="border border-gray-300 p-0">
-                      <div className="p-4 bg-gray-50">
-                        <h3 className="font-semibold mb-2">Items</h3>
-                        <div className="grid gap-4">
-                          {order.lineItems.edges.map((edge, index) => (
-                            <div
-                              key={`item-${order.id}-${index}`}
-                              className="flex items-center border-b border-gray-200 pb-2"
-                            >
-                              {edge.node.variant?.image?.url && (
-                                <div className="w-16 h-16 mr-4 relative">
-                                  <Image
-                                    src={edge.node.variant.image.url}
-                                    alt={edge.node.title}
-                                    fill
-                                    sizes="64px"
-                                    style={{ objectFit: "cover" }}
-                                    className="rounded"
-                                  />
-                                </div>
-                              )}
-                              <div className="flex-grow">
-                                <p className="font-medium">{edge.node.title}</p>
-                                {edge.node.variant?.title !==
-                                  "Default Title" && (
-                                  <p className="text-sm text-gray-600">
-                                    {edge.node.variant?.title}
-                                  </p>
-                                )}
-                                <div className="flex items-center mt-1">
-                                  {reviewOrder === order.id ? (
-                                    <>
-                                      <label className="text-sm mr-2">
-                                        Quantity:
-                                      </label>
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        defaultValue={edge.node.quantity}
-                                        className="w-16 p-1 border border-gray-300 rounded"
-                                      />
-                                      <button className="ml-4 text-xs text-red-600 hover:underline">
-                                        Remove
-                                      </button>
-                                    </>
-                                  ) : (
-                                    <p className="text-sm">
-                                      Quantity: {edge.node.quantity}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                  {expandedOrder === order.id ? "Hide Details" : "View Details"}
+                </button>
 
-                        {reviewOrder === order.id && (
-                          <div className="mt-4 flex justify-end space-x-3">
-                            <button
-                              className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-                              onClick={() => setReviewOrder(null)}
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                              onClick={() => setReviewOrder(null)}
-                            >
-                              Save Changes
-                            </button>
+                {expandedOrder === order.id && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <h4 className="font-semibold mb-3">Items</h4>
+                    <div className="space-y-3">
+                      {order.lineItems.edges.map((edge, index) => (
+                        <div key={`item-${order.id}-${index}`} className="flex items-center gap-3">
+                          {edge.node.variant?.image?.url && (
+                            <div className="w-12 h-12 relative flex-shrink-0">
+                              <Image
+                                src={edge.node.variant.image.url}
+                                alt={edge.node.title}
+                                fill
+                                className="object-cover rounded"
+                              />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h5 className="font-medium text-sm truncate">{edge.node.title}</h5>
+                            <p className="text-xs text-gray-600">{edge.node.variant?.title}</p>
+                            <p className="text-xs">Qty: {edge.node.quantity}</p>
                           </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop Table Layout */}
+        <div className="hidden lg:block overflow-x-auto w-full">
+          <table className="min-w-full border border-gray-300">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border border-gray-300 p-3 text-left font-semibold">Order</th>
+                <th className="border border-gray-300 p-3 text-left font-semibold">Date</th>
+                <th className="border border-gray-300 p-3 text-left font-semibold">Payment Status</th>
+                <th className="border border-gray-300 p-3 text-left font-semibold">Fulfillment Status</th>
+                <th className="border border-gray-300 p-3 text-left font-semibold">Total</th>
+                <th className="border border-gray-300 p-3 text-left font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <React.Fragment key={order.id}>
+                  <tr className="hover:bg-gray-50 cursor-pointer" onClick={() => toggleOrderDetails(order.id)}>
+                    <td className="border border-gray-300 p-3 font-medium">{order.orderNumber}</td>
+                    <td className="border border-gray-300 p-3">{formatDate(order.processedAt)}</td>
+                    <td className="border border-gray-300 p-3">
+                      <span className={`px-2 py-1 text-xs ${
+                        order.financialStatus === "PAID" ? "text-green-800" : "text-yellow-800"
+                      }`}>
+                        {order.financialStatus}
+                      </span>
+                    </td>
+                    <td className="border border-gray-300 p-3">
+                      <span className={`px-2 py-1 text-xs ${
+                        order.fulfillmentStatus === "FULFILLED" ? "text-green-800" : "text-orange-800"
+                      }`}>
+                        {order.fulfillmentStatus}
+                      </span>
+                    </td>
+                    <td className="border border-gray-300 p-3 font-medium">
+                      {formatCurrency(order.totalPrice.amount, order.totalPrice.currencyCode)}
+                    </td>
+                    <td className="border border-gray-300 p-3">
+                      <div className="flex flex-col space-y-1">
+                        <button
+                          className="text-xs text-blue-600 hover:underline cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/account/return/${order.orderNumber}`);
+                          }}
+                        >
+                          Request Return
+                        </button>
+                        <button
+                          className="text-xs text-blue-600 hover:underline cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/account/review/${order.orderNumber}`);
+                          }}
+                        >
+                          Create Review
+                        </button>
+                        {isOrderEditable(order) && (
+                          <button
+                            className="text-xs text-red-600 hover:underline cursor-pointer"
+                            onClick={(e) => handleCancelOrder(order.id, order.orderNumber, e)}
+                            disabled={isCanceling}
+                          >
+                            {cancelingOrderId === order.id ? "Confirm Cancel" : "Cancel Order"}
+                          </button>
                         )}
+                        <button className="text-xs text-blue-600 hover:underline cursor-pointer">Reorder</button>
                       </div>
                     </td>
                   </tr>
-                )}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
+                  {expandedOrder === order.id && (
+                    <tr>
+                      <td colSpan={6} className="border border-gray-300 p-0">
+                        <div className="p-4 bg-gray-50">
+                          <h3 className="font-semibold mb-2">Items</h3>
+                          <div className="grid gap-4">
+                            {order.lineItems.edges.map((edge, index) => (
+                              <div key={`item-${order.id}-${index}`} className="flex items-center border-b border-gray-200 pb-2">
+                                {edge.node.variant?.image?.url && (
+                                  <div className="w-16 h-16 mr-4 relative">
+                                    <Image
+                                      src={edge.node.variant.image.url}
+                                      alt={edge.node.title}
+                                      fill
+                                      sizes="64px"
+                                      style={{ objectFit: "cover" }}
+                                      className="rounded"
+                                    />
+                                  </div>
+                                )}
+                                <div className="flex-grow">
+                                  <p className="font-medium">{edge.node.title}</p>
+                                  {edge.node.variant?.title !== "Default Title" && (
+                                    <p className="text-sm text-gray-600">{edge.node.variant?.title}</p>
+                                  )}
+                                  <div className="flex items-center mt-1">
+                                    {reviewOrder === order.id ? (
+                                      <>
+                                        <label className="text-sm mr-2">Quantity:</label>
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          defaultValue={edge.node.quantity}
+                                          className="w-16 p-1 border border-gray-300 rounded"
+                                        />
+                                        <button className="ml-4 text-xs text-red-600 hover:underline">Remove</button>
+                                      </>
+                                    ) : (
+                                      <p className="text-sm">Quantity: {edge.node.quantity}</p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          {reviewOrder === order.id && (
+                            <div className="mt-4 flex justify-end space-x-3">
+                              <button
+                                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+                                onClick={() => setReviewOrder(null)}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                onClick={() => setReviewOrder(null)}
+                              >
+                                Save Changes
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
